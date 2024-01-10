@@ -1,0 +1,94 @@
+version: "3.8"
+
+
+services:
+  tempo:
+    image: grafana/tempo:latest
+    command:
+      - -config.file=/etc/tempo-config.yaml
+
+    networks:
+      - sf-photos-otel
+      - sf-photos-ext
+    volumes:
+      - tempo-data:/tmp/tempo
+    configs:
+      - source: tempo-config
+        target: /etc/tempo-config.yaml
+
+  prometheus:
+    image: prom/prometheus:latest
+    entrypoint:
+      - /bin/prometheus
+      - --config.file=/etc/prometheus.yml
+    networks:
+      - sf-photos-otel
+      - sf-photos-ext
+    volumes:
+      - prometheus-data:/prometheus
+    configs:
+      - source: prometheus-config
+        target: /etc/prometheus.yml
+
+  grafana-agent:
+    image: grafana/agent:latest
+    command: "-config.file=/etc/agent-config.yaml"
+    ports:
+      - "14317:4317" # gRPC
+      - "14318:4318" # http
+    networks:
+      - sf-photos-otel
+      - sf-photos-ext
+
+    configs:
+      - source: grafana-agent-config
+        target: /etc/agent-config.yaml
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    ports:
+      - "3456:3000"
+    networks:
+      - sf-photos-otel
+      - sf-photos-ext
+    volumes:
+      - grafana-data:/var/lib/grafana
+    configs:
+      - source: grafana-datasource-config
+        target: /etc/grafana/provisioning/datasources/datasource.yml
+
+  loki:
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - sf-photos-otel
+      - sf-photos-ext
+    volumes:
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+
+configs:
+  grafana-agent-config:
+    file: ./docker/grafana-agent/agent-config.yaml
+  grafana-datasource-config:
+    file: ./docker/grafana/provisioning/datasources/datasource.yml
+  tempo-config:
+    file: ./docker/tempo/tempo.yaml
+  prometheus-config:
+    file: ./docker/prometheus/prometheus.yml
+
+networks:
+  sf-photos-otel:
+  sf-photos-ext:
+    name: sf-photos-backend_sf-photos
+    external: true
+volumes:
+  grafana-data:
+  prometheus-data:
+  tempo-data:
+  loki-data:

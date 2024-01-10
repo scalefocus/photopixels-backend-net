@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  proxy:
+    image: nginx:1.25.2
+    ports:
+      - "5002:80"
+    configs:
+      - source: nginx-config
+        target: /etc/nginx/nginx.conf
+    restart: always
+    networks:
+      - sf-photos
+
+  web:
+    image: boriss/photopixels:0.6.5-alpha
+    build:
+      context: .
+      dockerfile: 'src/SF.PhotoPixels.API/Dockerfile'
+      args:
+        BUILD_DEVELOPMENT: 1
+        VERSION: 0.5.5
+        VERSION_SUFFIX: alpha
+    ports:
+      - "${APP_PUBLIC_PORT}:80"
+    networks:
+      - sf-photos
+    volumes:
+      - "${PHOTOS_LOCATION}:/var/data/sf-photos"
+    environment:
+      ConnectionStrings__PhotosMetadata: 'Host=pgsql;Port=5432;Database=photosdb;Username=postgres;Password=${DB_PASSWORD}'
+      Admin__Email: '${ADMIN_EMAIL}'
+      Admin__Password: '${ADMIN_PASSWORD}'
+      Telemetry__Enabled: false
+     
+    depends_on:
+      - pgsql
+    restart: always
+
+  pgsql:
+    image: postgres:14.3
+    ports:
+      - "${DB_PUBLIC_PORT}:5432"
+    networks:
+      - sf-photos
+
+    environment:
+      POSTGRES_DB: 'photosdb'
+      POSTGRES_PASSWORD: '${DB_PASSWORD}'
+    volumes:
+      - sf-photos-db:/var/lib/postgresql/data
+    restart: unless-stopped
+
+configs:
+  nginx-config:
+    file: ./docker/proxy/nginx.conf
+
+networks:
+  sf-photos:
+volumes:
+  sf-photos-db:
