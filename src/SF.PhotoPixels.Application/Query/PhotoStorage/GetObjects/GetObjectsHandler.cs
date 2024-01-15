@@ -37,12 +37,15 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             sqlQuery = $@"
                 SELECT  data
                 FROM photos.mt_doc_objectproperties
-                WHERE (data->>'DateCreated')::timestamptz <= (SELECT (data->>'DateCreated')::timestamptz
+                WHERE ((data->>'DateCreated')::timestamptz = (SELECT (data->>'DateCreated')::timestamptz
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId)
 
-                        AND id <= :lastId
-                        AND (data->>'UserId')::uuid = :userId
+                      AND id <= :lastId) OR
+                      ((data->>'DateCreated')::timestamptz < (SELECT (data->>'DateCreated')::timestamptz
+                                                              FROM photos.mt_doc_objectproperties
+                                                              WHERE id = :lastId))
+                      AND (data->>'UserId')::uuid = :userId
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }
@@ -68,7 +71,8 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             properties.Add(thumbnailProperty);
         }
 
-        var lastId = objectProperties[^1].Id;
+        
+        var lastId = result.Count < request.PageSize ? "" : objectProperties[^1].Id;
         return new GetObjectsResponse() { Properties = properties, LastId = lastId };
     }
 }
