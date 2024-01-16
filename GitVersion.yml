@@ -1,0 +1,28 @@
+assembly-versioning-scheme: MajorMinorPatch
+
+branches:
+  develop:
+    increment: Patch
+
+  release:
+    tag: rc
+  
+  feature:
+    tag: build
+
+  hotfix:
+    increment: Patch
+    source-branches: [ 'main' ]
+    mode: ContinuousDeployment
+  bugfix:
+    regex: ^bugfix[/-]
+    mode: ContinuousDelivery
+    tag: build
+    increment: Inherit
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    source-branches: [ 'develop', 'main', 'release', 'feature', 'support', 'hotfix' ]
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false
+    pre-release-weight: 30000
