@@ -1,10 +1,12 @@
 ﻿using DotNet.Testcontainers.Builders;
+using FluentAssertions.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Npgsql;
 using Respawn;
 using SF.PhotoPixels.API.Integration.Tests.FakeServices;
@@ -115,7 +117,15 @@ public class PhotosWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             services.AddSingleton<TotpState>();
             services.AddTransient<IEmailGenerator, FakeEmailGenerator>();
             services.AddTransient<IEmailSender, FakeEmailSender>();
-        });
+            services.Configure<HealthCheckServiceOptions>(options =>
+            {
+                options.Registrations.Clear();
+            });
+
+            services.AddHealthChecks()
+            .AddNpgSql(ConnectionString())
+            .AddPingHealthCheck(options => options.AddHost("localhost", 1000));
+        });        
     }
 
     private async Task CreateConnectionToDb()

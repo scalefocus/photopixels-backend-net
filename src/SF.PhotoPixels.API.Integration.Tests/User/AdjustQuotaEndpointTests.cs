@@ -71,7 +71,7 @@ public class AdjustQuotaEndpointTests : IntegrationTest
     }
 
     [Fact]
-    public async Task AdjustQuota_WithIOnvalidUser_ShouldReturnNotFound()
+    public async Task AdjustQuota_WithInvalidUser_ShouldReturnNotFound()
     {
         await AuthenticateAsSeededAdminAsync();
 
