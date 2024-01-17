@@ -12,9 +12,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace SF.PhotoPixels.API.Integration.Tests.User;
 
-public class HealtEndpointTests : IntegrationTest
+public class HealthEndpointTests : IntegrationTest
 {
-    public HealtEndpointTests(PhotosWebApplicationFactory customWebFactory) : base(customWebFactory)
+    public HealthEndpointTests(PhotosWebApplicationFactory customWebFactory) : base(customWebFactory)
     {
 
     }
