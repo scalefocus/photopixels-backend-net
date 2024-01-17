@@ -1,6 +1,9 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using HealthChecks.Network.Core;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -21,14 +24,7 @@ using SF.PhotoPixels.Application.VersionMigrations;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Infrastructure;
 using SF.PhotoPixels.Infrastructure.Options;
-using SF.PhotoPixels.Infrastructure.Services.TusService;
 using SF.PhotoPixels.Infrastructure.Stores;
-using tusdotnet;
-using tusdotnet.Helpers;
-using tusdotnet.Models;
-using tusdotnet.Models.Configuration;
-using tusdotnet.Models.Expiration;
-using tusdotnet.Stores;
 
 const string appName = "PhotoPixels.io";
 
@@ -67,6 +63,18 @@ builder.Logging.AddSerilog();
 builder.Host.UseSerilog();
 
 builder.Services.AddTelemetry(telemetryConfiguration);
+
+var smtpOptions = builder.Configuration.GetSection("EmailConfiguration");
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("PhotosMetadata"))
+    .AddPingHealthCheck(options => options.AddHost("localhost", 1000))
+    .AddSmtpHealthCheck(setup =>
+    {
+        setup.Host = smtpOptions.GetValue<string>("Host");
+        setup.Port = smtpOptions.GetValue<int>("Port");
+        setup.ConnectionType = smtpOptions.GetValue<bool>("UseSsl") == true ? SmtpConnectionType.SSL : SmtpConnectionType.TLS;
+        setup.LoginWith(smtpOptions.GetValue<string>("Username"), smtpOptions.GetValue<string>("Password"));
+    });
 
 builder.Services.AddScoped<IAuthorizationHandler, RequireAdminRoleAuthorizationHandler>();
 
@@ -198,6 +206,11 @@ app.MapGet("/", () => Results.Redirect("/swagger")).AllowAnonymous();
 app.UseHttpsRedirection();
 
 app.UseRouting();
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+}).RequireAuthorization("RequireAdminRole");
 
 app.UseAuthentication();
 app.UseAuthorization();
