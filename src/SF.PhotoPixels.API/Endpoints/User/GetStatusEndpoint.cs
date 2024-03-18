@@ -6,6 +6,7 @@ using System.Text.Json;
 using SF.PhotoPixels.Application.Query.GetStatus;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json.Serialization;
+using System.Text.Encodings.Web;
 
 namespace SF.PhotoPixels.API.Endpoints.User;
 
@@ -35,13 +36,14 @@ public class GetStatusEndpoint : EndpointBaseAsync.WithoutRequest.WithActionResu
         );
     }
 
-    private static OkObjectResult RemoveNullsFromResponse(GetStatusResponse x)
+    private static JsonResult RemoveNullsFromResponse(GetStatusResponse x)
     {
-        return new OkObjectResult(JsonSerializer.Serialize(x,
-                    new JsonSerializerOptions(JsonSerializerDefaults.Web)
-                    {
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                        WriteIndented = true,
-                    }));
+        var serializationSettings = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        return new JsonResult(x,serializationSettings);
     }
 }
