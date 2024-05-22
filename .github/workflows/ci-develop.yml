@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ "develop" ]
+    branches: ["develop"]
 
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
 
       - name: Test
         env:
-          TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+          TESTCONTAINERS_HOST_OVERRIDE: unix:///var/run/docker.sock
         run: dotnet test --no-build --verbosity normal
 
       - name: Build docker image
@@ -42,7 +42,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB }}
-        
+
       - name: "Push Docker image"
         run: docker push scalefocusad/photopixels-backend-net:$(steps.gitversion.outputs.SemVer)
 

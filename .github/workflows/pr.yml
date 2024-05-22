@@ -20,5 +20,5 @@ jobs:
 
       - name: Test
         env:
-          TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+          TESTCONTAINERS_HOST_OVERRIDE: unix:///var/run/docker.sock
         run: dotnet test --no-build --verbosity normal
