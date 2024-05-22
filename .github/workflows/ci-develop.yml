@@ -31,7 +31,7 @@ jobs:
 
       - name: Test
         env:
-          TESTCONTAINERS_HOST_OVERRIDE: /var/run/docker.sock
+          TESTCONTAINERS_HOST_OVERRIDE: localhost
         run: dotnet test --no-build --verbosity normal
 
       - name: Build docker image
