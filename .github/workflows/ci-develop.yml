@@ -73,13 +73,14 @@ jobs:
 
           echo "ZZZ v1 = ${{ steps.gitversion.outputs.SemVer }}"
           echo "ZZZ v2 = ${{ steps.gitversion.outputs.MajorMinorPatch }}"
+          echo "ZZZ v3 = ${{ steps.gitversion.outputs.SemVer#*+ }}"
 
           # docker buildx build \
           #     --platform linux/amd64,linux/arm64,linux/arm/v7 \
           #     --no-cache \
-          #     --build-arg VERSION=0.8.2 \
-          #     --build-arg VERSION_SUFFIX=alpha \
-          #     -t scalefocusad/photopixels-backend-net:0.8.2-alpha \
+          #     --build-arg VERSION=${{ steps.gitversion.outputs.MajorMinorPatch }} \
+          #     --build-arg VERSION_SUFFIX=${{ steps.gitversion.outputs.SemVer#*+ }} \
+          #     -t scalefocusad/photopixels-backend-net:${{ steps.gitversion.outputs.MajorMinorPatch }}-alpha \
           #     -f ./src/SF.PhotoPixels.API/Dockerfile . \
           #     --push
 
