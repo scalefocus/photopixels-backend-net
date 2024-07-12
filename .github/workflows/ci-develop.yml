@@ -1,28 +1,51 @@
+# --------------------------------------------------------------------------------------------------
+# This GitHub Actions workflow file is used to automate the build process for the PhotoPixels
+# .NET-based backend project. The workflow includes several jobs to ensure the quality and delivery
+# of the project, such as:
+#
+# - check: Runs static analysis tools to check code quality and style.
+# - test: Executes unit tests to ensure the correctness of the code.
+# - build: Compiles the source code and generates the necessary artifacts.
+# - assemble-signed-release: Builds the application APK and signs it for release.
+# - distribute: Distributes the signed APK to the appropriate channels (e.g., Firebase App
+#       Distribution, Google Play).
+#
+# Note: The specific jobs and steps may evolve over time as the project requirements change.
+# --------------------------------------------------------------------------------------------------
+
+name: dotNET CI
+run-name: ${{ github.actor }} started the .NET CI workflow
+
 on:
   push:
-    branches: ["develop"]
+    branches: 
+        - main
+        - develop
+        - release/**
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up git version
-        uses: gittools/actions/gitversion/setup@v0.9.9
-        with:
-          versionSpec: "5.x"
-      - name: Run git version
-        id: gitversion
-        uses: gittools/actions/gitversion/execute@v0.9.9
+    #   - name: Set up git version
+    #     uses: gittools/actions/gitversion/setup@v0.9.9
+    #     with:
+    #       versionSpec: "5.x"
+
+    #   - name: Run git version
+    #     id: gitversion
+    #     uses: gittools/actions/gitversion/execute@v0.9.9
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
+
       - name: Restore dependencies
         run: dotnet restore
 
@@ -30,8 +53,6 @@ jobs:
         run: dotnet build
 
       - name: Test
-        env:
-          TESTCONTAINERS_HOST_OVERRIDE: localhost
         run: dotnet test --no-build --verbosity normal
 
       - name: Build docker image
@@ -45,8 +66,3 @@ jobs:
 
       - name: "Push Docker image"
         run: docker push scalefocusad/photopixels-backend-net:$(steps.gitversion.outputs.SemVer)
-
-      - name: Start containers
-        env:
-          IMAGE_VERSION: $(steps.gitversion.outputs.SemVer)
-        run: docker-compose -f "/home/photopixeladmin/docker-containers/dev2.photopixels.io" up -d
