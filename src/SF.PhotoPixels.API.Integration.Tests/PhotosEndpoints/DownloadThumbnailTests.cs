@@ -12,6 +12,7 @@ public class DownloadThumbnailTests : IntegrationTest
     }    
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task DownloadThumbnail_WithInvalidId_ShouldReturnNotFound()
     {
         await AuthenticateAsSeededAdminAsync();
@@ -23,6 +24,7 @@ public class DownloadThumbnailTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task DownloadThumbnail_WithValidImageAndNoAuthentication_ShouldReturnUnauthorized()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -38,6 +40,7 @@ public class DownloadThumbnailTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task DownloadThumbnail_WithOtherUserImage_ShouldReturnInternalServerError()
     {
         var token = await AuthenticateAsSeededAdminAsync();

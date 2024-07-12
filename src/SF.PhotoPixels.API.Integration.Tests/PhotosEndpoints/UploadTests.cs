@@ -15,6 +15,7 @@ public class UploadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Upload_WithImage_ShouldReturnOk()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -38,6 +39,7 @@ public class UploadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Upload_WithNoAuth_ShouldReturnUnauthorized()
     {
         var response = await _httpClient.PostAsync("/object", null);
@@ -46,6 +48,7 @@ public class UploadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Upload_WithMismathcedHash_ShouldReturnBadRequest()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -66,6 +69,7 @@ public class UploadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Upload_WithDuplicateImage_ShouldReturnConflict()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -88,6 +92,7 @@ public class UploadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Upload_WithMissingUser_ShouldReturnUnauthorized()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -110,6 +115,7 @@ public class UploadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Upload_WithNotEnougnQuota_ShouldReturnBadRequest()
     {
         var token = await AuthenticateAsSeededAdminAsync();

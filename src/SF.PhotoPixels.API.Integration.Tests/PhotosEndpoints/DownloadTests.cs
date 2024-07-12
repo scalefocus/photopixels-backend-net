@@ -12,6 +12,7 @@ public class DownloadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Download_WithValidImage_ShouldReturnOk()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -24,6 +25,7 @@ public class DownloadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Download_WithInvalidId_ShouldReturnNotFound()
     {
         await AuthenticateAsSeededAdminAsync();
@@ -35,6 +37,7 @@ public class DownloadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Download_WithValidImageAndNoAuthentication_ShouldReturnUnauthorized()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -50,6 +53,7 @@ public class DownloadTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task Download_WithOtherUserImage_ShouldReturnInternalServerError()
     {
         var token = await AuthenticateAsSeededAdminAsync();

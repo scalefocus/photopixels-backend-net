@@ -16,6 +16,7 @@ public class UpdateObjectEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task UpdateObject_WithValidData_ShouldReturnOk()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -42,6 +43,7 @@ public class UpdateObjectEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task UpdateObject_WithInvalidId_ShouldReturnNotFound()
     {
         await AuthenticateAsSeededAdminAsync();
@@ -65,6 +67,7 @@ public class UpdateObjectEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task UpdateObject_WithNoAuthentication_ShouldReturnUnauthorized()
     {
         string someId = "some_id";

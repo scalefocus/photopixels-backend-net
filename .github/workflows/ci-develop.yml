@@ -34,24 +34,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      #   - name: Set up git version
-      #     uses: gittools/actions/gitversion/setup@v0.9.9
-      #     with:
-      #       versionSpec: "5.x"
-
-      #   - name: Run git version
-      #     id: gitversion
-      #     uses: gittools/actions/gitversion/execute@v0.9.9
-
       - name: Set a variable that this workflow runs on Github Actions
         run: |
-          echo "GITHUB_ACTION is: ${GITHUB_ACTION}"
           if [[ "${GITHUB_ACTIONS}" == "true" ]]; then
-              echo "Setting environment variable TEST_PROJECT"
               echo "TEST_PROJECT=SF.PhotoPixels.API.Integration.Tests" >> $GITHUB_ENV
               exit 0
           else
-              echo "Not running on GitHub Actions"
               exit 1
           fi
 
@@ -69,11 +57,10 @@ jobs:
       - name: Build project
         run: |
           dotnet build
-          print "ZZZ: ${{ env.TEST_PROJECT }}"
 
       - name: Test
-        run: dotnet test --no-build --verbosity normal
-        if: ${{ env.TEST_PROJECT != 'SF.PhotoPixels.API.Integration.Tests' }}
+        run: dotnet test --no-build --verbosity normal --filter "Category!=Integration"
+        ### if: "${GITHUB_ACTIONS}" == "true" 
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
