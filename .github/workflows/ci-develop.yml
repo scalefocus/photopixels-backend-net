@@ -18,12 +18,12 @@ run-name: ${{ github.actor }} started the .NET CI workflow
 
 on:
   push:
-    branches: 
-        - main
-        - develop
-        - release/**
-        ###TEMP for tests
-        - feature/ci-cd-v2
+    branches:
+      - main
+      - develop
+      - release/**
+      ###TEMP for tests
+      - feature/ci-cd-v2
 
 jobs:
   build:
@@ -34,24 +34,30 @@ jobs:
         with:
           fetch-depth: 0
 
-    #   - name: Set up git version
-    #     uses: gittools/actions/gitversion/setup@v0.9.9
-    #     with:
-    #       versionSpec: "5.x"
+      #   - name: Set up git version
+      #     uses: gittools/actions/gitversion/setup@v0.9.9
+      #     with:
+      #       versionSpec: "5.x"
 
-    #   - name: Run git version
-    #     id: gitversion
-    #     uses: gittools/actions/gitversion/execute@v0.9.9
+      #   - name: Run git version
+      #     id: gitversion
+      #     uses: gittools/actions/gitversion/execute@v0.9.9
 
       - name: Set a variable that this workflow runs on Github Actions
         run: |
-            if [[ "${GITHUB_ACTION}" == *"github-actions"* ]]; then
-                echo "TEST_PROJECT=SF.PhotoPixels.API.Integration.Tests" >> $GITHUB_ENV
-                exit 0
-            else
-                exit 1
-            fi
-  
+          echo "GITHUB_ACTION is: ${GITHUB_ACTION}"
+          if [[ "${GITHUB_ACTION}" == *"github-actions"* ]]; then
+              echo "Setting environment variable TEST_PROJECT"
+              echo "TEST_PROJECT=SF.PhotoPixels.API.Integration.Tests" >> $GITHUB_ENV
+              exit 0
+          else
+              echo "Not running on GitHub Actions"
+              exit 1
+          fi
+
+      - name: Use the TEST_PROJECT environment variable
+        run: echo "The TEST_PROJECT variable is ${{ env.TEST_PROJECT }}"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -62,8 +68,8 @@ jobs:
 
       - name: Build project
         run: |
-            dotnet build
-            print "ZZZ: ${{ env.TEST_PROJECT }}"
+          dotnet build
+          print "ZZZ: ${{ env.TEST_PROJECT }}"
 
       - name: Test
         run: dotnet test --no-build --verbosity normal
@@ -80,19 +86,19 @@ jobs:
 
       - name: Build docker image
         run: |
-            ### dotnet publish --os linux --arch x64 -c Release -p:ContainerImageTag=$(steps.gitversion.outputs.SemVer) -p:AssemblyVersion=$(steps.gitversion.outputs.MajorMinorPatch) -p:Version=$(steps.gitversion.outputs.SemVer)
+          ### dotnet publish --os linux --arch x64 -c Release -p:ContainerImageTag=$(steps.gitversion.outputs.SemVer) -p:AssemblyVersion=$(steps.gitversion.outputs.MajorMinorPatch) -p:Version=$(steps.gitversion.outputs.SemVer)
 
-            print "ZZZ v1 = $(steps.gitversion.outputs.SemVer)"
-            print "ZZZ v2 = $(steps.gitversion.outputs.MajorMinorPatch)"
+          print "ZZZ v1 = $(steps.gitversion.outputs.SemVer)"
+          print "ZZZ v2 = $(steps.gitversion.outputs.MajorMinorPatch)"
 
-            # docker buildx build \
-            #     --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            #     --no-cache \
-            #     --build-arg VERSION=0.8.2 \
-            #     --build-arg VERSION_SUFFIX=alpha \
-            #     -t scalefocusad/photopixels-backend-net:0.8.2-alpha \
-            #     -f ./src/SF.PhotoPixels.API/Dockerfile . \
-            #     --push
+          # docker buildx build \
+          #     --platform linux/amd64,linux/arm64,linux/arm/v7 \
+          #     --no-cache \
+          #     --build-arg VERSION=0.8.2 \
+          #     --build-arg VERSION_SUFFIX=alpha \
+          #     -t scalefocusad/photopixels-backend-net:0.8.2-alpha \
+          #     -f ./src/SF.PhotoPixels.API/Dockerfile . \
+          #     --push
 
     #   - name: "Push Docker image"
     #     run: docker push scalefocusad/photopixels-backend-net:$(steps.gitversion.outputs.SemVer)
