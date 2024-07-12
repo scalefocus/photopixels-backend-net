@@ -45,11 +45,11 @@ jobs:
 
       - name: Set a variable that this workflow runs on Github Actions
         run: |
-            if [[ "${GITHUB_ACTION}" == *"github-actions"* ]]; then \
-                echo ::set-env name=TEST_PROJECT::SF.PhotoPixels.API.Integration.Tests \
-                exit 0 \
-            else \
-                exit 1 \
+            if [[ "${GITHUB_ACTION}" == *"github-actions"* ]]; then
+                echo "TEST_PROJECT=SF.PhotoPixels.API.Integration.Tests" >> $GITHUB_ENV
+                exit 0
+            else
+                exit 1
             fi
   
       - name: Setup .NET
