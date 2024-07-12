@@ -43,13 +43,13 @@ jobs:
     #     id: gitversion
     #     uses: gittools/actions/gitversion/execute@v0.9.9
 
-      - name: Check if DB is PostgreSQL and run on Github Actions
+      - name: Set a variable that this workflow runs on Github Actions
         run: |
-            if [[ "${GITHUB_ACTION}" == *"github-actions"* ]]; then 
-                echo ::set-env name=TEST_PROJECT::SF.PhotoPixels.API.Integration.Tests
-                exit 0
-            else 
-                exit 1
+            if [[ "${GITHUB_ACTION}" == *"github-actions"* ]]; then \
+                echo ::set-env name=TEST_PROJECT::SF.PhotoPixels.API.Integration.Tests \
+                exit 0 \
+            else \
+                exit 1 \
             fi
   
       - name: Setup .NET
