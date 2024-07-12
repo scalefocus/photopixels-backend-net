@@ -14,6 +14,7 @@ public class GetStatusEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetStatus_WithValidData_ShouldReturnOK()
     {
         await AuthenticateAsSeededAdminAsync();
@@ -27,6 +28,7 @@ public class GetStatusEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetStatus_WithNoAuth_ShouldReturnOK()
     {
         var response = await _httpClient.GetAsync("/status");
