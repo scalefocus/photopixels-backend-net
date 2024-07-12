@@ -41,6 +41,15 @@ jobs:
     #     id: gitversion
     #     uses: gittools/actions/gitversion/execute@v0.9.9
 
+      - name: Check if DB is PostgreSQL and run on Github Actions
+        run: |
+            if [[ "${GITHUB_ACTION}" == *"github-actions"* ]]; then 
+                echo ::set-env name=TEST_PROJECT::SF.PhotoPixels.API.Integration.Tests
+                exit 0
+            else 
+                exit 1
+            fi
+  
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -50,13 +59,13 @@ jobs:
         run: dotnet restore
 
       - name: Build project
-        run: dotnet build
+        run: |
+            dotnet build
+            print "ZZZ: ${{ env.TEST_PROJECT }}"
 
       - name: Test
         run: dotnet test --no-build --verbosity normal
-
-      - name: Build docker image
-        run: dotnet publish --os linux --arch x64 -c Release -p:ContainerImageTag=$(steps.gitversion.outputs.SemVer) -p:AssemblyVersion=$(steps.gitversion.outputs.MajorMinorPatch) -p:Version=$(steps.gitversion.outputs.SemVer)
+        if: ${{ env.TEST_PROJECT != 'SF.PhotoPixels.API.Integration.Tests' }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -64,5 +73,24 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB }}
 
-      - name: "Push Docker image"
-        run: docker push scalefocusad/photopixels-backend-net:$(steps.gitversion.outputs.SemVer)
+      - name: Create a multi-platform Docker builder
+        run: docker buildx create --name photopixelsBuilder --bootstrap --use
+
+      - name: Build docker image
+        run: |
+            ### dotnet publish --os linux --arch x64 -c Release -p:ContainerImageTag=$(steps.gitversion.outputs.SemVer) -p:AssemblyVersion=$(steps.gitversion.outputs.MajorMinorPatch) -p:Version=$(steps.gitversion.outputs.SemVer)
+
+            print "ZZZ v1 = $(steps.gitversion.outputs.SemVer)"
+            print "ZZZ v2 = $(steps.gitversion.outputs.MajorMinorPatch)"
+
+            # docker buildx build \
+            #     --platform linux/amd64,linux/arm64,linux/arm/v7 \
+            #     --no-cache \
+            #     --build-arg VERSION=0.8.2 \
+            #     --build-arg VERSION_SUFFIX=alpha \
+            #     -t scalefocusad/photopixels-backend-net:0.8.2-alpha \
+            #     -f ./src/SF.PhotoPixels.API/Dockerfile . \
+            #     --push
+
+    #   - name: "Push Docker image"
+    #     run: docker push scalefocusad/photopixels-backend-net:$(steps.gitversion.outputs.SemVer)
