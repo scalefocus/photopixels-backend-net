@@ -22,8 +22,6 @@ on:
       - main
       - develop
       - release/**
-      ###TEMP for tests
-      - feature/ci-cd-v2
 
 jobs:
   build:
@@ -76,4 +74,4 @@ jobs:
               --build-arg VERSION_SUFFIX="${{ steps.gitversion.outputs.preReleaseTag }}" \
               -t scalefocusad/photopixels-backend-net:${{ steps.gitversion.outputs.semVer }} \
               -f ./src/SF.PhotoPixels.API/Dockerfile . \
-            #   --push
+              --push
