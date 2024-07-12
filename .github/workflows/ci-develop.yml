@@ -71,8 +71,8 @@ jobs:
         run: |
           ### dotnet publish --os linux --arch x64 -c Release -p:ContainerImageTag=$(steps.gitversion.outputs.SemVer) -p:AssemblyVersion=$(steps.gitversion.outputs.MajorMinorPatch) -p:Version=$(steps.gitversion.outputs.SemVer)
 
-          echo "ZZZ v1 = $(steps.gitversion.outputs.SemVer)"
-          echo "ZZZ v2 = $(steps.gitversion.outputs.MajorMinorPatch)"
+          echo "ZZZ v1 = ${{ steps.gitversion.outputs.SemVer }}"
+          echo "ZZZ v2 = ${{ steps.gitversion.outputs.MajorMinorPatch }}"
 
           # docker buildx build \
           #     --platform linux/amd64,linux/arm64,linux/arm/v7 \
