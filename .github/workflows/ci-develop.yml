@@ -46,7 +46,7 @@ jobs:
       - name: Set a variable that this workflow runs on Github Actions
         run: |
           echo "GITHUB_ACTION is: ${GITHUB_ACTION}"
-          if [[ "${GITHUB_ACTION}" == *"github-actions"* ]]; then
+          if [[ "${GITHUB_ACTIONS}" == "true" ]]; then
               echo "Setting environment variable TEST_PROJECT"
               echo "TEST_PROJECT=SF.PhotoPixels.API.Integration.Tests" >> $GITHUB_ENV
               exit 0
