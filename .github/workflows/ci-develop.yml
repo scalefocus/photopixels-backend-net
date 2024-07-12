@@ -22,6 +22,8 @@ on:
         - main
         - develop
         - release/**
+        ###TEMP for tests
+        - feature/ci-cd-v2
 
 jobs:
   build:
