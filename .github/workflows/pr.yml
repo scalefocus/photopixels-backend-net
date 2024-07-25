@@ -1,3 +1,13 @@
+# --------------------------------------------------------------------------------------------------
+# This GitHub Actions workflow file is used to automate the build process for the PhotoPixels
+# .NET-based backend project. 
+#
+# Note: The specific jobs and steps may evolve over time as the project requirements change.
+# --------------------------------------------------------------------------------------------------
+
+name: dotNET CI for PRs
+run-name: ${{ github.actor }} started the .NET CI for PRs workflow
+
 on:
   pull_request:
     branches: ["main", "develop"]

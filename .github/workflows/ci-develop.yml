@@ -5,8 +5,8 @@
 # Note: The specific jobs and steps may evolve over time as the project requirements change.
 # --------------------------------------------------------------------------------------------------
 
-name: dotNET CI
-run-name: ${{ github.actor }} started the .NET CI workflow
+name: dotNET CI for Push
+run-name: ${{ github.actor }} started the .NET CI for Push workflow
 
 on:
   push:
