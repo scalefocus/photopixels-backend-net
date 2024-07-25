@@ -1,14 +1,6 @@
 # --------------------------------------------------------------------------------------------------
 # This GitHub Actions workflow file is used to automate the build process for the PhotoPixels
-# .NET-based backend project. The workflow includes several jobs to ensure the quality and delivery
-# of the project, such as:
-#
-# - check: Runs static analysis tools to check code quality and style.
-# - test: Executes unit tests to ensure the correctness of the code.
-# - build: Compiles the source code and generates the necessary artifacts.
-# - assemble-signed-release: Builds the application APK and signs it for release.
-# - distribute: Distributes the signed APK to the appropriate channels (e.g., Firebase App
-#       Distribution, Google Play).
+# .NET-based backend project. 
 #
 # Note: The specific jobs and steps may evolve over time as the project requirements change.
 # --------------------------------------------------------------------------------------------------
