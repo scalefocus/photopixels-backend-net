@@ -1,0 +1,71 @@
+# --------------------------------------------------------------------------------------------------
+# This GitHub Actions workflow file is used to automate the build process for the PhotoPixels
+# .NET-based backend project. 
+#
+# Note: The specific jobs and steps may evolve over time as the project requirements change.
+# --------------------------------------------------------------------------------------------------
+
+name: dotNET CI for Push
+run-name: ${{ github.actor }} started the .NET CI for Push workflow
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.0.0
+        with:
+            versionSpec: "6.x"
+            preferLatestVersion: true
+
+      - name: Run GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v3.0.0
+        with:
+            useConfigFile: true
+  
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal --filter "Category!=Integration"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB }}
+
+      - name: Create a multi-platform Docker builder
+        run: docker buildx create --name photopixelsBuilder --bootstrap --use
+
+      - name: Build docker image
+        run: |
+          docker buildx build \
+              --platform linux/amd64,linux/arm64,linux/arm/v7 \
+              --no-cache \
+              --build-arg VERSION="${{ steps.gitversion.outputs.MajorMinorPatch }}" \
+              --build-arg VERSION_SUFFIX="${{ steps.gitversion.outputs.preReleaseTag }}" \
+              -t scalefocusad/photopixels-backend-net:${{ steps.gitversion.outputs.semVer }} \
+              -f ./src/SF.PhotoPixels.API/Dockerfile . \
+              --push

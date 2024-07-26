@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="PrivacyMode\fullimage.jpeg" />
+    <EmbeddedResource Include="PrivacyMode\fullimage.jpeg" />
+    <None Remove="PrivacyMode\thumbnail.webp" />
+    <EmbeddedResource Include="PrivacyMode\thumbnail.webp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.8.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.1" />
+    <PackageReference Include="Mediator.Abstractions" Version="2.1.7" />
+    <PackageReference Include="Mediator.SourceGenerator" Version="2.1.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="OneOf" Version="3.0.255" />
+    <PackageReference Include="OneOf.SourceGenerator" Version="3.0.255" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SF.PhotoPixels.Domain\SF.PhotoPixels.Domain.csproj" />
+    <ProjectReference Include="..\SF.PhotoPixels.Infrastructure\SF.PhotoPixels.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

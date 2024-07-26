@@ -1,0 +1,69 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.PhotoPixels.API", "src\SF.PhotoPixels.API\SF.PhotoPixels.API.csproj", "{8999E88D-1BAF-4F22-A4F2-FC01D9C6745D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.PhotoPixels.Domain", "src\SF.PhotoPixels.Domain\SF.PhotoPixels.Domain.csproj", "{8EC09633-FC14-4F37-826F-097872807656}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.PhotoPixels.Infrastructure", "src\SF.PhotoPixels.Infrastructure\SF.PhotoPixels.Infrastructure.csproj", "{791D301F-8828-461C-AA93-E87AE36925B5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.PhotoPixels.Application", "src\SF.PhotoPixels.Application\SF.PhotoPixels.Application.csproj", "{79FB323B-F1B8-4EAC-8294-3F97D08499DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{83BD9B14-CB29-48AA-A7A5-DD97A2E45A69}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.env = .env
+		.env.dev = .env.dev
+		.gitignore = .gitignore
+		docker-compose.yml = docker-compose.yml
+		readme.md = readme.md
+		docker-compose-otel.yml = docker-compose-otel.yml
+		docker\prometheus\prometheus.yml = docker\prometheus\prometheus.yml
+		docker\grafana\provisioning\datasources\datasource.yml = docker\grafana\provisioning\datasources\datasource.yml
+		docker\grafana-agent\agent-config.yaml = docker\grafana-agent\agent-config.yaml
+		docker\tempo\tempo.yaml = docker\tempo\tempo.yaml
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.PhotoPixels.API.Integration.Tests", "src\SF.PhotoPixels.API.Integration.Tests\SF.PhotoPixels.API.Integration.Tests.csproj", "{06DA6E4E-D880-4F35-8C5E-FE19E23E0179}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A44A49BC-CE84-4535-BBCF-170447A43C05}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8999E88D-1BAF-4F22-A4F2-FC01D9C6745D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8999E88D-1BAF-4F22-A4F2-FC01D9C6745D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8999E88D-1BAF-4F22-A4F2-FC01D9C6745D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8999E88D-1BAF-4F22-A4F2-FC01D9C6745D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EC09633-FC14-4F37-826F-097872807656}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EC09633-FC14-4F37-826F-097872807656}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EC09633-FC14-4F37-826F-097872807656}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EC09633-FC14-4F37-826F-097872807656}.Release|Any CPU.Build.0 = Release|Any CPU
+		{791D301F-8828-461C-AA93-E87AE36925B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{791D301F-8828-461C-AA93-E87AE36925B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{791D301F-8828-461C-AA93-E87AE36925B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{791D301F-8828-461C-AA93-E87AE36925B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79FB323B-F1B8-4EAC-8294-3F97D08499DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79FB323B-F1B8-4EAC-8294-3F97D08499DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79FB323B-F1B8-4EAC-8294-3F97D08499DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79FB323B-F1B8-4EAC-8294-3F97D08499DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7542B97A-5E02-4114-B347-F53BB855C33A}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179} = {A44A49BC-CE84-4535-BBCF-170447A43C05}
+	EndGlobalSection
+EndGlobal
