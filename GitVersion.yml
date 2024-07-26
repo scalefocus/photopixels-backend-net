@@ -7,7 +7,7 @@ branches:
     increment: Patch
     prevent-increment:
       of-merged-branch: true
-    track-merge-target: false
+    track-merge-target: true
     track-merge-message: true
     regex: ^master$|^main$
     source-branches: []
