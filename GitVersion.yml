@@ -4,7 +4,7 @@ branches:
   main:
     mode: ContinuousDelivery
     label: ''
-    increment: Patch
+    increment: Minor
 
   develop:
     mode: ContinuousDelivery
