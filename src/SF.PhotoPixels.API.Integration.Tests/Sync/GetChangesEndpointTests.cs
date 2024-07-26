@@ -15,6 +15,7 @@ public class GetChangesEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetChanges_WithOneChange_ShouldReturnOk()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -35,6 +36,7 @@ public class GetChangesEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetChanges_WithNoImage_ShouldReturnNotFound()
     {
         await AuthenticateAsSeededAdminAsync();
@@ -47,6 +49,7 @@ public class GetChangesEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetChanges_WithNoAuthorization_ShouldReturnUnauthorized()
     {
         int revisionId = 0;

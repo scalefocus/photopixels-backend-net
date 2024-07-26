@@ -13,14 +13,7 @@ services:
       - sf-photos
 
   web:
-    image: boriss/photopixels:0.6.5-alpha
-    build:
-      context: .
-      dockerfile: 'src/SF.PhotoPixels.API/Dockerfile'
-      args:
-        BUILD_DEVELOPMENT: 1
-        VERSION: 0.5.5
-        VERSION_SUFFIX: alpha
+    image: scalefocusad/photopixels-backend-net:${IMAGE_VERSION}
     ports:
       - "${APP_PUBLIC_PORT}:80"
     networks:

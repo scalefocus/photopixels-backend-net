@@ -14,6 +14,7 @@ public class GetObjectDataListTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetObjectDataList_WithNoAuthorization_ShouldReturnUnauthorized()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -41,6 +42,7 @@ public class GetObjectDataListTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetObjectDataList_WithValidImage_ShouldReturnOk()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -70,6 +72,7 @@ public class GetObjectDataListTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetObjectDataList_WithWrongId_ShouldReturnOkWithEmptyList()
     {
         await AuthenticateAsSeededAdminAsync();
