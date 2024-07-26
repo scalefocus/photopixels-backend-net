@@ -13,6 +13,7 @@ public class GetObjectsTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetObjects_WithNoAuthorization_ShouldReturnUnauthorized()
     {
         var response = await _httpClient.GetAsync($"/objects?PageSize=3");
@@ -21,6 +22,7 @@ public class GetObjectsTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetObjects_WithValidImage_ShouldReturnOk()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -38,6 +40,7 @@ public class GetObjectsTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetObjects_WithInvalidLastId_ShouldReturnNoContent()
     {
         var token = await AuthenticateAsSeededAdminAsync();

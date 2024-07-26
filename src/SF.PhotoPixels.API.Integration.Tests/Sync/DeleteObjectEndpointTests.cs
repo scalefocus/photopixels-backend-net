@@ -13,6 +13,7 @@ public class DeleteObjectEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task DeleteObjectEndpoint_WithValidData_ShouldReturnOk()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -26,6 +27,7 @@ public class DeleteObjectEndpointTests : IntegrationTest
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task DeleteObjectEndpoint_WithInvalidId_ShouldReturnNotFound()
     {
         var token = await AuthenticateAsSeededAdminAsync();
