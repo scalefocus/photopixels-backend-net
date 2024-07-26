@@ -59,27 +59,25 @@ branches:
     is-source-branch-for: []
     tracks-release-branches: false
     is-release-branch: false
-    is-main-branch: true
+    is-main-branch: false
     pre-release-weight: 55000
 
   bugfix:
     regex: ^bugfix[/-]
     mode: ContinuousDelivery
     increment: Inherit
-    prevent-increment-of-merged-branch-version: false
     track-merge-target: false
     source-branches: [ 'develop', 'main', 'release', 'feature', 'support', 'hotfix' ]
     tracks-release-branches: false
     is-release-branch: false
-    is-mainline: false
     pre-release-weight: 50000
 
-pull-request:
+  pull-request:
     mode: ContinuousDelivery
     label: PullRequest
     increment: Inherit
 
-unknown:
+  unknown:
     mode: ManualDeployment
     label: '{BranchName}'
     increment: Inherit
