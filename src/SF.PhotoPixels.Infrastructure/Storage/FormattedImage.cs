@@ -1,11 +1,13 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
 using SF.PhotoPixels.Domain.Utils;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
+using SixLabors.ImageSharp.Processing;
 
 namespace SF.PhotoPixels.Infrastructure.Storage;
 
@@ -26,7 +28,7 @@ public sealed class FormattedImage : IDisposable, IStorageItem
     {
         _image = image;
         _format = format;
-        _imageFormatsManager = image.GetConfiguration().ImageFormatsManager;
+        _imageFormatsManager = image.Configuration.ImageFormatsManager;
     }
 
     public void Dispose()
@@ -61,21 +63,22 @@ public sealed class FormattedImage : IDisposable, IStorageItem
     public FormattedImage GetThumbnail(int width = 160, int height = 160)
     {
         var transform = Transform(new Size(width, height));
-        var thumbImage = _image.Clone(context =>
+
+        _image.Mutate(context =>
         {
             context.Resize(new ResizeOptions
             {
                 Size = transform,
                 Mode = ResizeMode.Max,
             });
+
+            // Reduce the size of the file by clearing metadata
+            _image.Metadata.ExifProfile = null;
+            _image.Metadata.IptcProfile = null;
+            _image.Metadata.XmpProfile = null;
         });
 
-        // Reduce the size of the file
-        thumbImage.Metadata.ExifProfile = null;
-        thumbImage.Metadata.IptcProfile = null;
-        thumbImage.Metadata.XmpProfile = null;
-
-        return new FormattedImage(thumbImage, WebpFormat.Instance);
+        return new FormattedImage(_image, WebpFormat.Instance);
     }
 
     public DateTime GetDateTime()
