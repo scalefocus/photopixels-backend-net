@@ -10,9 +10,8 @@ public class PatchRequestTests : IntegrationTest
     {
 
     }
-
-    // TODO: Location
-    // [Fact]
+    
+    [Fact]
     public async Task Patch_WithCompleteFile_ShouldReturn_NoContent()
     {
         var token = await AuthenticateAsSeededAdminAsync();
@@ -41,9 +40,8 @@ public class PatchRequestTests : IntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
-
-    // TODO: Location
-    // [Fact]
+    
+    [Fact]
     public async Task Patch_WithPartialFile_ShouldReturn_NoContentWithCorrectOffset()
     {
         var token = await AuthenticateAsSeededAdminAsync();

@@ -15,12 +15,11 @@ public class UploadChunkEndpoint : EndpointBaseAsync.WithRequest<string>.WithAct
     {
         _mediator = mediator;
     }
-        
 
     [TusUpload("/send_data/{fileId}")]
     [SwaggerOperation(
-            Summary = "Create resumable upload",
-            Tags = new[] { "Tus" }),
+            Summary = "Continue resumable upload",
+            Tags = ["Tus"]),
     ]
     public override async Task<ActionResult> HandleAsync([FromRoute] string fileId, CancellationToken cancellationToken = new())
     {
@@ -28,8 +27,7 @@ public class UploadChunkEndpoint : EndpointBaseAsync.WithRequest<string>.WithAct
         {
             FileId = fileId,
         };
-
-        await _mediator.Send(request);
+        await _mediator.Send(request, cancellationToken);
 
         return NoContent();
     }

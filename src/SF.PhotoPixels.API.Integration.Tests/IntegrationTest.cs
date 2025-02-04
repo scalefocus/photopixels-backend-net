@@ -138,7 +138,6 @@ public class IntegrationTest : IClassFixture<PhotosWebApplicationFactory>, IAsyn
             _userDirectoriesToDelete.Add(id);
         }
     }
-
     protected async Task RemoveTusFiles(string id)
     {
         await AuthenticateAsSeededAdminAsync();
@@ -146,10 +145,10 @@ public class IntegrationTest : IClassFixture<PhotosWebApplicationFactory>, IAsyn
         var message = new HttpRequestMessage()
         {
             Method = HttpMethod.Delete,
-            RequestUri = new Uri($"/files/{id}", UriKind.Relative)
+            RequestUri = new Uri($"/send_data/{id}", UriKind.Relative)
         };
         message.Headers.Add("Tus-Resumable", "1.0.0");
-        
+
         await _httpClient.SendAsync(message);
     }
     protected async Task<string> PostTusWhiteImage()
@@ -167,7 +166,7 @@ public class IntegrationTest : IClassFixture<PhotosWebApplicationFactory>, IAsyn
 
         message.Headers.Add("Tus-Resumable", "1.0.0");
         message.Content.Headers.Remove("Content-Type");
-        message.Content.Headers.Add("Content-Type", "application/offset+octet-stream");
+        message.Content.Headers.Add("Content-Length", $"0");
 
         message.Headers.Add("Upload-Length", $"631");
         message.Headers.Add("Upload-Metadata", "fileExtension anBn,fileName dG9SZXR1cm4=,fileHash YWJjWGlmT2xHaGlIY1Z5ZkR2REdPc0dBTkU0PQ==,fileSize NjMx,appleId,androidId");
