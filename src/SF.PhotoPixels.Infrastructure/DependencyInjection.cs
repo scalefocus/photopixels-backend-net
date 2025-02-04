@@ -45,24 +45,23 @@ public static class DependencyInjection
 
         services.AddTransient<ITusService, TusService>();
 
-        services.AddTus()
-            .FileStorageConfiguration(config =>
-            {
-                config.DirectoryPath =   TusService.GetDirectory;
-                config.MetaDirectoryPath = TusService.GetDirectory;
-
-            })
-            .Configuration(config =>
-            {
-                config.HasTermination = true;
-                config.ExpirationStrategy = ExpirationStrategy.SlidingExpiration;
-                config.SlidingInterval = TimeSpan.FromDays(1);
-                config.ExpirationJobRunnerInterval = TimeSpan.FromDays(1);
-            })
-            .AddExpirationHandler<TusExpirationHandler>()
-            .WithExpirationJobRunner()
-            .SetMetadataValidator(TusService.MetadataValidator)
-            .AllowEmptyMetadata(true);
+        services.AddTus(opt =>
+        {
+            opt.HasTermination = true;
+            opt.ExpirationStrategy = ExpirationStrategy.SlidingExpiration;
+            opt.SlidingInterval = TimeSpan.FromDays(1);
+            opt.ExpirationJobRunnerInterval = TimeSpan.FromDays(1);   
+            opt.DeletePartialFilesOnMerge = true;
+        })
+        .FileStorageConfiguration(config =>
+        {
+            config.DirectoryPath = TusService.GetDirectory();
+            config.MetaDirectoryPath = TusService.GetDirectory();
+        })
+        .AddExpirationHandler<TusExpirationHandler>()
+        .WithExpirationJobRunner()
+        .SetMetadataValidator(TusService.MetadataValidator)        
+        .AllowEmptyMetadata(true);
 
 
 
@@ -71,14 +70,14 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("PhotosMetadata")!;
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
 
-            var upgrader =
-                DeployChanges.To
-                    .PostgresqlDatabase(connectionString, Constants.DefaultSchema)
-                    .WithScriptsEmbeddedInAssembly(typeof(DependencyInjection).Assembly, s => !s.Contains("drop") && s.EndsWith(".sql"))
-                    .WithScriptNameComparer(new EmbeddedMigrationScriptComparer())
-                    .WithVariablesDisabled()
-                    .LogToAutodetectedLog()
-                    .Build();
+        var upgrader =
+            DeployChanges.To
+                .PostgresqlDatabase(connectionString, Constants.DefaultSchema)
+                .WithScriptsEmbeddedInAssembly(typeof(DependencyInjection).Assembly, s => !s.Contains("drop") && s.EndsWith(".sql"))
+                .WithScriptNameComparer(new EmbeddedMigrationScriptComparer())
+                .WithVariablesDisabled()
+                .LogToAutodetectedLog()
+                .Build();
 
         upgrader.PerformUpgrade();
 

@@ -1,50 +1,31 @@
-﻿using Marten;
-using Mediator;
-using OneOf;
-using OneOf.Types;
+﻿using Mediator;
 using SolidTUS.Handlers;
 
 namespace SF.PhotoPixels.Application.Commands.Tus.DeleteUpload;
 
-public class DeleteUploadHandler : IRequestHandler<DeleteUploadRequest, OneOf<NotFound, Success>>
+public class DeleteUploadHandler : IRequestHandler<DeleteUploadRequest, DeleteUploadResponses>
 {
 
     private readonly IUploadMetaHandler _uploadMetaHandler;
     private readonly IUploadStorageHandler _uploadStorageHandler;
-    private readonly IDocumentSession _session;
 
-    public DeleteUploadHandler(IUploadMetaHandler uploadMetaHandler, IUploadStorageHandler uploadStorageHandler, IDocumentSession session)
+    public DeleteUploadHandler(IUploadMetaHandler uploadMetaHandler, IUploadStorageHandler uploadStorageHandler)
     {
         _uploadMetaHandler = uploadMetaHandler;
         _uploadStorageHandler = uploadStorageHandler;
-        _session = session;
     }
 
-    public async ValueTask<OneOf<NotFound, Success>> Handle(DeleteUploadRequest request, CancellationToken cancellationToken)
+    public async ValueTask<DeleteUploadResponses> Handle(DeleteUploadRequest request, CancellationToken cancellationToken)
     {
         var info = await _uploadMetaHandler.GetResourceAsync(request.FileId, cancellationToken);
 
         if (info is null)
         {
-            return new NotFound();
+            return new ValidationError("Object not found", "The object has already been deleted");            
         }
 
-        var userId = Guid.Parse(info.Metadata["userId"]);
-
-        var user = _session.Load<Domain.Entities.User>(userId);
-        if (user is null)
-        {
-            return new NotFound();
-        }
-
-        var fileSize = long.Parse(info.Metadata["fileSize"]!);
-        user.DecreaseUsedQuota(fileSize);
-
-        _session.Update(user);
-        await _session.SaveChangesAsync(cancellationToken);
-
-        await _uploadMetaHandler.DeleteUploadFileInfoAsync(info, cancellationToken);
+        await _uploadMetaHandler.DeleteUploadFileInfoAsync(info, cancellationToken);        
         await _uploadStorageHandler.DeleteFileAsync(info, cancellationToken);
-        return new Success();
+        return new DeleteUploadResponse();
     }
 }

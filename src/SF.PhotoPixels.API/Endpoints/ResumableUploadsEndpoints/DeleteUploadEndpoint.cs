@@ -4,12 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using SolidTUS.Attributes;
 using Swashbuckle.AspNetCore.Annotations;
 using SF.PhotoPixels.Application.Commands.Tus.DeleteUpload;
-using OneOf.Types;
-using OneOf;
 
 namespace SF.PhotoPixels.API.Endpoints.TusEndpoints;
 
-public class DeleteUploadEndpoint : EndpointBaseAsync.WithRequest<string>.WithActionResult<OneOf<NotFound, Success>>
+public class DeleteUploadEndpoint : EndpointBaseAsync.WithRequest<string>.WithActionResult<DeleteUploadResponse>
 {
     private readonly IMediator _mediator;
 
@@ -20,10 +18,10 @@ public class DeleteUploadEndpoint : EndpointBaseAsync.WithRequest<string>.WithAc
 
     [TusDelete("/send_data/{fileId}")]
     [SwaggerOperation(
-            Summary = "Create resumable upload",
-            Tags = new[] { "Tus" }),
+            Summary = "Delete ongoing resumable upload",
+            Tags = ["Tus"]),
     ]
-    public override async Task<ActionResult<OneOf<NotFound, Success>>> HandleAsync([FromRoute] string fileId, CancellationToken cancellationToken = new())
+    public override async Task<ActionResult<DeleteUploadResponse>> HandleAsync([FromRoute] string fileId, CancellationToken cancellationToken = new())
     {
         var request = new DeleteUploadRequest()
         {
@@ -32,9 +30,7 @@ public class DeleteUploadEndpoint : EndpointBaseAsync.WithRequest<string>.WithAc
 
         var result = await _mediator.Send(request, cancellationToken);
 
-        return result.Match<ActionResult<OneOf<NotFound, Success>>>(
-            response => NotFound(),
-            _ => Ok()
-        );
+        if (result.IsT1) return NotFound(result.AsT1.Errors.First().Value);
+        return NoContent();
     }
 }

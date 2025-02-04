@@ -1,10 +1,8 @@
 ﻿using Mediator;
-using OneOf;
-using OneOf.Types;
 
 namespace SF.PhotoPixels.Application.Commands.Tus.DeleteUpload;
 
-public class DeleteUploadRequest : IRequest<OneOf<NotFound, Success>>
+public class DeleteUploadRequest : IRequest<DeleteUploadResponses>
 {
     public string FileId { get; set; }
 }

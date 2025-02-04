@@ -17,7 +17,7 @@ public class GetUserUploadsEndpoint : EndpointBaseAsync.WithoutRequest.WithActio
     [HttpGet("/resumable_uploads")]
     [SwaggerOperation(
         Summary = "Get User current resumable uploads",
-        Tags = new[] { "Tus" }),
+        Tags = ["Tus"]),
 ]
     public override async Task<ActionResult<GetUserUploadsResponse>> HandleAsync(CancellationToken cancellationToken = default)
     {

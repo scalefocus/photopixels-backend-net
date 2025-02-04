@@ -12,7 +12,7 @@ public class OptionsRequestTests : IntegrationTest
     }
 
     [Fact]
-    public async Task Options_WithAuthentication_ShouldReturnTusHeaersAndNoContentResponse()
+    public async Task Options_WithAuthentication_ShouldReturnTusHeadersAndNoContentResponse()
     {
         await AuthenticateAsSeededAdminAsync();
 
