@@ -4,6 +4,7 @@ using MimeKit;
 using MailKit.Net.Smtp;
 using SF.PhotoPixels.Infrastructure.Options;
 using Microsoft.Extensions.Logging;
+using MailKit.Security;
 
 namespace SF.PhotoPixels.Infrastructure;
 
@@ -38,7 +39,11 @@ public class EmailSender : IEmailSender
         {
             using var client = new SmtpClient();
             client.CheckCertificateRevocation = _smtpOptions.CheckCertificateRevocation;
-            await client.ConnectAsync(_smtpOptions.Host, _smtpOptions.Port ?? DefaultPort, _smtpOptions.UseSsl);
+
+            SecureSocketOptions secureSocketOption = _smtpOptions.UseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTlsWhenAvailable;
+
+            await client.ConnectAsync(_smtpOptions.Host, _smtpOptions.Port ?? DefaultPort, secureSocketOption);
+
             _logger.LogInformation("Connection with mail server made");
             await client.AuthenticateAsync(from, _smtpOptions.Password);
             _logger.LogInformation("Authenticated sender credentials on server");
