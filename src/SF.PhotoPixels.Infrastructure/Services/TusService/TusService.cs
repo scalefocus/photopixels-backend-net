@@ -116,8 +116,8 @@ public class TusService : ITusService
 
     public static string GetDirectory()
     {
-        var tempDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Path.Combine(Path.DirectorySeparatorChar + "var", "temp") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "sf-photos", "temp");
-        if (!Directory.Exists(Path.Combine(tempDirectory)))
+        var tempDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Path.Combine("/tmp", "sf-photos", "temp") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "sf-photos", "temp");
+        if (!Directory.Exists(tempDirectory))
         {
             Directory.CreateDirectory(tempDirectory);
         }
