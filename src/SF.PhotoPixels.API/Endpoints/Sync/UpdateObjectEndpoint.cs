@@ -18,7 +18,7 @@ public class UpdateObjectEndpoint : EndpointBaseAsync.WithRequest<UpdateObjectRe
     [HttpPut("/object/{Id}")]
     [SwaggerOperation(
             Summary = "Update an object",
-            Tags = new[] { "Object operations" }),
+            Tags = ["Object operations"]),
     ]
     public override async Task<ActionResult<VersioningResponse>> HandleAsync([FromRoute] UpdateObjectRequest request, CancellationToken cancellationToken = new())
     {
