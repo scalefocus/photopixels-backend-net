@@ -45,7 +45,7 @@ public class LocalObjectStorage : IObjectStorage
          return await StoreObjectInternal(path, item, cancellationToken);
     }
 
-    public void DeleteObject(Guid userId, string name)
+    public bool DeleteObject(Guid userId, string name)
     {
         var path = Path.Combine(_imagesDirectory, userId.ToString(), name);
 
@@ -54,10 +54,12 @@ public class LocalObjectStorage : IObjectStorage
             _logger.LogDebug("Deleting photo: {name}", name);
 
             File.Delete(path);
+            return true;
         }
+        return false;
     }
 
-    public void DeleteThumbnail(Guid userId,  string name)
+    public bool DeleteThumbnail(Guid userId,  string name)
     {
         var path = Path.Combine(_imagesDirectory, userId.ToString(), ThumbDirectory, name);
 
@@ -66,7 +68,9 @@ public class LocalObjectStorage : IObjectStorage
             _logger.LogDebug("Deleting thumbnail: {name}", name);
 
             File.Delete(path);
+            return true;
         }
+        return false;
     }
 
     private static string GetRootDirectory()

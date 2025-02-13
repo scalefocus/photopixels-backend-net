@@ -42,4 +42,37 @@ public class DeleteObjectEndpointTests : IntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task DeleteObjectEndpoint_WithValidImageAndNoAuthentication_ShouldReturnUnauthorized()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+        var image = await UploadImageAsync();
+
+        await RevokeAuthentication();
+
+        QueueDirectoryDeletion(token.UserId);
+
+        var response = await _httpClient.DeleteAsync($"/object/{image.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task DeleteObjectEndpoint_WithOtherUserImage_ShouldReturnNotFound()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+        var image = await UploadImageAsync();
+
+        await SeedDefaultContributorAsync();
+        await AuthenticateAsDefaultContributorAsync();
+
+        QueueDirectoryDeletion(token.UserId);
+
+        var response = await _httpClient.DeleteAsync($"/object/{image.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

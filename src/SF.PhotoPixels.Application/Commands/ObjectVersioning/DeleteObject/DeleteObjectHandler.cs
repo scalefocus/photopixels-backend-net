@@ -40,8 +40,13 @@ public class DeleteObjectHandler : IRequestHandler<DeleteObjectRequest, ObjectVe
         {
             return new NotFound();
         }
-        _objectStorage.DeleteObject(_executionContextAccessor.UserId, objectMetadata.GetImageName());
-        _objectStorage.DeleteThumbnail(_executionContextAccessor.UserId, objectMetadata.GetThumbnailName());
+        var isPhotoDeleted = _objectStorage.DeleteObject(_executionContextAccessor.UserId, objectMetadata.GetImageName());
+        var isThumbnailDeleted = _objectStorage.DeleteThumbnail(_executionContextAccessor.UserId, objectMetadata.GetThumbnailName());
+
+        if (!isPhotoDeleted || !isThumbnailDeleted)
+        {
+            return new NotFound();
+        }
 
         user.DecreaseUsedQuota(objectMetadata.SizeInBytes);
         _session.Update(user);
