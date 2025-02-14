@@ -1,7 +1,6 @@
 ﻿using Ardalis.ApiEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
-using OneOf.Types;
 using SF.PhotoPixels.Application.Commands.Import.StartImport;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -19,7 +18,7 @@ public class StartImportEndpoint : EndpointBaseAsync.WithRequest<StartImportRequ
     [SwaggerOperation(
     Summary = "Starts directory import",
     Description = "Starts a new import of a directory's images into the users directory",
-    Tags = new[] { "Import" })]
+    Tags = ["Import"])]
     public override async Task<ActionResult<StartImportResponse>> HandleAsync([FromBody] StartImportRequest request, CancellationToken cancellationToken = default)
     {
         var response = await _mediator.Send(request, cancellationToken);

@@ -10,8 +10,7 @@ public class DeleteRequestTests : IntegrationTest
     {
     }
 
-    // TODO: Location
-    // [Fact]
+    [Fact]
     public async Task DeleteUpload_WithValidId_ShouldReturnNoContent()
     {
         await AuthenticateAsSeededAdminAsync();
@@ -28,12 +27,12 @@ public class DeleteRequestTests : IntegrationTest
 
         var response = await _httpClient.SendAsync(message);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
+    // If file is not found the DeleteUploadFileInfoAsync considers it has been deleted and returns true
     [Fact]
-    public async Task DeleteUpload_WithNonExistingdId_ShouldReturnNotFound()
+    public async Task DeleteUpload_WithNonExistingdId_ShouldReturnNoContent()
     {
         await AuthenticateAsSeededAdminAsync();
 
@@ -47,7 +46,6 @@ public class DeleteRequestTests : IntegrationTest
 
         var response = await _httpClient.SendAsync(message);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 }

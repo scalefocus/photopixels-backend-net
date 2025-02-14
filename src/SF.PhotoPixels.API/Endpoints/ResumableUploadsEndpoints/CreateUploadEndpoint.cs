@@ -20,17 +20,15 @@ public class CreateUploadEndpoint : EndpointBaseAsync.WithoutRequest.WithActionR
     [UpdateMetadata]
     [TusCreation("/create_upload")]
     [SwaggerOperation(
-            Summary = "Create resumable upload",
-            Tags = new[] { "Tus" }),
+            Summary = "Create and get info on a new upload resource",
+            Tags = ["Tus"]),
     ]
     public override async Task<ActionResult<CreateUploadResponse>> HandleAsync(CancellationToken cancellationToken = new())
     {
-
         var request = new CreateUploadRequest();
         var result = await _mediator.Send(request, cancellationToken);
 
         if (result.IsT1) return BadRequest(result.AsT1.Errors.First().Value);
         return Ok();
     }
-
 }

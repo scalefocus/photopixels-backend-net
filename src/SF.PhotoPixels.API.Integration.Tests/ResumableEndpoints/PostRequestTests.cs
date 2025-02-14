@@ -11,8 +11,7 @@ public class PostRequestTests : IntegrationTest
 
     }
 
-    // TODO: Location
-    // [Fact]
+    [Fact]
     public async Task StartUpload_WithValidData_ShouldReturnCreated()
     {
         await AuthenticateAsSeededAdminAsync();
@@ -35,6 +34,7 @@ public class PostRequestTests : IntegrationTest
         var response = await _httpClient.SendAsync(message);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.Headers.GetValues("Location").Should().NotBeNullOrEmpty();
         var id = response.Headers.GetValues("Location").First().Substring(11);
         await RemoveTusFiles(id);
     }

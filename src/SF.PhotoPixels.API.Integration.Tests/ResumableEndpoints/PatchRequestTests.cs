@@ -10,8 +10,7 @@ public class PatchRequestTests : IntegrationTest
     {
 
     }
-
-    // TODO: Location
+    // TODO: CI Test step fails due to access to the path 'var/data' is denied.
     // [Fact]
     public async Task Patch_WithCompleteFile_ShouldReturn_NoContent()
     {
@@ -42,7 +41,7 @@ public class PatchRequestTests : IntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
-    // TODO: Location
+    // TODO: CI Test step fails due to access to the path 'var/data' is denied.
     // [Fact]
     public async Task Patch_WithPartialFile_ShouldReturn_NoContentWithCorrectOffset()
     {

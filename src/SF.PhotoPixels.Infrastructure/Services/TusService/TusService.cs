@@ -1,13 +1,11 @@
 ﻿using JasperFx.Core;
 using Marten;
-using Microsoft.Extensions.Primitives;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Exceptions;
 using SF.PhotoPixels.Infrastructure.Services.PhotoService;
 using SF.PhotoPixels.Infrastructure.Storage;
 using SolidTUS.Handlers;
 using SolidTUS.Models;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -40,18 +38,18 @@ public class TusService : ITusService
 
     public async Task HandleNewCompletion(UploadFileInfo fileInfo)
     {
-        var isFileSameAsRequested = await IsHashEqual(Path.Combine(fileInfo.OnDiskDirectoryPath!, fileInfo.OnDiskFilename), fileInfo.Metadata["fileHash"]);
-        if (!isFileSameAsRequested)
-        {
-            throw new FailRequestException("Hash of upload dont match initial hash", HttpStatusCode.BadRequest);
-        }
-
         var ctx = new CancellationTokenSource();
         var extension = fileInfo.Metadata!["fileExtension"];
         using var fs = await SaveCompletedFileWithExtensionNew(Path.Combine(fileInfo.OnDiskDirectoryPath!, fileInfo.OnDiskFilename), extension);
         using var rawImage = new RawImage(fs);
-        var userId = Guid.Parse(fileInfo.Metadata!["userId"]);
 
+        var imageHash = Convert.ToBase64String(await rawImage.GetHashAsync());
+        if (!imageHash.Equals(fileInfo.Metadata["fileHash"]))
+        {
+            throw new FailRequestException("Object hash does not match", HttpStatusCode.BadRequest);
+        }
+
+        var userId = Guid.Parse(fileInfo.Metadata!["userId"]);
         var user = _session.Load<User>(userId) ?? throw new FailRequestException("User not found", HttpStatusCode.BadRequest);
 
         var imageFingerprint = await rawImage.GetSafeFingerprintAsync();
@@ -74,7 +72,7 @@ public class TusService : ITusService
 
         var version = await _photoService.StoreObjectCreatedEventAsync(rawImage, usedQuota, fileInfo.Metadata!["fileName"], user.Id, ctx.Token, apple, robot);
         fs.Close();
-
+        
         await _uploadMetaHandler.DeleteUploadFileInfoAsync(fileInfo, ctx.Token);
         await _uploadStorageHandler.DeleteFileAsync(fileInfo, ctx.Token);
         File.Delete($"{Path.Combine(fileInfo.OnDiskDirectoryPath!, fileInfo.OnDiskFilename)}.{extension}");
@@ -87,19 +85,6 @@ public class TusService : ITusService
         if (RequiredMetadata.Contains(a.Key) && a.Value.Length == 0) return false;
 
         return true;
-    }
-
-    private Task<bool> IsHashEqual(string filePath, string metadataHash)
-    {
-        using var fileStream = new FileStream(filePath, FileMode.Open);
-
-        byte[] hash = SHA1.HashData(fileStream);
-
-        var stringHash = Convert.ToBase64String(hash);
-
-        var isEqual = stringHash.Equals(metadataHash);
-
-        return Task.FromResult(isEqual);
     }
 
     private Task<FileStream> SaveCompletedFileWithExtensionNew(string filePath, string extension)
@@ -128,5 +113,14 @@ public class TusService : ITusService
         return isMetadataPresent && isMetadataValuesFilled;
     }
 
-    public static string GetDirectory => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Path.Combine(Path.DirectorySeparatorChar + "var", "temp") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "sf-photos", "temp");
+
+    public static string GetDirectory()
+    {
+        var tempDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Path.Combine("/tmp", "sf-photos", "temp") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "sf-photos", "temp");
+        if (!Directory.Exists(tempDirectory))
+        {
+            Directory.CreateDirectory(tempDirectory);
+        }
+        return tempDirectory;
+    }
 }

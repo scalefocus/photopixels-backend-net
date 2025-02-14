@@ -29,7 +29,7 @@
 
 		<PackageReference Include="LibHeif.Native.win-x64" Version="1.15.1" Condition=" '$(TargetOS)' == 'Windows' " />
 		<PackageReference Include="LibHeif.Native.linux-x64" Version="1.15.1" Condition="'$(TargetOS)' == 'Unix'" />
-		<PackageReference Include="SolidTUS" Version="0.0.29" />
+		<PackageReference Include="SolidTUS" Version="0.0.34" />
 	</ItemGroup>
 
 	<ItemGroup>
