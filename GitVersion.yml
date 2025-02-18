@@ -1,5 +1,7 @@
 assembly-versioning-scheme: MajorMinorPatch
 
+tag-pre-release-weight: false
+
 branches:
   main:
     mode: ContinuousDelivery
@@ -23,7 +25,7 @@ branches:
     label: alpha
     increment: Minor
     prevent-increment:
-      when-current-commit-tagged: false
+      when-current-commit-tagged: true
     track-merge-target: true
     track-merge-message: true
     regex: ^dev(elop)?(ment)?$
@@ -38,6 +40,9 @@ branches:
   release:
     label: beta
     increment: Minor
+    prevent-increment:
+      when-current-commit-tagged: true 
+    tag-pre-release-weight: false
   
   feature:
     mode: ManualDeployment
