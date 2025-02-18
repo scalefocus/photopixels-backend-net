@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
@@ -83,5 +84,67 @@ public static class DependencyInjection
 
 
         return host;
+    }
+
+    public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
+    {
+        services.AddSwaggerGen(options =>
+        {
+            options.EnableAnnotations();
+            options.CustomSchemaIds(type => type.ToString());
+
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Version = "v1",
+                Title = AppConfiguration.GetAppName(),
+                Description = "PhotoPixels.io - an open-source media backup platform",
+            });
+            options.CustomSchemaIds(type => type.FullName);
+        });
+
+        services.AddSwaggerGen(options =>
+        {
+            const string bearer = "Bearer";
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = bearer,
+                        },
+                        Scheme = bearer,
+                        Name = bearer,
+                        In = ParameterLocation.Header,
+                    },
+                    new List<string>()
+                },
+            });
+
+            options.CustomSchemaIds(type => type.FullName!.Replace("+", "_", StringComparison.OrdinalIgnoreCase));
+            options.AddSecurityDefinition(bearer, new OpenApiSecurityScheme
+            {
+                Description = $"Bearer Authorization header using the {bearer} scheme. Example: \"Authorization: {bearer} {{token}}\"",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = bearer,
+            });
+        });
+
+        return services;
+    }
+
+    public static WebApplication UseSwaggerDocumentation(this WebApplication app)
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c => { c.SwaggerEndpoint("v1/swagger.json", $"{AppConfiguration.GetAppName()} v1"); });
+
+        app.MapGet("/", () => Results.Redirect("/swagger")).AllowAnonymous();
+
+        return app;
     }
 }
