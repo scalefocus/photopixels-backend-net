@@ -1,7 +1,5 @@
 assembly-versioning-scheme: MajorMinorPatch
 
-tag-pre-release-weight: false
-
 branches:
   main:
     mode: ContinuousDelivery
@@ -36,6 +34,7 @@ branches:
     is-release-branch: false
     is-main-branch: false
     pre-release-weight: 0
+    tag-pre-release-weight: false
 
   release:
     label: beta
@@ -63,6 +62,8 @@ branches:
     is-release-branch: true
     is-main-branch: false
     pre-release-weight: 30000
+    tag-pre-release-weight: false
+
 
   support:
     mode: ContinuousDelivery
