@@ -65,6 +65,6 @@ jobs:
               --no-cache \
               --build-arg VERSION="${{ steps.gitversion.outputs.MajorMinorPatch }}" \
               --build-arg VERSION_SUFFIX="${{ steps.gitversion.outputs.preReleaseTag }}" \
-              -t scalefocusad/photopixels-backend-net:$(echo "${{ steps.gitversion.outputs.semVer }}" | sed 's/-[0-9]\+$//') \
+              -t scalefocusad/photopixels-backend-net:$(echo "${{ steps.gitversion.outputs.semVer }}" | sed 's/\.[0-9]\+$//' | sed 's/-[0-9]\+$//')
               -f ./src/SF.PhotoPixels.API/Dockerfile . \
               --push
