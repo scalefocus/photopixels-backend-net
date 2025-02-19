@@ -21,11 +21,17 @@ public class StateChangesQueryHandler : IQueryHandler<StateChangesRequest, Query
         var changesResponse = await _session.Events
             .AggregateStreamAsync<StateChangesResponseDetails>(_executionContextAccessor.UserId, fromVersion: query.RevisionId, token: cancellationToken);
 
-        if (changesResponse == null)
+        if (changesResponse != null)
         {
-            return new NotFound();
+            return changesResponse;
         }
 
-        return changesResponse;
+        var state = await _session.Events.FetchStreamStateAsync(_executionContextAccessor.UserId, cancellationToken);
+        if (state != null && query.RevisionId > state.Version)
+        {
+            return new StateChangesResponseDetails { Id = _executionContextAccessor.UserId, Version = state.Version };
+        }
+
+        return new NotFound();
     }
 }
