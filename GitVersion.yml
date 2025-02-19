@@ -1,4 +1,6 @@
 assembly-versioning-scheme: MajorMinorPatch
+assembly-versioning-format: '{Major}.{Minor}.{Patch}'
+assembly-informational-format: '{Major}.{Minor}.{Patch}'
 
 branches:
   main:
@@ -21,7 +23,7 @@ branches:
   develop:
     mode: ContinuousDelivery
     label: alpha
-    increment: Minor
+    increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
     track-merge-target: true
@@ -34,14 +36,13 @@ branches:
     is-release-branch: false
     is-main-branch: false
     pre-release-weight: 0
-    tag-pre-release-weight: false
 
   release:
     label: beta
-    increment: Minor
+    increment: Patch
     prevent-increment:
       when-current-commit-tagged: true 
-    tag-pre-release-weight: false
+    pre-release-weight: 0
   
   feature:
     mode: ManualDeployment
@@ -62,8 +63,6 @@ branches:
     is-release-branch: true
     is-main-branch: false
     pre-release-weight: 30000
-    tag-pre-release-weight: false
-
 
   support:
     mode: ContinuousDelivery
