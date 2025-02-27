@@ -1,3 +1,4 @@
+
 ## How to add new migrations
 1. Open a terminal.
 2. Navigate to the repo **root** folder.

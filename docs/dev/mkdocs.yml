@@ -1,0 +1,24 @@
+### Site metadata ###
+
+site_name: PhotoPixel Back End
+site_description: Back end for PhotoPixel
+site_url: https://github.com/scalefocus/photopixels-backend-net
+
+repo_url: https://github.com/scalefocus/photopixels-backend-net
+edit_uri: edit/main/docs/dev
+
+### Build settings ###
+
+theme: 
+  name: material
+
+nav:
+  - Home: index.md
+  - About MkDocs: About.md
+  - Developer:
+      - Migrations: Migrations.md
+      # - Installation: tutorial/installation.md
+      # - Set up project: tutorial/setup-project.md
+      # - Advanced: tutorial/advanced.md
+      # - Usage: tutorial/usage.md
+      # - Deploy: tutorial/deploy.md
