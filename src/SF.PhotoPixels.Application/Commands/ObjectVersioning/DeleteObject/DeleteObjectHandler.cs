@@ -4,6 +4,7 @@ using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
+using SF.PhotoPixels.Infrastructure;
 using SF.PhotoPixels.Infrastructure.Repositories;
 using SF.PhotoPixels.Infrastructure.Storage;
 
@@ -41,7 +42,9 @@ public class DeleteObjectHandler : IRequestHandler<DeleteObjectRequest, ObjectVe
             return new NotFound();
         }
         var isPhotoDeleted = _objectStorage.DeleteObject(_executionContextAccessor.UserId, objectMetadata.GetImageName());
-        var isThumbnailDeleted = _objectStorage.DeleteThumbnail(_executionContextAccessor.UserId, objectMetadata.GetThumbnailName());
+
+        var thumbnailExtension = Constants.SupportedVideoFormats.Contains($".{objectMetadata.Extension}") ? "png" : "webp";
+        var isThumbnailDeleted = _objectStorage.DeleteThumbnail(_executionContextAccessor.UserId, objectMetadata.GetThumbnailName(thumbnailExtension));
 
         if (!isPhotoDeleted || !isThumbnailDeleted)
         {

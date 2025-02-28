@@ -71,7 +71,11 @@ builder.Services.AddSwaggerDocumentation();
 
 builder.Host.ApplyOaktonExtensions();
 
+builder.ConfigureWebServersUpperLimitOptions();
+
 var app = builder.Build();
+
+app.ConfigureFFmpegVideoSupport();
 
 app.UseSerilogRequestLogging();
 

@@ -14,6 +14,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="dbup-postgresql" Version="5.0.40" />
+		<PackageReference Include="FFMpegCore" Version="5.1.0" />
 		<PackageReference Include="HeyRed.ImageSharp.Heif" Version="2.1.3" />
 		<PackageReference Include="MailKit" Version="4.10.0" />
 		<PackageReference Include="Marten" Version="7.37.0" />

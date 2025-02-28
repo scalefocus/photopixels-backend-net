@@ -44,9 +44,9 @@ public class ObjectProperties
         UserId = objectId.UserId;
     }
 
-    public string GetThumbnailName()
+    public string GetThumbnailName(string extenstion = "webp")
     {
-        return $"{Hash}.webp";
+        return $"{Hash}.{extenstion}";
     }
 
     public string GetImageName()

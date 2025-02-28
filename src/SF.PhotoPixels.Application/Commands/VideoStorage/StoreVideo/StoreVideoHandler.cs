@@ -1,42 +1,42 @@
 ﻿using Marten;
 using Mediator;
 using OneOf;
+using SF.PhotoPixels.Application.Commands.PhotoStorage.StorePhoto;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
-using SF.PhotoPixels.Infrastructure.Services.PhotoService;
+using SF.PhotoPixels.Infrastructure.Services.VideoService;
 using SF.PhotoPixels.Infrastructure.Storage;
 
-namespace SF.PhotoPixels.Application.Commands.PhotoStorage.StorePhoto;
+namespace SF.PhotoPixels.Application.Commands.VideoStorage.StoreVideo;
 
-public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<IMediaResponse, Duplicate, ValidationError>>
+public class StoreVideoHandler : IRequestHandler<StoreVideoRequest, OneOf<IMediaResponse, Duplicate, ValidationError>>
 {
     private readonly IExecutionContextAccessor _executionContextAccessor;
     private readonly IDocumentSession _session;
-    private readonly IPhotoService _photoService;
+    private readonly IVideoService _videoService;
 
-    public StorePhotoHandler(
+    public StoreVideoHandler(
         IDocumentSession session,
         IExecutionContextAccessor executionContextAccessor,
-        IPhotoService photoService)
+        IVideoService videoService)
     {
         _session = session;
         _executionContextAccessor = executionContextAccessor;
-        _photoService = photoService;
+        _videoService = videoService;
     }
 
-    public async ValueTask<OneOf<IMediaResponse, Duplicate, ValidationError>> Handle(StorePhotoRequest request, CancellationToken cancellationToken)
+    public async ValueTask<OneOf<IMediaResponse, Duplicate, ValidationError>> Handle(StoreVideoRequest request, CancellationToken cancellationToken)
     {
-        using var rawImage = new RawImage(request.File.OpenReadStream());
+        using var rawVideo = new RawVideo(request.File.OpenReadStream(), request.File.FileName);
 
-
-        var imageHash = Convert.ToBase64String(await rawImage.GetHashAsync());
-        if (imageHash != request.ObjectHash)
+        var videoHash = Convert.ToBase64String(await rawVideo.GetHashAsync());
+        if (videoHash != request.ObjectHash)
         {
             return new ValidationError(nameof(request.ObjectHash), "Object hash does not match");
         }
 
-        var imageFingerprint = await rawImage.GetSafeFingerprintAsync();
-        var objectId = new ObjectId(_executionContextAccessor.UserId, imageFingerprint);
+        var videoFingerprint = await rawVideo.GetSafeFingerprintAsync();
+        var objectId = new ObjectId(_executionContextAccessor.UserId, videoFingerprint);
         if (await _session.Query<ObjectProperties>().AnyAsync(x => x.Id == objectId, cancellationToken))
         {
             return new Duplicate();
@@ -48,7 +48,7 @@ public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<IMedia
             return new ValidationError("UserNotFound", "User not found");
         }
 
-        var usedQuota = await _photoService.SaveFile(rawImage, user.Id, cancellationToken);
+        var usedQuota = await _videoService.SaveFile(rawVideo, user.Id, cancellationToken);
         if (!user.IncreaseUsedQuota(usedQuota))
         {
             return new ValidationError("QuotaReached", "User quota is reached, not enough capacity for new upload");
@@ -59,9 +59,9 @@ public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<IMedia
 
         var filename = request.File.FileName;
 
-        var version = await _photoService.StoreObjectCreatedEventAsync(rawImage, usedQuota, filename, user.Id, cancellationToken, request.AppleCloudId, request.AndroidCloudId);
+        var version = await _videoService.StoreObjectCreatedEventAsync(rawVideo, usedQuota, filename, user.Id, cancellationToken, request.AppleCloudId, request.AndroidCloudId);
 
-        return new StorePhotoResponse
+        return new StoreVideoResponse
         {
             Id = objectId,
             Revision = version,

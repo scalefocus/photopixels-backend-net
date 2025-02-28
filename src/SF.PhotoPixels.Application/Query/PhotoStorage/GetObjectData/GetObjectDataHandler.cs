@@ -7,6 +7,7 @@ using SF.PhotoPixels.Application.Config;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Application.PrivacyMode;
 using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Infrastructure;
 using SF.PhotoPixels.Infrastructure.Storage;
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.GetObjectData;
@@ -49,7 +50,8 @@ public class GetObjectDataHandler : IQueryHandler<GetObjectDataRequest, QueryRes
             return new NotFound();
         }
 
-        var photo = await LoadPhoto(metadata.GetThumbnailName(), cancellationToken);
+        var thumbnailExtension = Constants.SupportedVideoFormats.Contains($".{metadata.Extension}") ? "png" : "webp";
+        var photo = await LoadPhoto(metadata.GetThumbnailName(thumbnailExtension), cancellationToken);
 
         await using var base64Stream = new CryptoStream(photo, new ToBase64Transform(), CryptoStreamMode.Read);
         using var streamReader = new StreamReader(base64Stream);

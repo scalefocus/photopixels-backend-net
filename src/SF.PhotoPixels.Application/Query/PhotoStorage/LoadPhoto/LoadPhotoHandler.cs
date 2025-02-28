@@ -6,6 +6,7 @@ using SF.PhotoPixels.Application.Config;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Application.PrivacyMode;
 using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Infrastructure;
 using SF.PhotoPixels.Infrastructure.Storage;
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadPhoto;
@@ -48,28 +49,41 @@ public class LoadPhotoHandler : IQueryHandler<LoadPhotoRequest, QueryResponse<Ph
             return new NotFound();
         }
 
-        var photo = await LoadPhoto(metadata.GetImageName(), cancellationToken);
-
-        if (string.IsNullOrWhiteSpace(request.Format))
+        if (Constants.SupportedVideoFormats.Contains($".{metadata.Extension}"))
         {
+            var videoStream = await _objectStorage.LoadObjectAsync(_executionContextAccessor.UserId, metadata.GetImageName(), cancellationToken);      
+
             return new PhotoResponse
             {
-                Photo = photo,
-                ContentType = !_systemConfig.PrivacyTestMode ? metadata.MimeType! : "image/jpeg",
+                Photo = videoStream,
+                ContentType = metadata.MimeType,
             };
-        }
-
-        var formattedImage = await FormattedImage.LoadAsync(photo, cancellationToken);
-        var ms = new MemoryStream();
-        await formattedImage.SaveToFormat(ms, request.Format, cancellationToken);
-
-        ms.Seek(0, SeekOrigin.Begin);
-
-        return new PhotoResponse
+        } 
+        else
         {
-            Photo = ms,
-            ContentType = formattedImage.GetMimeType() ?? "",
-        };
+            var photo = await LoadPhoto(metadata.GetImageName(), cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(request.Format))
+            {
+                return new PhotoResponse
+                {
+                    Photo = photo,
+                    ContentType = !_systemConfig.PrivacyTestMode ? metadata.MimeType! : "image/jpeg",
+                };
+            }
+
+            var formattedImage = await FormattedImage.LoadAsync(photo, cancellationToken);
+            var ms = new MemoryStream();
+            await formattedImage.SaveToFormat(ms, request.Format, cancellationToken);
+
+            ms.Seek(0, SeekOrigin.Begin);
+
+            return new PhotoResponse
+            {
+                Photo = ms,
+                ContentType = formattedImage.GetMimeType() ?? "",
+            };
+        }        
     }
 
     private async Task<Stream> LoadPhoto(string name, CancellationToken cancellationToken)
