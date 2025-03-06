@@ -1,81 +1,70 @@
-﻿using SF.PhotoPixels.Application.Config;
+﻿using Microsoft.Extensions.Options;
+using SF.PhotoPixels.Application.Config;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Application.PrivacyMode;
-using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Domain.Models;
 using SF.PhotoPixels.Infrastructure.Storage;
 
-namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia
+namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia;
+
+public class PhotoCreationHandler : IMediaCreationHandler
 {
-    public class PhotoCreationHandler : IMediaCreationHandler, IDisposable, IAsyncDisposable
+    private readonly IObjectStorage _objectStorage;
+    private readonly IExecutionContextAccessor _executionContextAccessor;
+    private readonly SystemConfig _systemConfig;
+    private readonly MemoryStream _memoryStream = new();
+
+    public PhotoCreationHandler(IObjectStorage objectStorage,
+        IExecutionContextAccessor executionContextAccessor,
+        IOptions<SystemConfig> config
+        )
     {
-        private readonly IObjectStorage _objectStorage;
-        private readonly IExecutionContextAccessor _executionContextAccessor;
-        private readonly SystemConfig _systemConfig;
-        private readonly LoadMediaRequest _request;
-        private readonly MemoryStream _memoryStream = new();
+        _objectStorage = objectStorage;
+        _executionContextAccessor = executionContextAccessor;
+        _systemConfig = config.Value;
+    }
 
-        public PhotoCreationHandler(IObjectStorage objectStorage,
-            IExecutionContextAccessor executionContextAccessor,
-            SystemConfig systemConfig,
-            LoadMediaRequest request)
+    public async ValueTask<QueryResponse<LoadMediaResponse>> Handle(LoadMediaCreationModel model, CancellationToken cancellationToken)
+    {
+        var photo = await LoadPhoto(model.FileName, cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(model.Format))
         {
-            _objectStorage = objectStorage;
-            _executionContextAccessor = executionContextAccessor;
-            _request = request;
-            _systemConfig = systemConfig;
-        }
-
-        public async ValueTask<QueryResponse<LoadMediaResponse>> Handle(ObjectProperties? metadata, CancellationToken cancellationToken)
-        {
-            var photo = await LoadPhoto(metadata.GetImageName(), cancellationToken);
-
-            if (string.IsNullOrWhiteSpace(_request.Format))
-            {
-                return new LoadMediaResponse
-                {
-                    Media = photo,
-                    ContentType = !_systemConfig.PrivacyTestMode ? metadata.MimeType! : "image/jpeg",
-                };
-            }
-
-            var formattedImage = await FormattedImage.LoadAsync(photo, cancellationToken);
-            var ms = new MemoryStream();
-            await formattedImage.SaveToFormat(ms, _request.Format, cancellationToken);
-
-            ms.Seek(0, SeekOrigin.Begin);
-
             return new LoadMediaResponse
             {
-                Media = ms,
-                ContentType = formattedImage.GetMimeType() ?? "",
+                Media = photo,
+                ContentType = !_systemConfig.PrivacyTestMode ? model.MimeType! : "image/jpeg",
             };
         }
 
-        public void Dispose()
+        var formattedImage = await FormattedImage.LoadAsync(photo, cancellationToken);
+        var ms = new MemoryStream();
+        await formattedImage.SaveToFormat(ms, model.Format, cancellationToken);
+
+        ms.Seek(0, SeekOrigin.Begin);
+
+        return new LoadMediaResponse
         {
-            _memoryStream.Dispose();
+            Media = ms,
+            ContentType = formattedImage.GetMimeType() ?? "",
+        };
+    }
+
+
+    private async Task<Stream> LoadPhoto(string name, CancellationToken cancellationToken)
+    {
+        if (!_systemConfig.PrivacyTestMode)
+        {
+            return await _objectStorage.LoadObjectAsync(_executionContextAccessor.UserId, name, cancellationToken);
         }
 
-        public async ValueTask DisposeAsync()
+        if (_memoryStream.Length == 0)
         {
-            await _memoryStream.DisposeAsync();
+            PrivacyModeFileLoader.LoadFullImage(_memoryStream);
         }
 
-        private async Task<Stream> LoadPhoto(string name, CancellationToken cancellationToken)
-        {
-            if (!_systemConfig.PrivacyTestMode)
-            {
-                return await _objectStorage.LoadObjectAsync(_executionContextAccessor.UserId, name, cancellationToken);
-            }
+        _memoryStream.Seek(0, SeekOrigin.Begin);
 
-            if (_memoryStream.Length == 0)
-            {
-                PrivacyModeFileLoader.LoadFullImage(_memoryStream);
-            }
-
-            _memoryStream.Seek(0, SeekOrigin.Begin);
-
-            return _memoryStream;
-        }
+        return _memoryStream;
     }
 }

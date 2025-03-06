@@ -1,5 +1,5 @@
 ﻿using SF.PhotoPixels.Application.Core;
-using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Domain.Models;
 using SF.PhotoPixels.Infrastructure.Storage;
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia
@@ -16,14 +16,14 @@ namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia
             _executionContextAccessor = executionContextAccessor;
         }
 
-        public async ValueTask<QueryResponse<LoadMediaResponse>> Handle(ObjectProperties? metadata, CancellationToken cancellationToken)
+        public async ValueTask<QueryResponse<LoadMediaResponse>> Handle(LoadMediaCreationModel model, CancellationToken cancellationToken)
         {
-            var videoStream = await _objectStorage.LoadObjectAsync(_executionContextAccessor.UserId, metadata.GetImageName(), cancellationToken);
+            var videoStream = await _objectStorage.LoadObjectAsync(_executionContextAccessor.UserId, model.FileName, cancellationToken);
 
             return new LoadMediaResponse
             {
                 Media = videoStream,
-                ContentType = metadata.MimeType,
+                ContentType = model.MimeType,
             };
         }
     }

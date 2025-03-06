@@ -49,7 +49,7 @@ public class ObjectProperties
         return $"{Hash}.{extenstion}";
     }
 
-    public string GetImageName()
+    public string GetFileName()
     {
         return $"{Hash}.{Extension}";
     }

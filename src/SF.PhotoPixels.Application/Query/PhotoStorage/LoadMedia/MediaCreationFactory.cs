@@ -1,22 +1,26 @@
-﻿using Marten;
-using SF.PhotoPixels.Application.Config;
-using SF.PhotoPixels.Application.Core;
-using SF.PhotoPixels.Domain.Entities;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SF.PhotoPixels.Domain.Enums;
 using SF.PhotoPixels.Infrastructure;
-using SF.PhotoPixels.Infrastructure.Storage;
 
-namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia
+namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia;
+
+public class MediaCreationFactory : IMediaCreationFactory
 {
-    public static class MediaCreationFactory
+    private readonly IServiceProvider _serviceProvider;
+
+    public MediaCreationFactory(IServiceProvider serviceProvider)
     {
-        public static IMediaCreationHandler CreateMediaHandler(ObjectProperties? metadata, LoadMediaRequest request, IExecutionContextAccessor executionContextAccessor, IObjectStorage objectStorage, IDocumentSession session, SystemConfig systemConfig)
+        _serviceProvider = serviceProvider;
+    }
+
+    public IMediaCreationHandler CreateMediaHandler(string extension)
+    {
+        return extension switch
         {
-            return metadata.Extension switch
-            {
-                var ext when Constants.SupportedVideoFormats.Contains($".{ext}") => new VideoCreationHandler(objectStorage, executionContextAccessor) as IMediaCreationHandler,
-                var ext when Constants.SupportedPhotoFormats.Contains($".{ext}") => new PhotoCreationHandler(objectStorage, executionContextAccessor, systemConfig, request) as IMediaCreationHandler,
-                _ => throw new NotSupportedException("Unsupported media type")
-            };
-        }
+            var ext when Constants.SupportedVideoFormats.Contains($".{ext}") => _serviceProvider.GetRequiredKeyedService<IMediaCreationHandler>(MediaType.Video),
+            var ext when Constants.SupportedPhotoFormats.Contains($".{ext}") => _serviceProvider.GetRequiredKeyedService<IMediaCreationHandler>(MediaType.Photo),
+            _ => throw new NotSupportedException("Unsupported media type")
+        };
     }
 }
+
