@@ -42,7 +42,7 @@ public class LocalObjectStorage : IObjectStorage
 
         var path = Path.Combine(_imagesDirectory, userId.ToString(), ThumbDirectory, name);
 
-         return await StoreObjectInternal(path, item, cancellationToken);
+        return await StoreObjectInternal(path, item, cancellationToken);
     }
 
     public bool DeleteObject(Guid userId, string name)
@@ -59,7 +59,7 @@ public class LocalObjectStorage : IObjectStorage
         return false;
     }
 
-    public bool DeleteThumbnail(Guid userId,  string name)
+    public bool DeleteThumbnail(Guid userId, string name)
     {
         var path = Path.Combine(_imagesDirectory, userId.ToString(), ThumbDirectory, name);
 
@@ -116,5 +116,14 @@ public class LocalObjectStorage : IObjectStorage
 
             Directory.Delete(userDirectory, true);
         }
+    }
+
+    public (string ObjectFolder, string ThumbFolder) GetUserFolders(Guid userId)
+    {
+        EnsureUserFolders(userId);
+
+        return new(
+            Path.Combine(_imagesDirectory, userId.ToString()),
+            Path.Combine(_imagesDirectory, userId.ToString(), ThumbDirectory));
     }
 }

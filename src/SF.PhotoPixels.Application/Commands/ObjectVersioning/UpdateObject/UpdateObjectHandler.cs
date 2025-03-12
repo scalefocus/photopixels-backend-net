@@ -13,7 +13,6 @@ namespace SF.PhotoPixels.Application.Commands.ObjectVersioning.UpdateObject
     {
         private readonly IExecutionContextAccessor _executionContextAccessor;
         private readonly IObjectRepository _objectRepository;
-        private readonly IObjectStorage _objectStorage;
         private readonly IDocumentSession _session;
 
         public UpdateObjectHandler(IExecutionContextAccessor executionContextAccessor, IObjectRepository objectRepository, IDocumentSession session, IObjectStorage objectStorage)
@@ -21,7 +20,6 @@ namespace SF.PhotoPixels.Application.Commands.ObjectVersioning.UpdateObject
             _executionContextAccessor = executionContextAccessor;
             _objectRepository = objectRepository;
             _session = session;
-            _objectStorage = objectStorage;
         }
 
         public async ValueTask<ObjectVersioningResponse> Handle(UpdateObjectRequest request, CancellationToken cancellationToken)

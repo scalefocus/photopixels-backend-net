@@ -1,12 +1,12 @@
 ﻿using Ardalis.ApiEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
-using SF.PhotoPixels.Application.Query.PhotoStorage.LoadPhoto;
+using SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SF.PhotoPixels.API.Endpoints.PhotosEndpoints;
 
-public class Download : EndpointBaseAsync.WithRequest<LoadPhotoRequest>.WithActionResult<FileStream>
+public class Download : EndpointBaseAsync.WithRequest<LoadMediaRequest>.WithActionResult<FileStream>
 {
     private readonly IMediator _mediator;
 
@@ -17,17 +17,17 @@ public class Download : EndpointBaseAsync.WithRequest<LoadPhotoRequest>.WithActi
 
     [HttpGet("/object/{Id}")]
     [SwaggerOperation(
-            Summary = "Download a photo",
-            Description = "Downloads a photo from the server",
-            OperationId = "Download_Photo",
+            Summary = "Download a media",
+            Description = "Downloads a media from the server",
+            OperationId = "Download_Media",
             Tags = new[] { "Object operations" }),
     ]
-    public override async Task<ActionResult<FileStream>> HandleAsync([FromRoute] LoadPhotoRequest request, CancellationToken cancellationToken = default)
+    public override async Task<ActionResult<FileStream>> HandleAsync([FromRoute] LoadMediaRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(request, cancellationToken);
 
         return result.Match<ActionResult<FileStream>>(
-            x => new FileStreamResult(x.Photo, x.ContentType),
+            x => new FileStreamResult(x.Media, x.ContentType),
             _ => new NotFoundResult()
         );
     }

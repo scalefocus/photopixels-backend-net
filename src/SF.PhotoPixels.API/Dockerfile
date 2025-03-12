@@ -1,4 +1,7 @@
 ﻿FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+
+RUN apt-get -y update && apt-get -y upgrade && apt-get install -y --no-install-recommends ffmpeg
+
 WORKDIR /app
 EXPOSE 80 443
 

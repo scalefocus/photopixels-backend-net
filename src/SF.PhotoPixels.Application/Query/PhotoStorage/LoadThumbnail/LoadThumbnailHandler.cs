@@ -6,6 +6,7 @@ using SF.PhotoPixels.Application.Config;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Application.PrivacyMode;
 using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Infrastructure;
 using SF.PhotoPixels.Infrastructure.Storage;
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadThumbnail;
@@ -48,8 +49,8 @@ public class LoadThumbnailHandler : IQueryHandler<LoadThumbnailRequest, QueryRes
             return new NotFound();
         }
 
-        var thumbnail = await LoadPhoto(metadata.GetThumbnailName(), cancellationToken);
-
+        var thumbnailExtension = Constants.SupportedVideoFormats.Contains($".{metadata.Extension}") ? "png" : "webp";
+        var thumbnail = await LoadPhoto(metadata.GetThumbnailName(thumbnailExtension), cancellationToken);
 
         var formattedImage = await FormattedImage.LoadAsync(thumbnail, cancellationToken);
         var ms = new MemoryStream();

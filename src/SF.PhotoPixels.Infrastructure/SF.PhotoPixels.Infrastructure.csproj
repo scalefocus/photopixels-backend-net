@@ -14,6 +14,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="dbup-postgresql" Version="5.0.40" />
+		<PackageReference Include="FFMpegCore" Version="5.1.0" />
 		<PackageReference Include="HeyRed.ImageSharp.Heif" Version="2.1.3" />
 		<PackageReference Include="MailKit" Version="4.10.0" />
 		<PackageReference Include="Marten" Version="7.37.0" />
@@ -25,7 +26,7 @@
 		<PackageReference Include="MimeKit" Version="4.10.0" />
 		<PackageReference Include="Npgsql" Version="9.0.2" />
 		<PackageReference Include="Polly" Version="8.5.1" />
-		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
 
 		<PackageReference Include="LibHeif.Native.win-x64" Version="1.15.1" Condition=" '$(TargetOS)' == 'Windows' " />
 		<PackageReference Include="LibHeif.Native.linux-x64" Version="1.15.1" Condition="'$(TargetOS)' == 'Unix'" />
