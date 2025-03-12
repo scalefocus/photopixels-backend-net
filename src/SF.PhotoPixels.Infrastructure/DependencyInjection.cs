@@ -9,20 +9,21 @@ using Microsoft.Extensions.DependencyInjection;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
 using SF.PhotoPixels.Domain.Repositories;
-using SF.PhotoPixels.Infrastructure.Migrations;
+using SF.PhotoPixels.Infrastructure.BackgroundServices;
+using SF.PhotoPixels.Infrastructure.BackgroundServices.ImportDirectory;
 using SF.PhotoPixels.Infrastructure.Helpers;
+using SF.PhotoPixels.Infrastructure.Migrations;
 using SF.PhotoPixels.Infrastructure.Projections;
 using SF.PhotoPixels.Infrastructure.Repositories;
-using SF.PhotoPixels.Infrastructure.Storage;
-using SF.PhotoPixels.Infrastructure.Stores;
-using Weasel.Core;
-using SF.PhotoPixels.Infrastructure.BackgroundServices.ImportDirectory;
 using SF.PhotoPixels.Infrastructure.Services.PhotoService;
 using SF.PhotoPixels.Infrastructure.Services.TusService;
+using SF.PhotoPixels.Infrastructure.Services.VideoService;
+using SF.PhotoPixels.Infrastructure.Storage;
+using SF.PhotoPixels.Infrastructure.Stores;
 using SixLabors.ImageSharp;
 using SolidTUS.Extensions;
-using SF.PhotoPixels.Infrastructure.BackgroundServices;
 using SolidTUS.Models;
+using Weasel.Core;
 
 namespace SF.PhotoPixels.Infrastructure;
 
@@ -32,6 +33,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IObjectStorage, LocalObjectStorage>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IVideoService, VideoService>();
 
         services.AddTransient<IObjectRepository, ObjectRepository>();
 
@@ -62,8 +64,6 @@ public static class DependencyInjection
         .WithExpirationJobRunner()
         .SetMetadataValidator(TusService.MetadataValidator)        
         .AllowEmptyMetadata(true);
-
-
 
         services.AddTransient<IApplicationConfigurationRepository, ApplicationConfigurationRepository>();
 

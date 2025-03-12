@@ -15,5 +15,7 @@
         public bool DeleteThumbnail(Guid userId, string name);
 
         public void DeleteUserFolders(Guid userId);
+
+        public (string ObjectFolder, string ThumbFolder) GetUserFolders(Guid userId);
     }
 }

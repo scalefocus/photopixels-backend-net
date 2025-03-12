@@ -1,14 +1,14 @@
-﻿using JasperFx.Core;
+﻿using System.Net;
+using System.Runtime.InteropServices;
+using JasperFx.Core;
 using Marten;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Exceptions;
 using SF.PhotoPixels.Infrastructure.Services.PhotoService;
+using SF.PhotoPixels.Infrastructure.Services.VideoService;
 using SF.PhotoPixels.Infrastructure.Storage;
 using SolidTUS.Handlers;
 using SolidTUS.Models;
-using System.Net;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace SF.PhotoPixels.Infrastructure.Services.TusService;
 
@@ -16,6 +16,7 @@ public class TusService : ITusService
 {
     private readonly IDocumentSession _session;
     private readonly IPhotoService _photoService;
+    private readonly IVideoService _videoService;
 
     private readonly IUploadMetaHandler _uploadMetaHandler;
     private readonly IUploadStorageHandler _uploadStorageHandler;
@@ -27,13 +28,14 @@ public class TusService : ITusService
         IDocumentSession session,
         IPhotoService photoService,
         IUploadMetaHandler uploadMetaHandler,
-        IUploadStorageHandler uploadStorageHandler
-        )
+        IUploadStorageHandler uploadStorageHandler,
+        IVideoService videoService)
     {
         _session = session;
         _photoService = photoService;
         _uploadMetaHandler = uploadMetaHandler;
         _uploadStorageHandler = uploadStorageHandler;
+        _videoService = videoService;
     }
 
     public async Task HandleNewCompletion(UploadFileInfo fileInfo)
@@ -41,19 +43,33 @@ public class TusService : ITusService
         var ctx = new CancellationTokenSource();
         var extension = fileInfo.Metadata!["fileExtension"];
         using var fs = await SaveCompletedFileWithExtensionNew(Path.Combine(fileInfo.OnDiskDirectoryPath!, fileInfo.OnDiskFilename), extension);
-        using var rawImage = new RawImage(fs);
+
+        if (Constants.SupportedVideoFormats.Contains($".{extension}"))
+        {
+            using RawVideo rawVideo = await SaveVideo(fileInfo, ctx, fs);
+        }
+        else
+        {
+            using RawImage rawImage = await SavePhoto(fileInfo, ctx, fs);
+        }
+
+        await _uploadMetaHandler.DeleteUploadFileInfoAsync(fileInfo, ctx.Token);
+        await _uploadStorageHandler.DeleteFileAsync(fileInfo, ctx.Token);
+        File.Delete($"{Path.Combine(fileInfo.OnDiskDirectoryPath!, fileInfo.OnDiskFilename)}.{extension}");
+    }
+
+    private async Task<RawImage> SavePhoto(UploadFileInfo fileInfo, CancellationTokenSource ctx, FileStream fs)
+    {
+        var rawImage = new RawImage(fs);
 
         var imageHash = Convert.ToBase64String(await rawImage.GetHashAsync());
-        if (!imageHash.Equals(fileInfo.Metadata["fileHash"]))
+        if (!imageHash.Equals(fileInfo.Metadata!["fileHash"]))
         {
             throw new FailRequestException("Object hash does not match", HttpStatusCode.BadRequest);
         }
 
         var userId = Guid.Parse(fileInfo.Metadata!["userId"]);
         var user = _session.Load<User>(userId) ?? throw new FailRequestException("User not found", HttpStatusCode.BadRequest);
-
-        var imageFingerprint = await rawImage.GetSafeFingerprintAsync();
-        var objectId = new ObjectId(userId, imageFingerprint);
 
         var usedQuota = await _photoService.SaveFile(rawImage, user.Id, ctx.Token);
         if (!user.IncreaseUsedQuota(usedQuota))
@@ -70,12 +86,41 @@ public class TusService : ITusService
         var canGetRobot = fileInfo.Metadata!.TryGetValue("androidId", out var robot);
         if (!canGetRobot) robot = "";
 
-        var version = await _photoService.StoreObjectCreatedEventAsync(rawImage, usedQuota, fileInfo.Metadata!["fileName"], user.Id, ctx.Token, apple, robot);
+        await _photoService.StoreObjectCreatedEventAsync(rawImage, usedQuota, fileInfo.Metadata!["fileName"], user.Id, ctx.Token, apple, robot);
         fs.Close();
-        
-        await _uploadMetaHandler.DeleteUploadFileInfoAsync(fileInfo, ctx.Token);
-        await _uploadStorageHandler.DeleteFileAsync(fileInfo, ctx.Token);
-        File.Delete($"{Path.Combine(fileInfo.OnDiskDirectoryPath!, fileInfo.OnDiskFilename)}.{extension}");
+        return rawImage;
+    }
+
+    private async Task<RawVideo> SaveVideo(UploadFileInfo fileInfo, CancellationTokenSource ctx, FileStream fs)
+    {
+        var rawVideo = new RawVideo(fs, $"{fileInfo.OnDiskFilename}.{fileInfo.Metadata!["fileExtension"]}");
+        var videoHash = Convert.ToBase64String(await rawVideo.GetHashAsync());
+        if (!videoHash.Equals(fileInfo.Metadata["fileHash"]))
+        {
+            throw new FailRequestException("Object hash does not match", HttpStatusCode.BadRequest);
+        }
+
+        var userId = Guid.Parse(fileInfo.Metadata!["userId"]);
+        var user = _session.Load<User>(userId) ?? throw new FailRequestException("User not found", HttpStatusCode.BadRequest);
+
+        var usedQuota = await _videoService.SaveFile(rawVideo, user.Id, ctx.Token);
+        if (!user.IncreaseUsedQuota(usedQuota))
+        {
+            throw new FailRequestException("User quota is reached, not enough capacity for new upload", HttpStatusCode.BadRequest);
+        }
+
+        _session.Update(user);
+        await _session.SaveChangesAsync(ctx.Token);
+
+        var canGetApple = fileInfo.Metadata!.TryGetValue("appleId", out var apple);
+        if (!canGetApple) apple = "";
+
+        var canGetRobot = fileInfo.Metadata!.TryGetValue("androidId", out var robot);
+        if (!canGetRobot) robot = "";
+
+        await _videoService.StoreObjectCreatedEventAsync(rawVideo, usedQuota, fileInfo.Metadata!["fileName"], user.Id, ctx.Token, apple, robot);
+        fs.Close();
+        return rawVideo;
     }
 
     private static bool ValidateMetadataEntry(KeyValuePair<string, string> a)
@@ -112,7 +157,6 @@ public class TusService : ITusService
 
         return isMetadataPresent && isMetadataValuesFilled;
     }
-
 
     public static string GetDirectory()
     {
