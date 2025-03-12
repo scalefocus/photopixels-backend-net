@@ -4,6 +4,8 @@ using OneOf;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Domain.Enums;
+using SF.PhotoPixels.Infrastructure;
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.GetObjects;
 
@@ -65,14 +67,27 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             var thumbnailProperty = new PropertiesResponse
             {
                 Id = obj.Id,
-                DateCreated = obj.DateCreated
+                DateCreated = obj.DateCreated,
+                MediaType = GetMediaType(obj.Extension)
             };
 
             properties.Add(thumbnailProperty);
         }
 
-        
+
         var lastId = result.Count < request.PageSize ? "" : objectProperties[^1].Id;
         return new GetObjectsResponse() { Properties = properties, LastId = lastId };
     }
+
+    private string? GetMediaType(string extension)
+    {
+        return extension switch
+        {
+            var ext when Constants.SupportedVideoFormats.Contains($".{ext}") => MediaType.Video.ToString().ToLower(),
+            var ext when Constants.SupportedPhotoFormats.Contains($".{ext}") => MediaType.Photo.ToString().ToLower(),
+            _ => MediaType.Unknown.ToString().ToLower()
+        };
+    }
+
+
 }
