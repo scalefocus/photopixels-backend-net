@@ -13,6 +13,32 @@ public class ObjectPropertiesProjection : EventProjection
         Project<MediaObjectCreated>(CreateObjectProperties);
         Project<MediaObjectDeleted>(DeleteObjectProperties);
         Project<MediaObjectUpdated>(UpdateObjectProperties);
+        Project<MediaObjectTrashed>(TrashObjectProperties);
+        Project<MediaObjectRemovedFromTrash>(RemovedFromTrashObjectProperties);
+    }
+
+    private static void RemovedFromTrashObjectProperties(MediaObjectRemovedFromTrash mediaObjectRemovedFromTrash, IDocumentOperations documentOperations)
+    {
+        var objectProperties = documentOperations.Query<ObjectProperties>()
+            .SingleOrDefault(x => x.Id == mediaObjectRemovedFromTrash.ObjectId);
+
+        if (objectProperties is not null)
+        {
+            objectProperties.TrashDate = null;
+            documentOperations.Store(objectProperties);
+        }
+    }
+    
+   private static void TrashObjectProperties(MediaObjectTrashed mediaObjectTrashed, IDocumentOperations documentOperations)
+    {
+        var objectProperties = documentOperations.Query<ObjectProperties>()
+            .SingleOrDefault(x => x.Id == mediaObjectTrashed.ObjectId);
+
+        if (objectProperties is not null)
+        {
+            objectProperties.TrashDate = mediaObjectTrashed.TrashDate;
+            documentOperations.Store(objectProperties);
+        }
     }
 
     private static void CreateObjectProperties(MediaObjectCreated mediaObjectCreated, IDocumentOperations documentOperations)
@@ -63,6 +89,7 @@ public class ObjectPropertiesProjection : EventProjection
             AppleCloudId = mediaObjectUpdated.AppleCloudId,
             AndroidCloudId = mediaObjectUpdated.AndroidCloudId,
             SizeInBytes = mediaObjectUpdated.SizeInBytes,
+            TrashDate = mediaObjectUpdated.TrashDate
         };
 
         documentOperations.Store(objectProperties);

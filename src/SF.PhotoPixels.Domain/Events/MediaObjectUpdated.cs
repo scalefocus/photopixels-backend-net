@@ -25,4 +25,6 @@ public record MediaObjectUpdated
     public Guid UserId { get; set; }
 
     public long SizeInBytes { get; set; }
+
+    public DateTimeOffset? TrashDate { get; set; }   
 }

@@ -42,7 +42,7 @@ public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<StoreP
             return new Duplicate();
         }
 
-        var user = _session.Load<Domain.Entities.User>(_executionContextAccessor.UserId);
+        var user = await _session.LoadAsync<Domain.Entities.User>(_executionContextAccessor.UserId);
         if (user == null)
         {
             return new ValidationError("UserNotFound", "User not found");

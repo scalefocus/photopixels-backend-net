@@ -26,7 +26,7 @@ public class StartImportHandler : IRequestHandler<StartImportRequest,OneOf< Star
     public async ValueTask<OneOf<StartImportResponse, ValidationError>> Handle(StartImportRequest request, CancellationToken cancellationToken)
     {
 
-        var user = _session.Load<Domain.Entities.User>(_executionContextAccessor.UserId);
+        var user = await _session.LoadAsync<Domain.Entities.User>(_executionContextAccessor.UserId);
 
         if (user == null)
         {

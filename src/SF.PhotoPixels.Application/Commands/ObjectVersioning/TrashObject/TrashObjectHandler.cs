@@ -1,6 +1,8 @@
-﻿using Marten;
+using Marten;
 using Mediator;
 using OneOf.Types;
+using SF.PhotoPixels.Application.Commands.ObjectVersioning.TrashObject;
+using SF.PhotoPixels.Application.Commands.ObjectVersioning.UpdateObject;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
@@ -9,22 +11,20 @@ using SF.PhotoPixels.Infrastructure.Storage;
 
 namespace SF.PhotoPixels.Application.Commands.ObjectVersioning.DeleteObject;
 
-public class DeleteObjectHandler : IRequestHandler<DeleteObjectRequest, ObjectVersioningResponse>
+public class TrashObjectHandler : IRequestHandler<TrashObjectRequest, ObjectVersioningResponse>
 {
     private readonly IExecutionContextAccessor _executionContextAccessor;
     private readonly IObjectRepository _objectRepository;
-    private readonly IObjectStorage _objectStorage;
     private readonly IDocumentSession _session;
 
-    public DeleteObjectHandler(IExecutionContextAccessor executionContextAccessor, IObjectRepository objectRepository, IDocumentSession session, IObjectStorage objectStorage)
+    public TrashObjectHandler(IExecutionContextAccessor executionContextAccessor, IObjectRepository objectRepository, IDocumentSession session)
     {
         _executionContextAccessor = executionContextAccessor;
         _objectRepository = objectRepository;
         _session = session;
-        _objectStorage = objectStorage;
     }
 
-    public async ValueTask<ObjectVersioningResponse> Handle(DeleteObjectRequest request, CancellationToken cancellationToken)
+    public async ValueTask<ObjectVersioningResponse> Handle(TrashObjectRequest request, CancellationToken cancellationToken)
     {
         var objectMetadata = await _session.Query<ObjectProperties>()
             .SingleOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
@@ -40,19 +40,11 @@ public class DeleteObjectHandler : IRequestHandler<DeleteObjectRequest, ObjectVe
         {
             return new NotFound();
         }
-        var isPhotoDeleted = _objectStorage.DeleteObject(_executionContextAccessor.UserId, objectMetadata.GetImageName());
-        var isThumbnailDeleted = _objectStorage.DeleteThumbnail(_executionContextAccessor.UserId, objectMetadata.GetThumbnailName());
+        
+        objectMetadata.TrashDate = request.TrashDate;
+        _session.Update(objectMetadata);
 
-        if (!isPhotoDeleted || !isThumbnailDeleted)
-        {
-            return new NotFound();
-        }
-
-        user.DecreaseUsedQuota(objectMetadata.SizeInBytes);
-        _session.Update(user);
-        await _session.SaveChangesAsync(cancellationToken);
-
-        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectDeleted(request.Id), cancellationToken);
+        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectTrashed(request.Id, request.TrashDate), cancellationToken);
 
         return new VersioningResponse
         {

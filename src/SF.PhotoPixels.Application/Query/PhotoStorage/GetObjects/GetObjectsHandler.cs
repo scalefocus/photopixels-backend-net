@@ -29,6 +29,7 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                 FROM photos.mt_doc_objectproperties
                 WHERE (data->>'DateCreated')::timestamptz <= :timeNow
                         AND (data->>'UserId')::uuid = :userId
+                        AND (data->>'TrashDate')::timestamptz is null
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }
@@ -46,6 +47,7 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId))
                       AND (data->>'UserId')::uuid = :userId
+                      AND (data->>'TrashDate')::timestamptz is null
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }

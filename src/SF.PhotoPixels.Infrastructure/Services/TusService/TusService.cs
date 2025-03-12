@@ -50,7 +50,7 @@ public class TusService : ITusService
         }
 
         var userId = Guid.Parse(fileInfo.Metadata!["userId"]);
-        var user = _session.Load<User>(userId) ?? throw new FailRequestException("User not found", HttpStatusCode.BadRequest);
+        var user = await _session.LoadAsync<User>(userId) ?? throw new FailRequestException("User not found", HttpStatusCode.BadRequest);
 
         var imageFingerprint = await rawImage.GetSafeFingerprintAsync();
         var objectId = new ObjectId(userId, imageFingerprint);

@@ -48,6 +48,7 @@ namespace SF.PhotoPixels.Application.Commands.ObjectVersioning.UpdateObject
                 Hash = objectMetadata.Hash,
                 UserId = objectMetadata.UserId,
                 SizeInBytes = objectMetadata.SizeInBytes,
+                TrashDate = objectMetadata.TrashDate,
             };
 
             var version = await _objectRepository.AddEvent(_executionContextAccessor.UserId, evt, cancellationToken);

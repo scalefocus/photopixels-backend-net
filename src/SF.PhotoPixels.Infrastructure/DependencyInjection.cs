@@ -105,6 +105,8 @@ public static class DependencyInjection
 
                 options.Events.AddEventType<MediaObjectCreated>();
                 options.Events.AddEventType<MediaObjectUpdated>();
+                options.Events.AddEventType<MediaObjectTrashed>();
+                options.Events.AddEventType<MediaObjectRemovedFromTrash>();
                 options.Events.AddEventType<MediaObjectDeleted>();
             })
             .UseLightweightSessions();

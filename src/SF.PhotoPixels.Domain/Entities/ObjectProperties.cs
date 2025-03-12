@@ -27,6 +27,8 @@ public class ObjectProperties
     public string? AndroidCloudId { get; set; }
 
     public long SizeInBytes { get; set; }
+    
+    public DateTimeOffset? TrashDate { get; set; } = null;
 
     // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
     internal ObjectProperties()
