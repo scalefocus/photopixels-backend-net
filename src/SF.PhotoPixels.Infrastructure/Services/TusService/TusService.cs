@@ -69,7 +69,7 @@ public class TusService : ITusService
         }
 
         var userId = Guid.Parse(fileInfo.Metadata!["userId"]);
-        var user = _session.Load<User>(userId) ?? throw new FailRequestException("User not found", HttpStatusCode.BadRequest);
+        var user = await _session.LoadAsync<User>(userId) ?? throw new FailRequestException("User not found", HttpStatusCode.BadRequest);
 
         var usedQuota = await _photoService.SaveFile(rawImage, user.Id, ctx.Token);
         if (!user.IncreaseUsedQuota(usedQuota))
