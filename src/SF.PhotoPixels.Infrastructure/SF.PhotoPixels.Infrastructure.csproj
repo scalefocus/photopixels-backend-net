@@ -26,7 +26,7 @@
 		<PackageReference Include="MimeKit" Version="4.10.0" />
 		<PackageReference Include="Npgsql" Version="9.0.2" />
 		<PackageReference Include="Polly" Version="8.5.1" />
-		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
 
 		<PackageReference Include="LibHeif.Native.win-x64" Version="1.15.1" Condition=" '$(TargetOS)' == 'Windows' " />
 		<PackageReference Include="LibHeif.Native.linux-x64" Version="1.15.1" Condition="'$(TargetOS)' == 'Unix'" />
