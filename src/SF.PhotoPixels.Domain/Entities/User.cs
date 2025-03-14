@@ -1,9 +1,10 @@
 ﻿using System.Security.Principal;
+using Marten.Metadata;
 using SF.PhotoPixels.Domain.Enums;
 
 namespace SF.PhotoPixels.Domain.Entities;
 
-public class User : IIdentity
+public class User : IIdentity, ISoftDeleted
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -34,6 +35,10 @@ public class User : IIdentity
     public string AuthenticationType { get; set; } = string.Empty;
 
     public string? SecurityStamp { get; set; }
+
+    public bool Deleted { get; set; }
+
+    public DateTimeOffset? DeletedAt { get; set; }
 
     public bool IncreaseUsedQuota(long size)
     {

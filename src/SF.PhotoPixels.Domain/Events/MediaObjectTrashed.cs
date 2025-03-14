@@ -1,3 +1,3 @@
 namespace SF.PhotoPixels.Domain.Events;
 
-public record MediaObjectTrashed(string ObjectId, DateTimeOffset TrashDate);
+public record MediaObjectTrashed(string ObjectId);

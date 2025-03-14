@@ -41,10 +41,10 @@ public class TrashObjectHandler : IRequestHandler<TrashObjectRequest, ObjectVers
             return new NotFound();
         }
         
-        objectMetadata.TrashDate = request.TrashDate;
-        _session.Update(objectMetadata);
+        _session.DeleteWhere<ObjectProperties>(op => op.Id == objectMetadata.Id);
+        await _session.SaveChangesAsync();
 
-        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectTrashed(request.Id, request.TrashDate), cancellationToken);
+        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectTrashed(request.Id), cancellationToken);
 
         return new VersioningResponse
         {

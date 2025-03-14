@@ -1,6 +1,10 @@
-﻿namespace SF.PhotoPixels.Domain.Entities;
+﻿
+using Marten.Metadata;
 
-public class ObjectProperties
+namespace SF.PhotoPixels.Domain.Entities;
+
+
+public class ObjectProperties : ISoftDeleted
 {
     public string Id { get; set; }
 
@@ -18,8 +22,6 @@ public class ObjectProperties
 
     public string Hash { get; set; }
 
-    public bool IsDeleted { get; set; }
-
     public Guid UserId { get; set; }
 
     public string? AppleCloudId { get; set; }
@@ -27,8 +29,10 @@ public class ObjectProperties
     public string? AndroidCloudId { get; set; }
 
     public long SizeInBytes { get; set; }
-    
-    public DateTimeOffset? TrashDate { get; set; } = null;
+
+    public bool Deleted { get; set; }
+ 
+    public DateTimeOffset? DeletedAt { get; set; }
 
     // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
     internal ObjectProperties()

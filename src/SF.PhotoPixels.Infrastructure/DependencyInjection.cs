@@ -88,12 +88,13 @@ public static class DependencyInjection
                 options.DatabaseSchemaName = Constants.DefaultSchema;
 
                 options.Schema.For<ObjectProperties>()
-                    .SoftDeletedWithIndex()
+                    .SoftDeletedWithPartitioningAndIndex()
                     .Index(x => x.Hash)
-                    .Metadata(m => { m.IsSoftDeleted.MapTo(x => x.IsDeleted); })
+                    // .Metadata(m => { m.IsSoftDeleted.MapTo(x => x.Deleted); })
                     .Duplicate(x => x.UserId, configure: idx => idx.IsUnique = false);
 
                 options.Schema.For<User>()
+                    .SoftDeletedWithPartitioningAndIndex()
                     .Index(x => x.Id);
 
                 options.Schema.For<ApplicationConfiguration>()

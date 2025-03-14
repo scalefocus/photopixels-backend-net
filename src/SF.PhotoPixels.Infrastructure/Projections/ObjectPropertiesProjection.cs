@@ -24,11 +24,10 @@ public class ObjectPropertiesProjection : EventProjection
 
         if (objectProperties is not null)
         {
-            objectProperties.TrashDate = null;
-            documentOperations.Store(objectProperties);
+            documentOperations.UndoDeleteWhere<ObjectProperties>(x => x.Id == mediaObjectRemovedFromTrash.ObjectId);
         }
     }
-    
+
    private static void TrashObjectProperties(MediaObjectTrashed mediaObjectTrashed, IDocumentOperations documentOperations)
     {
         var objectProperties = documentOperations.Query<ObjectProperties>()
@@ -36,8 +35,7 @@ public class ObjectPropertiesProjection : EventProjection
 
         if (objectProperties is not null)
         {
-            objectProperties.TrashDate = mediaObjectTrashed.TrashDate;
-            documentOperations.Store(objectProperties);
+            documentOperations.Delete<ObjectProperties>(mediaObjectTrashed.ObjectId);
         }
     }
 
@@ -61,7 +59,7 @@ public class ObjectPropertiesProjection : EventProjection
         var existingObjectProperties = documentOperations.Query<ObjectProperties>()
             .SingleOrDefault(x => x.Id == objectProperties.Id && x.IsDeleted());
 
-        if (existingObjectProperties is not null && existingObjectProperties.IsDeleted)
+        if (existingObjectProperties is not null && existingObjectProperties.Deleted)
         {
             documentOperations.HardDelete(existingObjectProperties);
         }
@@ -89,7 +87,6 @@ public class ObjectPropertiesProjection : EventProjection
             AppleCloudId = mediaObjectUpdated.AppleCloudId,
             AndroidCloudId = mediaObjectUpdated.AndroidCloudId,
             SizeInBytes = mediaObjectUpdated.SizeInBytes,
-            TrashDate = mediaObjectUpdated.TrashDate
         };
 
         documentOperations.Store(objectProperties);

@@ -1,4 +1,5 @@
 ﻿using Marten;
+using Marten.Linq.SoftDeletes;
 using Mediator;
 using OneOf;
 using OneOf.Types;
@@ -22,6 +23,7 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
     {
         var utcNow = DateTimeOffset.UtcNow;
         string? sqlQuery;
+
         if (request.LastId == null)
         {
             sqlQuery = $@"
@@ -29,7 +31,7 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
                 FROM photos.mt_doc_objectproperties
                 WHERE (data->>'DateCreated')::timestamptz <= :timeNow
                         AND (data->>'UserId')::uuid = :userId
-                        AND (data->>'TrashDate')::timestamptz is not null
+                        AND (mt_deleted)
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }
@@ -47,7 +49,7 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId))
                       AND (data->>'UserId')::uuid = :userId
-                      AND (data->>'TrashDate')::timestamptz is not null
+                      AND (mt_deleted)
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }
@@ -68,7 +70,7 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
             {
                 Id = obj.Id,
                 DateCreated = obj.DateCreated,
-                DateTrashed = obj.TrashDate
+                DateTrashed = obj.DeletedAt
             };
 
             properties.Add(thumbnailProperty);

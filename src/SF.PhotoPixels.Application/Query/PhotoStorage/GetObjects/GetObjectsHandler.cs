@@ -29,7 +29,6 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                 FROM photos.mt_doc_objectproperties
                 WHERE (data->>'DateCreated')::timestamptz <= :timeNow
                         AND (data->>'UserId')::uuid = :userId
-                        AND (data->>'TrashDate')::timestamptz is null
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }
@@ -47,12 +46,12 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId))
                       AND (data->>'UserId')::uuid = :userId
-                      AND (data->>'TrashDate')::timestamptz is null
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }
 
-        var result = await _session.QueryAsync<ObjectProperties>(sqlQuery, new { pageSize = request.PageSize + 1, timeNow = utcNow, lastId = request.LastId, userId = _executionContextAccessor.UserId });
+        var result = await _session.QueryAsync<ObjectProperties>(sqlQuery, 
+                            new { pageSize = request.PageSize + 1, timeNow = utcNow, lastId = request.LastId, userId = _executionContextAccessor.UserId });
         var objectProperties = result.ToList();
 
         var properties = new List<PropertiesResponse>();

@@ -40,8 +40,8 @@ public class RemoveFromTrashObjectHandler : IRequestHandler<RemoveFromTrashObjec
             return new NotFound();
         }
         
-        objectMetadata.TrashDate = null;
-        _session.Update(objectMetadata);
+        _session.DeleteWhere<ObjectProperties>(op => op.Id == objectMetadata.Id);
+        await _session.SaveChangesAsync(cancellationToken);
 
         var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectRemovedFromTrash(request.Id), cancellationToken);
 
