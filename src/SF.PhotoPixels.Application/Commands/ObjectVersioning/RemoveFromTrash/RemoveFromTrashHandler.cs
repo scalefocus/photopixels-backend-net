@@ -1,4 +1,5 @@
 using Marten;
+using Marten.Linq.SoftDeletes;
 using Mediator;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Commands.ObjectVersioning.TrashObject;
@@ -26,7 +27,7 @@ public class RemoveFromTrashObjectHandler : IRequestHandler<RemoveFromTrashObjec
     public async ValueTask<ObjectVersioningResponse> Handle(RemoveFromTrashObjectRequest request, CancellationToken cancellationToken)
     {
         var objectMetadata = await _session.Query<ObjectProperties>()
-            .SingleOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == request.Id && x.IsDeleted(), cancellationToken);
 
         if (objectMetadata == null)
         {
@@ -40,7 +41,7 @@ public class RemoveFromTrashObjectHandler : IRequestHandler<RemoveFromTrashObjec
             return new NotFound();
         }
         
-        _session.DeleteWhere<ObjectProperties>(op => op.Id == objectMetadata.Id);
+        _session.UndoDeleteWhere<ObjectProperties>(op => op.Id == objectMetadata.Id);
         await _session.SaveChangesAsync(cancellationToken);
 
         var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectRemovedFromTrash(request.Id), cancellationToken);

@@ -1,4 +1,5 @@
 ﻿using Marten;
+using Marten.Linq.SoftDeletes;
 using Mediator;
 using OneOf;
 using OneOf.Types;
@@ -27,7 +28,8 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             sqlQuery = $@"
                 SELECT  data
                 FROM photos.mt_doc_objectproperties
-                WHERE (data->>'DateCreated')::timestamptz <= :timeNow
+                WHERE mt_deleted = false 
+                AND (data->>'DateCreated')::timestamptz <= :timeNow
                         AND (data->>'UserId')::uuid = :userId
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
@@ -37,11 +39,11 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             sqlQuery = $@"
                 SELECT  data
                 FROM photos.mt_doc_objectproperties
-                WHERE ((data->>'DateCreated')::timestamptz = (SELECT (data->>'DateCreated')::timestamptz
+                WHERE mt_deleted = false 
+                AND ((data->>'DateCreated')::timestamptz = (SELECT (data->>'DateCreated')::timestamptz
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId)
-
-                      AND id <= :lastId) OR
+                    AND id <= :lastId) OR
                       ((data->>'DateCreated')::timestamptz < (SELECT (data->>'DateCreated')::timestamptz
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId))

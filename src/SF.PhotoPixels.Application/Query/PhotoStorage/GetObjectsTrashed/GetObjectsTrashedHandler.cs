@@ -29,7 +29,8 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
             sqlQuery = $@"
                 SELECT  data
                 FROM photos.mt_doc_objectproperties
-                WHERE (data->>'DateCreated')::timestamptz <= :timeNow
+                WHERE mt_deleted = true
+                AND(data->>'DateCreated')::timestamptz <= :timeNow
                         AND (data->>'UserId')::uuid = :userId
                         AND (mt_deleted)
                 ORDER BY data->>'DateCreated' desc ,id desc
@@ -40,7 +41,8 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
             sqlQuery = $@"
                 SELECT  data
                 FROM photos.mt_doc_objectproperties
-                WHERE ((data->>'DateCreated')::timestamptz = (SELECT (data->>'DateCreated')::timestamptz
+                WHERE mt_deleted = true
+                AND ((data->>'DateCreated')::timestamptz = (SELECT (data->>'DateCreated')::timestamptz
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId)
 
