@@ -23,41 +23,25 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
     {
         var utcNow = DateTimeOffset.UtcNow;
         string? sqlQuery;
+        
+        var result = _session.Query<ObjectProperties>()
+            .Where(x => x.UserId == _executionContextAccessor.UserId 
+                        && x.IsDeleted()
+                        && x.DateCreated <= utcNow)  
+            .OrderByDescending(x => x.DateCreated)
+            .ThenByDescending(x => x.Id)
+            .Take(request.PageSize + 1);
 
-        if (request.LastId == null)
+        if (request.LastId != null)
         {
-            sqlQuery = $@"
-                SELECT  data
-                FROM photos.mt_doc_objectproperties
-                WHERE mt_deleted = true
-                AND(data->>'DateCreated')::timestamptz <= :timeNow
-                        AND (data->>'UserId')::uuid = :userId
-                        AND (mt_deleted)
-                ORDER BY data->>'DateCreated' desc ,id desc
-                FETCH FIRST :pageSize ROWS ONLY";
-        }
-        else
-        {
-            sqlQuery = $@"
-                SELECT  data
-                FROM photos.mt_doc_objectproperties
-                WHERE mt_deleted = true
-                AND ((data->>'DateCreated')::timestamptz = (SELECT (data->>'DateCreated')::timestamptz
-                                                              FROM photos.mt_doc_objectproperties
-                                                              WHERE id = :lastId)
+            DateTimeOffset? lastDateCreated = !string.IsNullOrEmpty(request.LastId) 
+                                    ? await _session.Query<ObjectProperties>().Where(x => x.Id == request.LastId).Select(x => x.DateCreated).FirstOrDefaultAsync()
+                                    : await _session.Query<ObjectProperties>().Where(x=> x.UserId == _executionContextAccessor.UserId).OrderByDescending(x => x.DateCreated).Select(x => x.DateCreated).FirstOrDefaultAsync();
 
-                      AND id <= :lastId) OR
-                      ((data->>'DateCreated')::timestamptz < (SELECT (data->>'DateCreated')::timestamptz
-                                                              FROM photos.mt_doc_objectproperties
-                                                              WHERE id = :lastId))
-                      AND (data->>'UserId')::uuid = :userId
-                      AND (mt_deleted)
-                ORDER BY data->>'DateCreated' desc ,id desc
-                FETCH FIRST :pageSize ROWS ONLY";
-        }
-
-        var result = await _session.QueryAsync<ObjectProperties>(sqlQuery, new { pageSize = request.PageSize + 1, timeNow = utcNow, lastId = request.LastId, userId = _executionContextAccessor.UserId });
-        var objectProperties = result.ToList();
+            result = result.Where(x => x.DateCreated <= lastDateCreated);
+        }    
+        
+        var objectProperties = await result.ToListAsync();
 
         var properties = new List<PropertiesTrashedResponse>();
 
@@ -78,7 +62,7 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
             properties.Add(thumbnailProperty);
         }
        
-        var lastId = result.Count < request.PageSize ? "" : objectProperties[^1].Id;
+        var lastId = result.Count() < request.PageSize ? "" : objectProperties[^1].Id;
         return new GetObjectsTrashedResponse() { Properties = properties, LastId = lastId };
     }
 }

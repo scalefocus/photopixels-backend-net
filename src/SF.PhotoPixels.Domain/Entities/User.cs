@@ -1,5 +1,6 @@
 ﻿using System.Security.Principal;
 using Marten.Metadata;
+using Marten.Schema;
 using SF.PhotoPixels.Domain.Enums;
 
 namespace SF.PhotoPixels.Domain.Entities;
@@ -38,6 +39,7 @@ public class User : IIdentity, ISoftDeleted
 
     public bool Deleted { get; set; }
 
+    [SoftDeletedAtMetadata]
     public DateTimeOffset? DeletedAt { get; set; }
 
     public bool IncreaseUsedQuota(long size)

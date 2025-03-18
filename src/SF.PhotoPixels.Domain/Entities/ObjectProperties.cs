@@ -1,5 +1,6 @@
 ﻿
 using Marten.Metadata;
+using Marten.Schema;
 
 namespace SF.PhotoPixels.Domain.Entities;
 
@@ -32,6 +33,7 @@ public class ObjectProperties : ISoftDeleted
 
     public bool Deleted { get; set; }
  
+    [SoftDeletedAtMetadata]
     public DateTimeOffset? DeletedAt { get; set; }
 
     // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized

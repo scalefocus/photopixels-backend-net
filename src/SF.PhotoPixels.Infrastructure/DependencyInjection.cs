@@ -90,14 +90,20 @@ public static class DependencyInjection
                 options.Schema.For<ObjectProperties>()
                     .SoftDeletedWithPartitioningAndIndex()
                     .Index(x => x.Hash)
-                    .Metadata(m => { m.IsSoftDeleted.MapTo(x => x.Deleted); })
-                    .Metadata(m => { m.SoftDeletedAt.MapTo(x => x.DeletedAt); })
+                    .Metadata(m => 
+                        { 
+                            m.IsSoftDeleted.MapTo(x => x.Deleted); 
+                            m.SoftDeletedAt.MapTo(x => x.DeletedAt);
+                        })
                     .Duplicate(x => x.UserId, configure: idx => idx.IsUnique = false);
 
                 options.Schema.For<User>()
                     .SoftDeletedWithPartitioningAndIndex()
-                    .Metadata(m => { m.IsSoftDeleted.MapTo(x => x.Deleted); })
-                    .Metadata(m => { m.SoftDeletedAt.MapTo(x => x.DeletedAt); })
+                    .Metadata(m => 
+                        { 
+                            m.IsSoftDeleted.MapTo(x => x.Deleted); 
+                            m.SoftDeletedAt.MapTo(x => x.DeletedAt);
+                        })
                     .Index(x => x.Id);
 
                 options.Schema.For<ApplicationConfiguration>()
