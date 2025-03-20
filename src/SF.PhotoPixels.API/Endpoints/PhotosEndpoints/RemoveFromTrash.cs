@@ -1,6 +1,7 @@
 using Ardalis.ApiEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using SF.PhotoPixels.Application.Commands.ObjectVersioning;
 using SF.PhotoPixels.Application.Commands.ObjectVersioning.TrashObject;
 using SF.PhotoPixels.Application.Commands.ObjectVersioning.UpdateObject;
 using SF.PhotoPixels.Application.Commands.PhotoStorage.StorePhoto;
@@ -10,7 +11,7 @@ namespace SF.PhotoPixels.API.Endpoints.PhotosEndpoints;
 
 public class RemoveFromTrash : EndpointBaseAsync
     .WithRequest<RemoveFromTrashObjectRequest>
-    .WithActionResult<StorePhotoResponse>
+    .WithActionResult<ObjectVersioningResponse>
 {
     private readonly IMediator _mediator;
 
@@ -25,11 +26,11 @@ public class RemoveFromTrash : EndpointBaseAsync
             Description = "Remove item from trash on the server.",
             Tags = new[] { "Object operations" }),
     ]
-    public override async Task<ActionResult<StorePhotoResponse>> HandleAsync([FromBody] RemoveFromTrashObjectRequest request, CancellationToken cancellationToken = default)
+    public override async Task<ActionResult<ObjectVersioningResponse>> HandleAsync([FromBody] RemoveFromTrashObjectRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(request, cancellationToken);
 
-        return result.Match<ActionResult<StorePhotoResponse>>(
+        return result.Match<ActionResult<ObjectVersioningResponse>>(
             response => new OkObjectResult(response),
             e => new BadRequestObjectResult(e)
         );
