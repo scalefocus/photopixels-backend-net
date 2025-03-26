@@ -2,7 +2,6 @@
 using Mediator;
 using OneOf;
 using SF.PhotoPixels.Application.Core;
-using SF.PhotoPixels.Infrastructure.BackgroundServices;
 using SF.PhotoPixels.Infrastructure.BackgroundServices.ImportDirectory;
 
 namespace SF.PhotoPixels.Application.Commands.Import.StartImport;

@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace SF.PhotoPixels.API.Endpoints.PhotosEndpoints;
 
 public class Trash : EndpointBaseAsync
-    .WithRequest<TrashObjectRequest>
+    .WithRequest<string>
     .WithActionResult<ObjectVersioningResponse>
 {
     private readonly IMediator _mediator;
@@ -24,9 +24,11 @@ public class Trash : EndpointBaseAsync
             Description = "Trash a photo to the server",
             Tags = new[] { "Object operations" }),
     ]
-    public override async Task<ActionResult<ObjectVersioningResponse>> HandleAsync( TrashObjectRequest trashObjectRequest, CancellationToken cancellationToken = default)
+    public override async Task<ActionResult<ObjectVersioningResponse>> HandleAsync([FromRoute] string objectid, CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send( trashObjectRequest, cancellationToken);
+        var trashObjectRequest = new TrashObjectRequest { ObjectId = objectid };
+
+        var result = await _mediator.Send(trashObjectRequest, cancellationToken);
 
         return result.Match<ActionResult<ObjectVersioningResponse>>(
             response => new OkObjectResult(response),

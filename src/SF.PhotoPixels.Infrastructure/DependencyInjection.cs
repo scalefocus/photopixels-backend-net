@@ -52,7 +52,7 @@ public static class DependencyInjection
             opt.HasTermination = true;
             opt.ExpirationStrategy = ExpirationStrategy.SlidingExpiration;
             opt.SlidingInterval = TimeSpan.FromDays(1);
-            opt.ExpirationJobRunnerInterval = TimeSpan.FromDays(1);   
+            opt.ExpirationJobRunnerInterval = TimeSpan.FromDays(1);
             opt.DeletePartialFilesOnMerge = true;
         })
         .FileStorageConfiguration(config =>
@@ -62,7 +62,7 @@ public static class DependencyInjection
         })
         .AddExpirationHandler<TusExpirationHandler>()
         .WithExpirationJobRunner()
-        .SetMetadataValidator(TusService.MetadataValidator)        
+        .SetMetadataValidator(TusService.MetadataValidator)
         .AllowEmptyMetadata(true);
 
         services.AddTransient<IApplicationConfigurationRepository, ApplicationConfigurationRepository>();
@@ -90,18 +90,18 @@ public static class DependencyInjection
                 options.Schema.For<ObjectProperties>()
                     .SoftDeletedWithPartitioningAndIndex()
                     .Index(x => x.Hash)
-                    .Metadata(m => 
-                        { 
-                            m.IsSoftDeleted.MapTo(x => x.Deleted); 
+                    .Metadata(m =>
+                        {
+                            m.IsSoftDeleted.MapTo(x => x.Deleted);
                             m.SoftDeletedAt.MapTo(x => x.DeletedAt);
                         })
                     .Duplicate(x => x.UserId, configure: idx => idx.IsUnique = false);
 
                 options.Schema.For<User>()
                     .SoftDeletedWithPartitioningAndIndex()
-                    .Metadata(m => 
-                        { 
-                            m.IsSoftDeleted.MapTo(x => x.Deleted); 
+                    .Metadata(m =>
+                        {
+                            m.IsSoftDeleted.MapTo(x => x.Deleted);
                             m.SoftDeletedAt.MapTo(x => x.DeletedAt);
                         })
                     .Index(x => x.Id);

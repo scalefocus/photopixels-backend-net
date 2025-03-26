@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry;
@@ -147,4 +148,5 @@ public static class DependencyInjection
 
         return app;
     }
+
 }

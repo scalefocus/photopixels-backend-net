@@ -27,7 +27,7 @@ public class TrashObjectHandler : IRequestHandler<TrashObjectRequest, ObjectVers
     public async ValueTask<ObjectVersioningResponse> Handle(TrashObjectRequest request, CancellationToken cancellationToken)
     {
         var objectMetadata = await _session.Query<ObjectProperties>()
-            .SingleOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == request.ObjectId, cancellationToken);
 
         if (objectMetadata == null)
         {
@@ -40,11 +40,11 @@ public class TrashObjectHandler : IRequestHandler<TrashObjectRequest, ObjectVers
         {
             return new NotFound();
         }
-        
+
         _session.DeleteWhere<ObjectProperties>(op => op.Id == objectMetadata.Id);
         await _session.SaveChangesAsync();
 
-        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectTrashed(request.Id), cancellationToken);
+        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectTrashed(request.ObjectId), cancellationToken);
 
         return new VersioningResponse
         {
