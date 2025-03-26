@@ -34,6 +34,7 @@ public class TrashHardDeleteService : ITrashHardDeleteService
     public async Task<IEnumerable<string>> EmptyTrashBin(Guid userid)
     {
         var _applicationConfiguration = await _applicationConfigurationRepository.GetConfiguration();
+
         var _daysToDelayHardDeleteConfigValue = _applicationConfiguration.GetValue<int>("TrashHardDeleteConfiguration.DaysToDelayHardDelete");
         _daysToDelayHardDelete = _daysToDelayHardDeleteConfigValue == default ? _daysToDelayHardDelete : _daysToDelayHardDeleteConfigValue;
 
@@ -62,8 +63,8 @@ public class TrashHardDeleteService : ITrashHardDeleteService
         _deleteAtTimeOfDay = _applicationConfiguration.GetValue<TimeOnly>("TrashHardDeleteConfiguration.DeleteAtTimeOfDay");
         _deleteAtTimeOfDay = _deleteAtTimeOfDay == default ? new TimeOnly(0, 0, 0) : _deleteAtTimeOfDay;
 
-        var timeOfDaySeconds = _deleteAtTimeOfDay.Hour * 3600 + _deleteAtTimeOfDay.Minute * 60 + _deleteAtTimeOfDay.Second;
-        var now = DateTimeOffset.Now;
+        var timeOfDaySeconds = _deleteAtTimeOfDay.ToTimeSpan().TotalSeconds;
+        var now = DateTime.UtcNow;
         if (now.TimeOfDay.TotalSeconds > timeOfDaySeconds
                 && now.Date > _lastRun.Date.AddDays(1))
         {
