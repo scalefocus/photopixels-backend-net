@@ -15,8 +15,6 @@ public class TrashHardDeleteService : ITrashHardDeleteService
 
     private readonly IApplicationConfigurationRepository _applicationConfigurationRepository;
 
-    private ApplicationConfiguration _applicationConfiguration;
-
     private TimeOnly _deleteAtTimeOfDay = new TimeOnly(0, 0, 0);
 
     private int _daysToDelayHardDelete = 30;
@@ -31,11 +29,11 @@ public class TrashHardDeleteService : ITrashHardDeleteService
         _session = session;
         _logger = logger;
         _applicationConfigurationRepository = applicationConfigurationRepository;
-        _applicationConfiguration = _applicationConfigurationRepository.GetConfiguration().Result;
     }
 
     public async Task<IEnumerable<string>> EmptyTrashBin(Guid userid)
     {
+        var _applicationConfiguration = await _applicationConfigurationRepository.GetConfiguration();
         var _daysToDelayHardDeleteConfigValue = _applicationConfiguration.GetValue<int>("TrashHardDeleteConfiguration.DaysToDelayHardDelete");
         _daysToDelayHardDelete = _daysToDelayHardDeleteConfigValue == default ? _daysToDelayHardDelete : _daysToDelayHardDeleteConfigValue;
 
@@ -59,7 +57,7 @@ public class TrashHardDeleteService : ITrashHardDeleteService
     public async Task EmptyTrashBin(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Emptying trash bin");
-        _applicationConfiguration = await _applicationConfigurationRepository.GetConfiguration();
+        var _applicationConfiguration = await _applicationConfigurationRepository.GetConfiguration();
         _lastRun = _applicationConfiguration.GetValue<DateTimeOffset>("TrashHardDeleteConfiguration.LastRun");
         _deleteAtTimeOfDay = _applicationConfiguration.GetValue<TimeOnly>("TrashHardDeleteConfiguration.DeleteAtTimeOfDay");
         _deleteAtTimeOfDay = _deleteAtTimeOfDay == default ? new TimeOnly(0, 0, 0) : _deleteAtTimeOfDay;

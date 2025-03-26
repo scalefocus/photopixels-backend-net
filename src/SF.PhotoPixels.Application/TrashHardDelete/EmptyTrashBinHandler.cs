@@ -14,7 +14,6 @@ public class EmptyTrashBinHandler : IRequestHandler<EmptyTrashBinRequest, EmptyT
     private readonly IApplicationConfigurationRepository _applicationConfigurationRepository;
     private readonly IDocumentSession _session;
     private readonly IMediator _mediatr;
-    private ApplicationConfiguration _applicationConfig;
 
     public EmptyTrashBinHandler(
         ITrashHardDeleteService trashHardDelete,
@@ -26,7 +25,6 @@ public class EmptyTrashBinHandler : IRequestHandler<EmptyTrashBinRequest, EmptyT
         _applicationConfigurationRepository = applicationConfigurationRepository;
         _session = session;
         _mediatr = mediatr;
-        _applicationConfig = _applicationConfigurationRepository.GetConfiguration().Result;
     }
 
     public async ValueTask<EmptyTrashBinResponse> Handle(EmptyTrashBinRequest request, CancellationToken cancellationToken)
@@ -40,6 +38,7 @@ public class EmptyTrashBinHandler : IRequestHandler<EmptyTrashBinRequest, EmptyT
             await _mediatr.Send(new DeleteObjectRequest { Id = id }, cancellationToken);
         }
 
+        var _applicationConfig = await _applicationConfigurationRepository.GetConfiguration();
         _applicationConfig.SetValue("TrashHardDeleteConfiguration.LastRun", DateTimeOffset.UtcNow);
         await _applicationConfigurationRepository.SaveConfiguration(_applicationConfig);
 

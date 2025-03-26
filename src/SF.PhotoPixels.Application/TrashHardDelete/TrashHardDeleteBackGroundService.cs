@@ -9,9 +9,7 @@ public class TrashHardDeleteBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
 
-
-
-    private int _period = 60 * 2; // 2 minutes
+    private int _period = 60 * 60 * 1; // 1 hour
 
     public TrashHardDeleteBackgroundService(IServiceScopeFactory scopeFactory)
     {
