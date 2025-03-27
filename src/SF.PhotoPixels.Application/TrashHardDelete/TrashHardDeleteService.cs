@@ -15,12 +15,6 @@ public class TrashHardDeleteService : ITrashHardDeleteService
 
     private readonly IApplicationConfigurationRepository _applicationConfigurationRepository;
 
-    private TimeOnly _deleteAtTimeOfDay = new TimeOnly(0, 0, 0);
-
-    private int _daysToDelayHardDelete = 30;
-
-    private DateTimeOffset _lastRun = DateTimeOffset.MinValue;
-
     public TrashHardDeleteService(
         IDocumentSession session,
         ILogger<TrashHardDeleteService> logger,
@@ -36,7 +30,7 @@ public class TrashHardDeleteService : ITrashHardDeleteService
         var _applicationConfiguration = await _applicationConfigurationRepository.GetConfiguration();
 
         var _daysToDelayHardDeleteConfigValue = _applicationConfiguration.GetValue<int>("TrashHardDeleteConfiguration.DaysToDelayHardDelete");
-        _daysToDelayHardDelete = _daysToDelayHardDeleteConfigValue == default ? _daysToDelayHardDelete : _daysToDelayHardDeleteConfigValue;
+        var _daysToDelayHardDelete = _daysToDelayHardDeleteConfigValue == default ? 30 : _daysToDelayHardDeleteConfigValue;
 
         _logger.LogInformation($"Emptying trash bin for {userid}");
 
@@ -59,8 +53,11 @@ public class TrashHardDeleteService : ITrashHardDeleteService
     {
         _logger.LogInformation("Emptying trash bin");
         var _applicationConfiguration = await _applicationConfigurationRepository.GetConfiguration();
-        _lastRun = _applicationConfiguration.GetValue<DateTimeOffset>("TrashHardDeleteConfiguration.LastRun");
-        _deleteAtTimeOfDay = _applicationConfiguration.GetValue<TimeOnly>("TrashHardDeleteConfiguration.DeleteAtTimeOfDay");
+
+        var _lastRun = _applicationConfiguration.GetValue<DateTimeOffset>("TrashHardDeleteConfiguration.LastRun");
+        _lastRun = _lastRun == default ? DateTimeOffset.MinValue : _lastRun;
+
+        var _deleteAtTimeOfDay = _applicationConfiguration.GetValue<TimeOnly>("TrashHardDeleteConfiguration.DeleteAtTimeOfDay");
         _deleteAtTimeOfDay = _deleteAtTimeOfDay == default ? new TimeOnly(0, 0, 0) : _deleteAtTimeOfDay;
 
         var timeOfDaySeconds = _deleteAtTimeOfDay.ToTimeSpan().TotalSeconds;
