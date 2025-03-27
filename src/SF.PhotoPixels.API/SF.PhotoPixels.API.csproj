@@ -13,7 +13,7 @@
 		<PackageReference Include="AspNetCore.HealthChecks.Network" Version="8.0.0" />
 		<PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
 		<PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.0" />
-		<PackageReference Include="Marten.CommandLine" Version="7.37.0" />
+		<PackageReference Include="Marten.CommandLine" Version="7.38.1" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
         <PackageReference Include="Npgsql" Version="9.0.2" />
         <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.2" />

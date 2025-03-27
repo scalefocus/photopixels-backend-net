@@ -52,7 +52,7 @@ public static class DependencyInjection
             opt.HasTermination = true;
             opt.ExpirationStrategy = ExpirationStrategy.SlidingExpiration;
             opt.SlidingInterval = TimeSpan.FromDays(1);
-            opt.ExpirationJobRunnerInterval = TimeSpan.FromDays(1);   
+            opt.ExpirationJobRunnerInterval = TimeSpan.FromDays(1);
             opt.DeletePartialFilesOnMerge = true;
         })
         .FileStorageConfiguration(config =>
@@ -62,7 +62,7 @@ public static class DependencyInjection
         })
         .AddExpirationHandler<TusExpirationHandler>()
         .WithExpirationJobRunner()
-        .SetMetadataValidator(TusService.MetadataValidator)        
+        .SetMetadataValidator(TusService.MetadataValidator)
         .AllowEmptyMetadata(true);
 
         services.AddTransient<IApplicationConfigurationRepository, ApplicationConfigurationRepository>();
@@ -88,12 +88,22 @@ public static class DependencyInjection
                 options.DatabaseSchemaName = Constants.DefaultSchema;
 
                 options.Schema.For<ObjectProperties>()
-                    .SoftDeletedWithIndex()
+                    .SoftDeletedWithPartitioningAndIndex()
                     .Index(x => x.Hash)
-                    .Metadata(m => { m.IsSoftDeleted.MapTo(x => x.IsDeleted); })
+                    .Metadata(m =>
+                        {
+                            m.IsSoftDeleted.MapTo(x => x.Deleted);
+                            m.SoftDeletedAt.MapTo(x => x.DeletedAt);
+                        })
                     .Duplicate(x => x.UserId, configure: idx => idx.IsUnique = false);
 
                 options.Schema.For<User>()
+                    .SoftDeletedWithPartitioningAndIndex()
+                    .Metadata(m =>
+                        {
+                            m.IsSoftDeleted.MapTo(x => x.Deleted);
+                            m.SoftDeletedAt.MapTo(x => x.DeletedAt);
+                        })
                     .Index(x => x.Id);
 
                 options.Schema.For<ApplicationConfiguration>()
@@ -105,6 +115,8 @@ public static class DependencyInjection
 
                 options.Events.AddEventType<MediaObjectCreated>();
                 options.Events.AddEventType<MediaObjectUpdated>();
+                options.Events.AddEventType<MediaObjectTrashed>();
+                options.Events.AddEventType<MediaObjectRemovedFromTrash>();
                 options.Events.AddEventType<MediaObjectDeleted>();
             })
             .UseLightweightSessions();
