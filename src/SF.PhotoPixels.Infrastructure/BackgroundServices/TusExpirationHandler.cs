@@ -36,11 +36,11 @@ public class TusExpirationHandler : IExpiredUploadHandler
         await using (var scope = _provider.CreateAsyncScope())
         {
             var session = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
+
             var user = await session.LoadAsync<User>(userId, CancellationToken.None);
             if (user != null)
             {
                 user.DecreaseUsedQuota(fileSize);
-
                 session.Update(user);
                 await session.SaveChangesAsync(cancellationToken);
             }
