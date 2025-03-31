@@ -17,4 +17,6 @@ public class ObjectDataResponse
     public int Width { get; set; }
 
     public int Height { get; set; }
+
+    public DateTimeOffset DateCreated { get; set; }
 }
