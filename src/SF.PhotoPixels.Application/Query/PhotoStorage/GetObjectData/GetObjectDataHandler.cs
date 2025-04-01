@@ -66,6 +66,7 @@ public class GetObjectDataHandler : IQueryHandler<GetObjectDataRequest, QueryRes
             AppleCloudId = metadata.AppleCloudId,
             Width = metadata.Width,
             Height = metadata.Height,
+            DateCreated = metadata.DateCreated
         };
     }
 
