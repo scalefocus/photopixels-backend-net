@@ -17,12 +17,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.env = .env
 		.env.dev = .env.dev
 		.gitignore = .gitignore
-		docker-compose.yml = docker-compose.yml
-		readme.md = readme.md
-		docker-compose-otel.yml = docker-compose-otel.yml
-		docker\prometheus\prometheus.yml = docker\prometheus\prometheus.yml
-		docker\grafana\provisioning\datasources\datasource.yml = docker\grafana\provisioning\datasources\datasource.yml
 		docker\grafana-agent\agent-config.yaml = docker\grafana-agent\agent-config.yaml
+		docker\grafana\provisioning\datasources\datasource.yml = docker\grafana\provisioning\datasources\datasource.yml
+		docker-compose-otel.yml = docker-compose-otel.yml
+		docker-compose.yml = docker-compose.yml
+		GitVersion.yml = GitVersion.yml
+		docker\prometheus\prometheus.yml = docker\prometheus\prometheus.yml
+		readme.md = readme.md
 		docker\tempo\tempo.yaml = docker\tempo\tempo.yaml
 	EndProjectSection
 EndProject
@@ -60,10 +61,10 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {7542B97A-5E02-4114-B347-F53BB855C33A}
-	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179} = {A44A49BC-CE84-4535-BBCF-170447A43C05}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7542B97A-5E02-4114-B347-F53BB855C33A}
 	EndGlobalSection
 EndGlobal

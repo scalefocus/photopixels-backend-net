@@ -1,7 +1,5 @@
 assembly-versioning-scheme: MajorMinorPatch
 
-tag-pre-release-weight: false
-
 branches:
   main:
     mode: ContinuousDelivery
@@ -41,8 +39,7 @@ branches:
     label: beta
     increment: Minor
     prevent-increment:
-      when-current-commit-tagged: true 
-    tag-pre-release-weight: false
+      when-current-commit-tagged: true
   
   feature:
     mode: ManualDeployment
