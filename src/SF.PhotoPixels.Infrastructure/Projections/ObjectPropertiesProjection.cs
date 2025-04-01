@@ -13,6 +13,30 @@ public class ObjectPropertiesProjection : EventProjection
         Project<MediaObjectCreated>(CreateObjectProperties);
         Project<MediaObjectDeleted>(DeleteObjectProperties);
         Project<MediaObjectUpdated>(UpdateObjectProperties);
+        Project<MediaObjectTrashed>(TrashObjectProperties);
+        Project<MediaObjectRemovedFromTrash>(RemovedFromTrashObjectProperties);
+    }
+
+    private static void RemovedFromTrashObjectProperties(MediaObjectRemovedFromTrash mediaObjectRemovedFromTrash, IDocumentOperations documentOperations)
+    {
+        var objectProperties = documentOperations.Query<ObjectProperties>()
+            .SingleOrDefault(x => x.Id == mediaObjectRemovedFromTrash.ObjectId);
+
+        if (objectProperties is not null)
+        {
+            documentOperations.UndoDeleteWhere<ObjectProperties>(x => x.Id == mediaObjectRemovedFromTrash.ObjectId);
+        }
+    }
+
+   private static void TrashObjectProperties(MediaObjectTrashed mediaObjectTrashed, IDocumentOperations documentOperations)
+    {
+        var objectProperties = documentOperations.Query<ObjectProperties>()
+            .SingleOrDefault(x => x.Id == mediaObjectTrashed.ObjectId);
+
+        if (objectProperties is not null)
+        {
+            documentOperations.Delete<ObjectProperties>(mediaObjectTrashed.ObjectId);
+        }
     }
 
     private static void CreateObjectProperties(MediaObjectCreated mediaObjectCreated, IDocumentOperations documentOperations)
@@ -35,7 +59,7 @@ public class ObjectPropertiesProjection : EventProjection
         var existingObjectProperties = documentOperations.Query<ObjectProperties>()
             .SingleOrDefault(x => x.Id == objectProperties.Id && x.IsDeleted());
 
-        if (existingObjectProperties is not null && existingObjectProperties.IsDeleted)
+        if (existingObjectProperties is not null  && existingObjectProperties.Deleted)
         {
             documentOperations.HardDelete(existingObjectProperties);
         }

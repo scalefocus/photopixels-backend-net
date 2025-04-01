@@ -8,7 +8,7 @@ using SF.PhotoPixels.Infrastructure.Storage;
 
 namespace SF.PhotoPixels.Application.Commands.PhotoStorage.StorePhoto;
 
-public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<StorePhotoResponse, Duplicate, ValidationError>>
+public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<IMediaResponse, Duplicate, ValidationError>>
 {
     private readonly IExecutionContextAccessor _executionContextAccessor;
     private readonly IDocumentSession _session;
@@ -24,7 +24,7 @@ public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<StoreP
         _photoService = photoService;
     }
 
-    public async ValueTask<OneOf<StorePhotoResponse, Duplicate, ValidationError>> Handle(StorePhotoRequest request, CancellationToken cancellationToken)
+    public async ValueTask<OneOf<IMediaResponse, Duplicate, ValidationError>> Handle(StorePhotoRequest request, CancellationToken cancellationToken)
     {
         using var rawImage = new RawImage(request.File.OpenReadStream());
 
@@ -42,7 +42,7 @@ public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<StoreP
             return new Duplicate();
         }
 
-        var user = _session.Load<Domain.Entities.User>(_executionContextAccessor.UserId);
+        var user = await _session.LoadAsync<Domain.Entities.User>(_executionContextAccessor.UserId);
         if (user == null)
         {
             return new ValidationError("UserNotFound", "User not found");

@@ -1,9 +1,11 @@
 ﻿using Marten;
+using Marten.Linq.SoftDeletes;
 using Mediator;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
+using SF.PhotoPixels.Infrastructure;
 using SF.PhotoPixels.Infrastructure.Repositories;
 using SF.PhotoPixels.Infrastructure.Storage;
 
@@ -27,21 +29,29 @@ public class DeleteObjectHandler : IRequestHandler<DeleteObjectRequest, ObjectVe
     public async ValueTask<ObjectVersioningResponse> Handle(DeleteObjectRequest request, CancellationToken cancellationToken)
     {
         var objectMetadata = await _session.Query<ObjectProperties>()
-            .SingleOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == request.Id && x.MaybeDeleted(), cancellationToken);
 
         if (objectMetadata == null)
         {
             return new NotFound();
         }
 
-        var user = _session.Load<Domain.Entities.User>(_executionContextAccessor.UserId);
+        var user = await _session.LoadAsync<Domain.Entities.User>(_executionContextAccessor.UserId);
+
+        if (user == null && objectMetadata.Deleted)
+        {
+            user = await _session.LoadAsync<Domain.Entities.User>(objectMetadata.UserId);
+        }
 
         if (user == null)
         {
             return new NotFound();
         }
-        var isPhotoDeleted = _objectStorage.DeleteObject(_executionContextAccessor.UserId, objectMetadata.GetImageName());
-        var isThumbnailDeleted = _objectStorage.DeleteThumbnail(_executionContextAccessor.UserId, objectMetadata.GetThumbnailName());
+
+        var isPhotoDeleted = _objectStorage.DeleteObject(user.Id, objectMetadata.GetFileName());
+
+        var thumbnailExtension = Constants.SupportedVideoFormats.Contains($".{objectMetadata.Extension}") ? "png" : "webp";
+        var isThumbnailDeleted = _objectStorage.DeleteThumbnail(user.Id, objectMetadata.GetThumbnailName(thumbnailExtension));
 
         if (!isPhotoDeleted || !isThumbnailDeleted)
         {
@@ -49,10 +59,13 @@ public class DeleteObjectHandler : IRequestHandler<DeleteObjectRequest, ObjectVe
         }
 
         user.DecreaseUsedQuota(objectMetadata.SizeInBytes);
+
         _session.Update(user);
+        _session.HardDelete(objectMetadata);
+
         await _session.SaveChangesAsync(cancellationToken);
 
-        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectDeleted(request.Id), cancellationToken);
+        var revision = await _objectRepository.AddEvent(user.Id, new MediaObjectDeleted(request.Id), cancellationToken);
 
         return new VersioningResponse
         {

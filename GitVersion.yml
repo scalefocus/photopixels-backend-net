@@ -23,7 +23,7 @@ branches:
     label: alpha
     increment: Minor
     prevent-increment:
-      when-current-commit-tagged: false
+      when-current-commit-tagged: true
     track-merge-target: true
     track-merge-message: true
     regex: ^dev(elop)?(ment)?$
@@ -38,6 +38,8 @@ branches:
   release:
     label: beta
     increment: Minor
+    prevent-increment:
+      when-current-commit-tagged: true
   
   feature:
     mode: ManualDeployment

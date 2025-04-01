@@ -1,6 +1,6 @@
 ﻿namespace SF.PhotoPixels.Application.Commands.PhotoStorage.StorePhoto;
 
-public class StorePhotoResponse
+public class StorePhotoResponse : IMediaResponse
 {
     public required string Id { get; set; }
 

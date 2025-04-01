@@ -9,20 +9,21 @@ using Microsoft.Extensions.DependencyInjection;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
 using SF.PhotoPixels.Domain.Repositories;
-using SF.PhotoPixels.Infrastructure.Migrations;
+using SF.PhotoPixels.Infrastructure.BackgroundServices;
+using SF.PhotoPixels.Infrastructure.BackgroundServices.ImportDirectory;
 using SF.PhotoPixels.Infrastructure.Helpers;
+using SF.PhotoPixels.Infrastructure.Migrations;
 using SF.PhotoPixels.Infrastructure.Projections;
 using SF.PhotoPixels.Infrastructure.Repositories;
-using SF.PhotoPixels.Infrastructure.Storage;
-using SF.PhotoPixels.Infrastructure.Stores;
-using Weasel.Core;
-using SF.PhotoPixels.Infrastructure.BackgroundServices.ImportDirectory;
 using SF.PhotoPixels.Infrastructure.Services.PhotoService;
 using SF.PhotoPixels.Infrastructure.Services.TusService;
+using SF.PhotoPixels.Infrastructure.Services.VideoService;
+using SF.PhotoPixels.Infrastructure.Storage;
+using SF.PhotoPixels.Infrastructure.Stores;
 using SixLabors.ImageSharp;
 using SolidTUS.Extensions;
-using SF.PhotoPixels.Infrastructure.BackgroundServices;
 using SolidTUS.Models;
+using Weasel.Core;
 
 namespace SF.PhotoPixels.Infrastructure;
 
@@ -32,6 +33,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IObjectStorage, LocalObjectStorage>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IVideoService, VideoService>();
 
         services.AddTransient<IObjectRepository, ObjectRepository>();
 
@@ -50,7 +52,7 @@ public static class DependencyInjection
             opt.HasTermination = true;
             opt.ExpirationStrategy = ExpirationStrategy.SlidingExpiration;
             opt.SlidingInterval = TimeSpan.FromDays(1);
-            opt.ExpirationJobRunnerInterval = TimeSpan.FromDays(1);   
+            opt.ExpirationJobRunnerInterval = TimeSpan.FromDays(1);
             opt.DeletePartialFilesOnMerge = true;
         })
         .FileStorageConfiguration(config =>
@@ -60,10 +62,8 @@ public static class DependencyInjection
         })
         .AddExpirationHandler<TusExpirationHandler>()
         .WithExpirationJobRunner()
-        .SetMetadataValidator(TusService.MetadataValidator)        
+        .SetMetadataValidator(TusService.MetadataValidator)
         .AllowEmptyMetadata(true);
-
-
 
         services.AddTransient<IApplicationConfigurationRepository, ApplicationConfigurationRepository>();
 
@@ -88,12 +88,22 @@ public static class DependencyInjection
                 options.DatabaseSchemaName = Constants.DefaultSchema;
 
                 options.Schema.For<ObjectProperties>()
-                    .SoftDeletedWithIndex()
+                    .SoftDeletedWithPartitioningAndIndex()
                     .Index(x => x.Hash)
-                    .Metadata(m => { m.IsSoftDeleted.MapTo(x => x.IsDeleted); })
+                    .Metadata(m =>
+                        {
+                            m.IsSoftDeleted.MapTo(x => x.Deleted);
+                            m.SoftDeletedAt.MapTo(x => x.DeletedAt);
+                        })
                     .Duplicate(x => x.UserId, configure: idx => idx.IsUnique = false);
 
                 options.Schema.For<User>()
+                    .SoftDeletedWithPartitioningAndIndex()
+                    .Metadata(m =>
+                        {
+                            m.IsSoftDeleted.MapTo(x => x.Deleted);
+                            m.SoftDeletedAt.MapTo(x => x.DeletedAt);
+                        })
                     .Index(x => x.Id);
 
                 options.Schema.For<ApplicationConfiguration>()
@@ -105,6 +115,8 @@ public static class DependencyInjection
 
                 options.Events.AddEventType<MediaObjectCreated>();
                 options.Events.AddEventType<MediaObjectUpdated>();
+                options.Events.AddEventType<MediaObjectTrashed>();
+                options.Events.AddEventType<MediaObjectRemovedFromTrash>();
                 options.Events.AddEventType<MediaObjectDeleted>();
             })
             .UseLightweightSessions();

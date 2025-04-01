@@ -119,7 +119,7 @@ public class MigrationExecutor
                         ObjectName = properties.Name,
                         MediaName = properties.Name,
                         User = user,
-                        SaveImage = storageItem => objectStorage.StoreObjectAsync(user.Id, storageItem, properties.GetImageName(), token),
+                        SaveImage = storageItem => objectStorage.StoreObjectAsync(user.Id, storageItem, properties.GetFileName(), token),
                         SaveThumbnail = storageItem => objectStorage.StoreThumbnailAsync(user.Id, storageItem, properties.GetThumbnailName(), token),
                         Logger = _loggerFactory.CreateLogger<ExecuteContext>(),
                     };
@@ -178,7 +178,7 @@ public class MigrationExecutor
 
     private static async Task<FormattedImage> LoadImageAsync(IObjectStorage objectStorage, ObjectProperties properties)
     {
-        var rawImage = await objectStorage.LoadObjectAsync(properties.UserId, properties.GetImageName());
+        var rawImage = await objectStorage.LoadObjectAsync(properties.UserId, properties.GetFileName());
 
         return await FormattedImage.LoadAsync(rawImage);
     }
