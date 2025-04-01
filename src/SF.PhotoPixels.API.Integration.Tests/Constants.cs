@@ -7,5 +7,5 @@ internal class Constants
     internal static readonly string WhiteimagePath = "Assets/whiteimage.jpg";
     internal static readonly string WhiteimageHash = "abcXifOlGhiHcVyfDvDGOsGANE4=";
     internal static readonly string RunVideoPath = "Assets/run.mp4";
-    internal static readonly string RunVideoHash = "5Ef1TuxNyp1fQAk9XfPalZLNc28=";
+    internal static readonly string RunVideoHash = "xOxBAwLexkGgSxuIj5Vqy9z5oM4=";
 }
