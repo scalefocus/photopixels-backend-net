@@ -63,7 +63,7 @@ public sealed class FormattedVideo : IDisposable, IStorageItem
 
     public DateTime GetDateTime()
     {
-        if (_format.Tags.TryGetValue("creation_time", out var tag) && 
+        if (_format.Tags != null && _format.Tags.TryGetValue("creation_time", out var tag) &&
             DateTime.TryParse(tag, CultureInfo.InvariantCulture, out DateTime parsedDateTime))
         {
             return parsedDateTime;
