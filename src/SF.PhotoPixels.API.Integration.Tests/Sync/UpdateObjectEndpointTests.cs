@@ -17,7 +17,7 @@ public class UpdateObjectEndpointTests : IntegrationTest
 
     [Fact]
     [Trait("Category", "Integration")]
-    public async Task UpdateObject_WithValidData_ShouldReturnOk()
+    public async Task UpdateObject_WithPhotoValidData_ShouldReturnOk()
     {
         var token = await AuthenticateAsSeededAdminAsync();
         var image = await UploadImageAsync();
@@ -87,4 +87,32 @@ public class UpdateObjectEndpointTests : IntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task UpdateObject_WithVideoValidData_ShouldReturnOk()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+        var video = await UploadImageAsync();
+
+        var request = new UpdateObjectRequest()
+        {
+            Id = video.Id,
+
+            RequestBody = new UpdateObjectRequestBody()
+            {
+                AndroidCloudId = "id",
+                AppleCloudId = "id"
+            }
+        };
+        QueueDirectoryDeletion(token.UserId);
+
+        var response = await _httpClient.PutAsJsonAsync($"/object/{video.Id}", request.RequestBody);
+
+        var content = await response.Content.ReadFromJsonAsync<VersioningResponse>();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        content?.Revision.Should().Be(2);
+    }
+
 }
