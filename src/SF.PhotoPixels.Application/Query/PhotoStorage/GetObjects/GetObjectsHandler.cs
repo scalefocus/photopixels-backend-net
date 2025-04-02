@@ -4,6 +4,7 @@ using OneOf;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
+using Weasel.Postgresql.Tables.Partitioning;
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.GetObjects;
 
@@ -65,13 +66,13 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             var thumbnailProperty = new PropertiesResponse
             {
                 Id = obj.Id,
-                DateCreated = obj.DateCreated
+                DateCreated = obj.DateCreated,
             };
 
             properties.Add(thumbnailProperty);
         }
 
-        
+
         var lastId = result.Count < request.PageSize ? "" : objectProperties[^1].Id;
         return new GetObjectsResponse() { Properties = properties, LastId = lastId };
     }
