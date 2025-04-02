@@ -28,7 +28,7 @@ public class ObjectPropertiesProjection : EventProjection
         }
     }
 
-   private static void TrashObjectProperties(MediaObjectTrashed mediaObjectTrashed, IDocumentOperations documentOperations)
+    private static void TrashObjectProperties(MediaObjectTrashed mediaObjectTrashed, IDocumentOperations documentOperations)
     {
         var objectProperties = documentOperations.Query<ObjectProperties>()
             .SingleOrDefault(x => x.Id == mediaObjectTrashed.ObjectId);
@@ -59,7 +59,7 @@ public class ObjectPropertiesProjection : EventProjection
         var existingObjectProperties = documentOperations.Query<ObjectProperties>()
             .SingleOrDefault(x => x.Id == objectProperties.Id && x.IsDeleted());
 
-        if (existingObjectProperties is not null  && existingObjectProperties.Deleted)
+        if (existingObjectProperties is not null && existingObjectProperties.Deleted)
         {
             documentOperations.HardDelete(existingObjectProperties);
         }
