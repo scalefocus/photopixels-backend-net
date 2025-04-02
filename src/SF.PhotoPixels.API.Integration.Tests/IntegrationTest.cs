@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using SF.PhotoPixels.Application.Commands.PhotoStorage.StorePhoto;
 using SF.PhotoPixels.Application.Commands.User.Quota;
 using SF.PhotoPixels.Application.Commands.User.Register;
+using SF.PhotoPixels.Application.Commands.VideoStorage.StoreVideo;
 using SF.PhotoPixels.Application.Query.User;
 using SF.PhotoPixels.Application.Query.User.Login;
 using SF.PhotoPixels.Application.Security.BearerToken;
@@ -86,6 +87,22 @@ public class IntegrationTest : IClassFixture<PhotosWebApplicationFactory>, IAsyn
         var response = await _httpClient.PostAsync("/object", multipartFormData);
 
         var data = await response.Content.ReadFromJsonAsync<StorePhotoResponse>();
+
+        return data;
+    }
+
+    protected async Task<StoreVideoResponse> UploadVideoAsync()
+    {
+        var multipartFormData = new MultipartFormDataContent();
+
+        var videoContent = new ByteArrayContent(await File.ReadAllBytesAsync(Constants.RunVideoPath));
+        videoContent.Headers.ContentType = new MediaTypeHeaderValue("video/mp4");
+        multipartFormData.Add(videoContent, "File", "run.mp4");
+        multipartFormData.Add(new StringContent(Constants.RunVideoHash), "ObjectHash");
+
+        var response = await _httpClient.PostAsync("/object", multipartFormData);
+
+        var data = await response.Content.ReadFromJsonAsync<StoreVideoResponse>();
 
         return data;
     }

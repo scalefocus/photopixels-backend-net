@@ -70,4 +70,19 @@ public class GetObjectDataTests : IntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task GetObjectData_WithValidVideo_ShouldReturnOk()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+        var video = await UploadVideoAsync();
+
+        QueueDirectoryDeletion(token.UserId);
+
+        var response = await _httpClient.GetAsync($"/object/{video.Id}/data");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
 }
