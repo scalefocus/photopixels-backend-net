@@ -1,10 +1,16 @@
 ﻿using Marten;
+using Marten.Linq.SoftDeletes;
 using Mediator;
 using OneOf;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
+
 using Weasel.Postgresql.Tables.Partitioning;
+
+using SF.PhotoPixels.Domain.Enums;
+using SF.PhotoPixels.Infrastructure;
+
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.GetObjects;
 
@@ -28,7 +34,8 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             sqlQuery = $@"
                 SELECT  data
                 FROM photos.mt_doc_objectproperties
-                WHERE (data->>'DateCreated')::timestamptz <= :timeNow
+                WHERE mt_deleted = false 
+                AND (data->>'DateCreated')::timestamptz <= :timeNow
                         AND (data->>'UserId')::uuid = :userId
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
@@ -38,11 +45,11 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             sqlQuery = $@"
                 SELECT  data
                 FROM photos.mt_doc_objectproperties
-                WHERE ((data->>'DateCreated')::timestamptz = (SELECT (data->>'DateCreated')::timestamptz
+                WHERE mt_deleted = false 
+                AND ((data->>'DateCreated')::timestamptz = (SELECT (data->>'DateCreated')::timestamptz
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId)
-
-                      AND id <= :lastId) OR
+                    AND id <= :lastId) OR
                       ((data->>'DateCreated')::timestamptz < (SELECT (data->>'DateCreated')::timestamptz
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId))
@@ -51,7 +58,8 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                 FETCH FIRST :pageSize ROWS ONLY";
         }
 
-        var result = await _session.QueryAsync<ObjectProperties>(sqlQuery, new { pageSize = request.PageSize + 1, timeNow = utcNow, lastId = request.LastId, userId = _executionContextAccessor.UserId });
+        var result = await _session.QueryAsync<ObjectProperties>(sqlQuery, 
+                            new { pageSize = request.PageSize + 1, timeNow = utcNow, lastId = request.LastId, userId = _executionContextAccessor.UserId });
         var objectProperties = result.ToList();
 
         var properties = new List<PropertiesResponse>();
@@ -67,6 +75,7 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             {
                 Id = obj.Id,
                 DateCreated = obj.DateCreated,
+                MediaType = GetMediaType(obj.Extension)
             };
 
             properties.Add(thumbnailProperty);
@@ -76,4 +85,16 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
         var lastId = result.Count < request.PageSize ? "" : objectProperties[^1].Id;
         return new GetObjectsResponse() { Properties = properties, LastId = lastId };
     }
+
+    private string? GetMediaType(string extension)
+    {
+        return extension switch
+        {
+            var ext when Constants.SupportedVideoFormats.Contains($".{ext}") => MediaType.Video.ToString().ToLower(),
+            var ext when Constants.SupportedPhotoFormats.Contains($".{ext}") => MediaType.Photo.ToString().ToLower(),
+            _ => MediaType.Unknown.ToString().ToLower()
+        };
+    }
+
+
 }

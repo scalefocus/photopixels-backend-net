@@ -30,19 +30,20 @@ public class TusExpirationHandler : IExpiredUploadHandler
 
     public async Task ExpiredUploadAsync(UploadFileInfo uploadFileInfo, CancellationToken cancellationToken)
     {
-        var fileSize = long.Parse(uploadFileInfo.Metadata["fileSize"]!);
+        var fileSize = long.Parse(uploadFileInfo.Metadata!["fileSize"]);
         var userId = Guid.Parse(uploadFileInfo.Metadata["userId"]);
 
         await using (var scope = _provider.CreateAsyncScope())
         {
             var session = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
-            var user = session.Load<User>(userId);
 
-            user.DecreaseUsedQuota(fileSize);
-
-            session.Update(user);
-            await session.SaveChangesAsync(cancellationToken);
-
+            var user = await session.LoadAsync<User>(userId, CancellationToken.None);
+            if (user != null)
+            {
+                user.DecreaseUsedQuota(fileSize);
+                session.Update(user);
+                await session.SaveChangesAsync(cancellationToken);
+            }
             await _uploadMetaHandler.DeleteUploadFileInfoAsync(uploadFileInfo, cancellationToken);
             await _uploadStorageHandler.DeleteFileAsync(uploadFileInfo, cancellationToken);
         }
