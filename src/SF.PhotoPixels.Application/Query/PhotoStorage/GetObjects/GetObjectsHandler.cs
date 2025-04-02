@@ -1,13 +1,9 @@
 ﻿using Marten;
-using Marten.Linq.SoftDeletes;
 using Mediator;
 using OneOf;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
-
-using Weasel.Postgresql.Tables.Partitioning;
-
 using SF.PhotoPixels.Domain.Enums;
 using SF.PhotoPixels.Infrastructure;
 
@@ -58,7 +54,7 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                 FETCH FIRST :pageSize ROWS ONLY";
         }
 
-        var result = await _session.QueryAsync<ObjectProperties>(sqlQuery, 
+        var result = await _session.QueryAsync<ObjectProperties>(sqlQuery,
                             new { pageSize = request.PageSize + 1, timeNow = utcNow, lastId = request.LastId, userId = _executionContextAccessor.UserId });
         var objectProperties = result.ToList();
 
