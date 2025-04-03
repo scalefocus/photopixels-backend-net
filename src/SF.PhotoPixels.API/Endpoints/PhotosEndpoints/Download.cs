@@ -18,7 +18,7 @@ public class Download : EndpointBaseAsync.WithRequest<LoadMediaRequest>.WithActi
     [HttpGet("/object/{Id}")]
     [SwaggerOperation(
             Summary = "Download a media",
-            Description = "Downloads a media from the server",
+            Description = "Downloads a media from the server", 
             OperationId = "Download_Media",
             Tags = new[] { "Object operations" }),
     ]
