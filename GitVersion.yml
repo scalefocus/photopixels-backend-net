@@ -21,7 +21,7 @@ branches:
   develop:
     mode: ContinuousDelivery
     label: alpha
-    increment: Minor
+    increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
     track-merge-target: true
@@ -37,7 +37,7 @@ branches:
 
   release:
     label: beta
-    increment: Minor
+    increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
   
