@@ -44,7 +44,7 @@ public class TrashObjectHandler : IRequestHandler<TrashObjectRequest, ObjectVers
         _session.DeleteWhere<ObjectProperties>(op => op.Id == objectMetadata.Id);
         await _session.SaveChangesAsync();
 
-        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectTrashed(request.ObjectId), cancellationToken);
+        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectTrashed(request.ObjectId, DateTimeOffset.UtcNow), cancellationToken);
 
         return new VersioningResponse
         {

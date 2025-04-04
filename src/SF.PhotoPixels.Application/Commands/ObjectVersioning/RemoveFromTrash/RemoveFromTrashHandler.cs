@@ -44,7 +44,7 @@ public class RemoveFromTrashObjectHandler : IRequestHandler<RemoveFromTrashObjec
         _session.UndoDeleteWhere<ObjectProperties>(op => op.Id == objectMetadata.Id);
         await _session.SaveChangesAsync(cancellationToken);
 
-        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectRemovedFromTrash(request.Id), cancellationToken);
+        var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectRemovedFromTrash(request.Id, DateTimeOffset.UtcNow), cancellationToken);
 
         return new VersioningResponse
         {
