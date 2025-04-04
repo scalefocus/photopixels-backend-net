@@ -10,24 +10,37 @@ public class StateChangesResponseDetails
 
     // ReSharper disable once CollectionNeverQueried.Global
     public Dictionary<string, long> Added { get; set; } = new();
+    public Dictionary<string, DateTimeOffset> AddedTime { get; set; } = new();
+
+    public Dictionary<string, DateTimeOffset> Trashed { get; set; } = new();
 
     // ReSharper disable once CollectionNeverQueried.Global
     public HashSet<string> Deleted { get; set; } = new();
 
     public void Apply(MediaObjectCreated media)
     {
+        Trashed.Remove(media.ObjectId);
         Deleted.Remove(media.ObjectId);
 
         Added.TryAdd(media.ObjectId, media.Timestamp);
+        AddedTime.TryAdd(media.ObjectId, DateTimeOffset.FromUnixTimeMilliseconds(media.Timestamp));
+    }
+
+    public void Apply(MediaObjectTrashed media)
+    {
+        Added.Remove(media.ObjectId);
+        AddedTime.Remove(media.ObjectId);
+        Deleted.Remove(media.ObjectId);
+
+        Trashed.TryAdd(media.ObjectId, media.trashedAt);
     }
 
     public void Apply(MediaObjectDeleted media)
     {
-        var result = Added.Remove(media.ObjectId);
+        Trashed.Remove(media.ObjectId);
+        Added.Remove(media.ObjectId);
+        AddedTime.Remove(media.ObjectId);
 
-        if (!result)
-        {
-            Deleted.Add(media.ObjectId);
-        }
+        Deleted.Add(media.ObjectId);
     }
 }

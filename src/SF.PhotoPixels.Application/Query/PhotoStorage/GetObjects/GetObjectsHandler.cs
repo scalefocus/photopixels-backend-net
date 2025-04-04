@@ -50,7 +50,7 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId))
                       AND (data->>'UserId')::uuid = :userId
-                ORDER BY data->>'DateCreated' desc ,id desc
+                ORDER BY data->>'DateCreated' desc, id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }
 
@@ -76,7 +76,6 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
 
             properties.Add(thumbnailProperty);
         }
-
 
         var lastId = result.Count < request.PageSize ? "" : objectProperties[^1].Id;
         return new GetObjectsResponse() { Properties = properties, LastId = lastId };
