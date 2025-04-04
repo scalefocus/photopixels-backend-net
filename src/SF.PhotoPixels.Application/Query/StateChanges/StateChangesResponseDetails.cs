@@ -10,6 +10,7 @@ public class StateChangesResponseDetails
 
     // ReSharper disable once CollectionNeverQueried.Global
     public Dictionary<string, long> Added { get; set; } = new();
+    public Dictionary<string, DateTimeOffset> AddedTime { get; set; } = new();
 
     public Dictionary<string, DateTimeOffset> Trashed { get; set; } = new();
 
@@ -22,11 +23,13 @@ public class StateChangesResponseDetails
         Deleted.Remove(media.ObjectId);
 
         Added.TryAdd(media.ObjectId, media.Timestamp);
+        AddedTime.TryAdd(media.ObjectId, DateTimeOffset.FromUnixTimeMilliseconds(media.Timestamp));
     }
 
     public void Apply(MediaObjectTrashed media)
     {
         Added.Remove(media.ObjectId);
+        AddedTime.Remove(media.ObjectId);
         Deleted.Remove(media.ObjectId);
 
         Trashed.TryAdd(media.ObjectId, media.trashedAt);
@@ -36,6 +39,7 @@ public class StateChangesResponseDetails
     {
         Trashed.Remove(media.ObjectId);
         Added.Remove(media.ObjectId);
+        AddedTime.Remove(media.ObjectId);
 
         Deleted.Add(media.ObjectId);
     }
