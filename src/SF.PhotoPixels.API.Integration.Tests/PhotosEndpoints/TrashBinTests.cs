@@ -20,37 +20,33 @@ public class TrashBinTests : IntegrationTest
     public async Task MoveToTrash()
     {
         var token = await AuthenticateAsSeededAdminAsync();
-
         QueueDirectoryDeletion(token.UserId);
 
+        //Upload item
         var formDataContent = new MultipartFormDataContent();
         var imageContent = new ByteArrayContent(File.ReadAllBytes(Constants.WhiteimagePath));
-
         imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-
         formDataContent.Add(imageContent, "File", "image.jpg");
         formDataContent.Add(new StringContent(Constants.WhiteimageHash), "ObjectHash");
-
         var response = await _httpClient.PostAsync("/object", formDataContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var data = await response.Content.ReadFromJsonAsync<StorePhotoResponse>();
 
+        //get object - confirm object is uploaded
         var getObject = await _httpClient.GetAsync($"/objects?pageSize=3");
-        getObject.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        getObject.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await getObject.Content.ReadAsStringAsync();
-
         content.Should().Contain(data.Id.ToString());
 
+        //trash object - confirm object is in trash bin
         var trashResponse = await _httpClient.DeleteAsync($"/object/{data.Id}/trash");
         trashResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
+        //get object - confirm object is not returned in object list.
         getObject = await _httpClient.GetAsync($"/objects?pageSize=3");
         getObject.StatusCode.Should().Be(HttpStatusCode.NoContent);
         content = await getObject.Content.ReadAsStringAsync();
-
         content.Should().NotContain(data.Id.ToString());
-
-        // trashResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        // data.Revision.Should().BeGreaterThanOrEqualTo(1);
     }
 
     // [Fact]
