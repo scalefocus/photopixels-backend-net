@@ -14,7 +14,7 @@ public class DeleteObjectEndpointTests : IntegrationTest
 
     [Fact]
     [Trait("Category", "Integration")]
-    public async Task DeleteObjectEndpoint_WithValidData_ShouldReturnOk()
+    public async Task DeleteObjectEndpoint_WithPhotoValidData_ShouldReturnOk()
     {
         var token = await AuthenticateAsSeededAdminAsync();
         var image = await UploadImageAsync();
@@ -75,4 +75,19 @@ public class DeleteObjectEndpointTests : IntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task DeleteObjectEndpoint_WithVideoValidData_ShouldReturnOk()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+        var video = await UploadVideoAsync();
+
+        QueueDirectoryDeletion(token.UserId);
+
+        var response = await _httpClient.DeleteAsync($"/object/{video.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
 }

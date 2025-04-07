@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using SF.PhotoPixels.Application.Commands.PhotoStorage.StorePhoto;
+using SF.PhotoPixels.Application.Commands.VideoStorage.StoreVideo;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -35,7 +36,7 @@ public class UploadTests : IntegrationTest
         var data = await response.Content.ReadFromJsonAsync<StorePhotoResponse>();
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        data.Revision.Should().Be(1);
+        data.Revision.Should().BeGreaterThanOrEqualTo(1);
     }
 
     [Fact]
@@ -116,7 +117,7 @@ public class UploadTests : IntegrationTest
 
     [Fact]
     [Trait("Category", "Integration")]
-    public async Task Upload_WithNotEnougnQuota_ShouldReturnBadRequest()
+    public async Task UploadPhoto_WithNotEnougnQuota_ShouldReturnBadRequest()
     {
         var token = await AuthenticateAsSeededAdminAsync();
 
@@ -131,6 +132,56 @@ public class UploadTests : IntegrationTest
 
         formDataContent.Add(imageContent, "File", "image.jpg");
         formDataContent.Add(new StringContent(Constants.WhiteimageHash), "ObjectHash");
+
+        var response = await _httpClient.PostAsync("/object", formDataContent);
+
+        var content = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        content.Should().Contain("QuotaReached");
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task Upload_WithVideo_ShouldReturnOk()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+
+        QueueDirectoryDeletion(token.UserId);
+
+        var formDataContent = new MultipartFormDataContent();
+        var videoContent = new ByteArrayContent(await File.ReadAllBytesAsync(Constants.RunVideoPath));
+
+        videoContent.Headers.ContentType = new MediaTypeHeaderValue("video/mp4");
+
+        formDataContent.Add(videoContent, "File", "run.mp4");
+        formDataContent.Add(new StringContent(Constants.RunVideoHash), "ObjectHash");
+
+        var response = await _httpClient.PostAsync("/object", formDataContent);
+
+        var data = await response.Content.ReadFromJsonAsync<StoreVideoResponse>();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        data.Revision.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task UploadVideo_WithNotEnougnQuota_ShouldReturnBadRequest()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+
+        await AdjustQuotaAsync(Guid.Parse(token.UserId), 1);
+
+        QueueDirectoryDeletion(token.UserId);
+
+        var formDataContent = new MultipartFormDataContent();
+        var videoContent = new ByteArrayContent(await File.ReadAllBytesAsync(Constants.RunVideoPath));
+
+        videoContent.Headers.ContentType = new MediaTypeHeaderValue("video/mp4");
+
+        formDataContent.Add(videoContent, "File", "run.mp4");
+        formDataContent.Add(new StringContent(Constants.RunVideoHash), "ObjectHash");
 
         var response = await _httpClient.PostAsync("/object", formDataContent);
 

@@ -20,8 +20,8 @@ public class Trash : EndpointBaseAsync
 
     [HttpDelete("/object/{objectid}/trash")]
     [SwaggerOperation(
-            Summary = "Trash a photo",
-            Description = "Trash a photo to the server",
+            Summary = "Trash a object",
+            Description = "Trash a object to the server",
             Tags = new[] { "Object operations" }),
     ]
     public override async Task<ActionResult<ObjectVersioningResponse>> HandleAsync([FromRoute] string objectid, CancellationToken cancellationToken = default)

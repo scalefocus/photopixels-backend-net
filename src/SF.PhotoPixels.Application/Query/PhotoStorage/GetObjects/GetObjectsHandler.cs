@@ -1,5 +1,4 @@
 ﻿using Marten;
-using Marten.Linq.SoftDeletes;
 using Mediator;
 using OneOf;
 using OneOf.Types;
@@ -7,6 +6,7 @@ using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Enums;
 using SF.PhotoPixels.Infrastructure;
+
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.GetObjects;
 
@@ -50,11 +50,11 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId))
                       AND (data->>'UserId')::uuid = :userId
-                ORDER BY data->>'DateCreated' desc ,id desc
+                ORDER BY data->>'DateCreated' desc, id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }
 
-        var result = await _session.QueryAsync<ObjectProperties>(sqlQuery, 
+        var result = await _session.QueryAsync<ObjectProperties>(sqlQuery,
                             new { pageSize = request.PageSize + 1, timeNow = utcNow, lastId = request.LastId, userId = _executionContextAccessor.UserId });
         var objectProperties = result.ToList();
 
@@ -76,7 +76,6 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
 
             properties.Add(thumbnailProperty);
         }
-
 
         var lastId = result.Count < request.PageSize ? "" : objectProperties[^1].Id;
         return new GetObjectsResponse() { Properties = properties, LastId = lastId };

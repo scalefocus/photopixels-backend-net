@@ -52,4 +52,23 @@ public class GetObjectsTests : IntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task GetObjects_WithValidVideo_ShouldReturnOk()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+        var video = await UploadVideoAsync();
+
+        QueueDirectoryDeletion(token.UserId);
+
+        var response = await _httpClient.GetAsync($"/objects?PageSize=3");
+
+        var contents = await response.Content.ReadFromJsonAsync<GetObjectsResponse>();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        contents.Properties.Should().ContainSingle();
+        contents.Properties.First().Id.Should().Be(video.Id);
+    }
+
 }

@@ -34,6 +34,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Update="Assets\run.mp4">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	  <None Update="Assets\whiteimage.jpg">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
