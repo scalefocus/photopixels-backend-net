@@ -81,7 +81,7 @@ public sealed class FormattedImage : IDisposable, IStorageItem
         return new FormattedImage(_image, WebpFormat.Instance);
     }
 
-    public DateTime GetDateTime()
+    public DateTimeOffset GetDateTime()
     {
         var datetime = GetOriginalDateTime();
 
@@ -100,7 +100,7 @@ public sealed class FormattedImage : IDisposable, IStorageItem
         return DateTime.UtcNow;
     }
 
-    public DateTime? GetOriginalDateTime()
+    public DateTimeOffset? GetOriginalDateTime()
     {
         var exifProfile = _image.Metadata.ExifProfile;
 
@@ -117,7 +117,7 @@ public sealed class FormattedImage : IDisposable, IStorageItem
         return GetDateTimeInternal(exifValue.Value);
     }
 
-    public DateTime? GetCreatedDateTime()
+    public DateTimeOffset? GetCreatedDateTime()
     {
         var exifProfile = _image.Metadata.ExifProfile;
 
@@ -134,16 +134,16 @@ public sealed class FormattedImage : IDisposable, IStorageItem
         return GetDateTimeInternal(exifValue.Value);
     }
 
-    private DateTime? GetDateTimeInternal(string? dateString)
+    private DateTimeOffset? GetDateTimeInternal(string? dateString)
     {
         if (string.IsNullOrWhiteSpace(dateString))
         {
             return null;
         }
 
-        if (DateTime.TryParseExact(dateString, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var dateTime))
+        if (DateTimeOffset.TryParseExact(dateString, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var dateTimeOffset))
         {
-            return dateTime.ToUniversalTime();
+            return dateTimeOffset.ToUniversalTime();
         }
 
         if (DateTime.TryParse(dateString, out var value))

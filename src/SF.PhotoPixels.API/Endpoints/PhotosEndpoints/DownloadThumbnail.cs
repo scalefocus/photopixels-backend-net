@@ -19,8 +19,8 @@ public class DownloadThumbnail : EndpointBaseAsync
 
     [HttpGet("/object/{ObjectId}/thumbnail")]
     [SwaggerOperation(
-        Summary = "Download a thumbnail of a photo",
-        Description = "Downloads a thumbnail of a photo from the server",
+        Summary = "Download a thumbnail of a object",
+        Description = "Downloads a thumbnail of a object from the server",
         Tags = new[] { "Object operations" })
     ]
     public override async Task<ActionResult<FileStream>> HandleAsync([FromRoute] LoadThumbnailRequest request, CancellationToken cancellationToken = default)

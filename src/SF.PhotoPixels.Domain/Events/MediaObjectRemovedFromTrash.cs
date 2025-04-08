@@ -1,5 +1,5 @@
 namespace SF.PhotoPixels.Domain.Events
 {
 
-    public record MediaObjectRemovedFromTrash(string ObjectId);
+    public record MediaObjectRemovedFromTrash(string ObjectId, DateTimeOffset removedFromTrashAt);
 }

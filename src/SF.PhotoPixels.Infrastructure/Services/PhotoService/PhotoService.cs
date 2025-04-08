@@ -45,14 +45,14 @@ public class PhotoService : IPhotoService
             Height = image.Height,
             Width = image.Width,
             Name = filename,
-            Timestamp = new DateTimeOffset(image.GetDateTime()).ToUnixTimeMilliseconds(),
+            Timestamp = image.GetDateTime().ToUnixTimeMilliseconds(),
             Hash = fingerprint,
             UserId = userId,
             SizeInBytes = usedQuota,
             AppleCloudId = AppleCloudId,
             AndroidCloudId = AndroidCloudId,
         };
-        
+
         return await _objectRepository.AddEvent(userId, evt, cancellationToken);
     }
 
