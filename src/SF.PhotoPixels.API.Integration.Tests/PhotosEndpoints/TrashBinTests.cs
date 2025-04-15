@@ -49,35 +49,119 @@ public class TrashBinTests : IntegrationTest
         content.Should().NotContain(data.Id.ToString());
     }
 
-    // [Fact]
-    // [Trait("Category", "Integration")]
-    // public async Task Upload_WithNoAuth_ShouldReturnUnauthorized()
-    // {
-    //     var response = await _httpClient.PostAsync("/object", null);
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task Trash_WithNoAuth_ShouldReturnUnauthorized()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+        QueueDirectoryDeletion(token.UserId);
 
-    //     response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    // }
+        //Upload item
+        var formDataContent = new MultipartFormDataContent();
+        var imageContent = new ByteArrayContent(File.ReadAllBytes(Constants.WhiteimagePath));
+        imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        formDataContent.Add(imageContent, "File", "image.jpg");
+        formDataContent.Add(new StringContent(Constants.WhiteimageHash), "ObjectHash");
+        var response = await _httpClient.PostAsync("/object", formDataContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var data = await response.Content.ReadFromJsonAsync<StorePhotoResponse>();
 
-    // [Fact]
-    // [Trait("Category", "Integration")]
-    // public async Task Upload_WithMismathcedHash_ShouldReturnBadRequest()
-    // {
-    //     var token = await AuthenticateAsSeededAdminAsync();
+        //get object - confirm object is uploaded
+        var getObject = await _httpClient.GetAsync($"/objects?pageSize=3");
+        getObject.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await getObject.Content.ReadAsStringAsync();
+        content.Should().Contain(data.Id.ToString());
 
-    //     QueueDirectoryDeletion(token.UserId);
+        //trash object - confirm trash cannot be executed without authorization
+        await RevokeAuthentication();
+        var trashResponse = await _httpClient.DeleteAsync($"/object/{data.Id}/trash");
+        trashResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 
-    //     var formDataContent = new MultipartFormDataContent();
-    //     var imageContent = new ByteArrayContent(File.ReadAllBytes(Constants.WhiteimagePath));
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task Trash_Untrash_ShouldBeOk()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+        QueueDirectoryDeletion(token.UserId);
 
-    //     imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        //Upload item
+        var formDataContent = new MultipartFormDataContent();
+        var imageContent = new ByteArrayContent(File.ReadAllBytes(Constants.WhiteimagePath));
+        imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        formDataContent.Add(imageContent, "File", "image.jpg");
+        formDataContent.Add(new StringContent(Constants.WhiteimageHash), "ObjectHash");
+        var response = await _httpClient.PostAsync("/object", formDataContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var data = await response.Content.ReadFromJsonAsync<StorePhotoResponse>();
 
-    //     formDataContent.Add(imageContent, "File", "image.jpg");
-    //     formDataContent.Add(new StringContent("wrong_hash"), "ObjectHash");
+        //get object - confirm object is uploaded
+        var getObject = await _httpClient.GetAsync($"/objects?pageSize=3");
+        getObject.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await getObject.Content.ReadAsStringAsync();
+        content.Should().Contain(data.Id.ToString());
 
-    //     var response = await _httpClient.PostAsync("/object", formDataContent);
+        //trash object - confirm trash cannot be executed without authorization
+        var trashResponse = await _httpClient.DeleteAsync($"/object/{data.Id}/trash");
+        trashResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-    //     response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    // }
+        //get objects - confirm object IS NOT returned in object list.
+        getObject = await _httpClient.GetAsync($"/objects?pageSize=3");
+        getObject.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        content = await getObject.Content.ReadAsStringAsync();
+        content.Should().NotContain(data.Id.ToString());
+
+        //now undelete object - restore it
+        var untrashContent = JsonContent.Create(new { Id = data.Id.ToString() });
+        var untrashResponse = await _httpClient.PostAsync($"/object/trash/remove", untrashContent);
+        untrashResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //get objects - confirm object IS returned in object list.
+        getObject = await _httpClient.GetAsync($"/objects?pageSize=3");
+        getObject.StatusCode.Should().Be(HttpStatusCode.OK);
+        content = await getObject.Content.ReadAsStringAsync();
+        content.Should().Contain(data.Id.ToString());
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task Trash_Untrash_NoAuth_ShouldReturnUnauthorized()
+    {
+        var token = await AuthenticateAsSeededAdminAsync();
+        QueueDirectoryDeletion(token.UserId);
+
+        //Upload item
+        var formDataContent = new MultipartFormDataContent();
+        var imageContent = new ByteArrayContent(File.ReadAllBytes(Constants.WhiteimagePath));
+        imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        formDataContent.Add(imageContent, "File", "image.jpg");
+        formDataContent.Add(new StringContent(Constants.WhiteimageHash), "ObjectHash");
+        var response = await _httpClient.PostAsync("/object", formDataContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var data = await response.Content.ReadFromJsonAsync<StorePhotoResponse>();
+
+        //get object - confirm object is uploaded
+        var getObject = await _httpClient.GetAsync($"/objects?pageSize=3");
+        getObject.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await getObject.Content.ReadAsStringAsync();
+        content.Should().Contain(data.Id.ToString());
+
+        //trash object - confirm trash cannot be executed without authorization
+        var trashResponse = await _httpClient.DeleteAsync($"/object/{data.Id}/trash");
+        trashResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //get objects - confirm object IS NOT returned in object list.
+        getObject = await _httpClient.GetAsync($"/objects?pageSize=3");
+        getObject.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        content = await getObject.Content.ReadAsStringAsync();
+        content.Should().NotContain(data.Id.ToString());
+
+        //now undelete object - try to restore it without authorization
+        await RevokeAuthentication();
+        var untrashContent = JsonContent.Create(new { Id = data.Id.ToString() });
+        var untrashResponse = await _httpClient.PostAsync($"/object/trash/remove", untrashContent);
+        untrashResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 
     // [Fact]
     // [Trait("Category", "Integration")]
