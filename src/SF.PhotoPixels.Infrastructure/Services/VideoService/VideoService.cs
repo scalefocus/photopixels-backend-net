@@ -35,6 +35,7 @@ public class VideoService : IVideoService
     public async Task<long> StoreObjectCreatedEventAsync(RawVideo rawVideo, long usedQuota, string filename, Guid userId, CancellationToken cancellationToken, string? AppleCloudId = null, string? AndroidCloudId = null)
     {
         var fingerprint = await rawVideo.GetSafeFingerprintAsync();
+        var hash = Convert.ToBase64String(await rawVideo.GetHashAsync());
         var objectId = new ObjectId(userId, fingerprint);
         var video = await rawVideo.ToFormattedVideoAsync(cancellationToken);
         var extension = video.GetExtension(filename);
@@ -49,6 +50,7 @@ public class VideoService : IVideoService
             Name = video.GetName(filename),
             Timestamp = new DateTimeOffset(video.GetDateTime()).ToUnixTimeMilliseconds(),
             Hash = fingerprint,
+            OriginalHash = hash,
             UserId = userId,
             SizeInBytes = usedQuota,
             AppleCloudId = AppleCloudId,

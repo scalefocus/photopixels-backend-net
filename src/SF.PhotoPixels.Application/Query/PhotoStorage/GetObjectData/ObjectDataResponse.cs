@@ -19,4 +19,5 @@ public class ObjectDataResponse
     public int Height { get; set; }
 
     public DateTimeOffset DateCreated { get; set; }
+    public string OriginalHash { get; internal set; }
 }

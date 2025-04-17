@@ -62,6 +62,7 @@ public class GetObjectDataHandler : IQueryHandler<GetObjectDataRequest, QueryRes
             Thumbnail = await streamReader.ReadToEndAsync(cancellationToken),
             ContentType = metadata.MimeType,
             Hash = metadata.Hash,
+            OriginalHash = metadata.OriginalHash,
             AndroidCloudId = metadata.AndroidCloudId,
             AppleCloudId = metadata.AppleCloudId,
             Width = metadata.Width,
