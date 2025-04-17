@@ -21,7 +21,10 @@ public class ObjectProperties : ISoftDeleted
 
     public required int Width { get; set; }
 
+    // This is used in the sens of file fingerprinting and is not needed by the FEs
     public string Hash { get; set; }
+
+    public string OriginalHash { get; set; }
 
     public Guid UserId { get; set; }
 
@@ -32,7 +35,7 @@ public class ObjectProperties : ISoftDeleted
     public long SizeInBytes { get; set; }
 
     public bool Deleted { get; set; }
- 
+
     [SoftDeletedAtMetadata]
     public DateTimeOffset? DeletedAt { get; set; }
 

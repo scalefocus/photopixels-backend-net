@@ -66,6 +66,7 @@ public class GetObjectDataListHandler : IRequestHandler<GetObjectDataListRequest
                     Thumbnail = await streamReader.ReadToEndAsync(cancellationToken),
                     ContentType = obj.MimeType ?? string.Empty,
                     Hash = obj.Hash,
+                    OriginalHash = obj.OriginalHash,
                     AndroidCloudId = obj.AndroidCloudId,
                     AppleCloudId = obj.AppleCloudId,
                     Width = obj.Width,
