@@ -21,7 +21,7 @@ public class ObjectProperties : ISoftDeleted
 
     public required int Width { get; set; }
 
-    // This is used in the sens of file fingerprinting and is not needed by the FEs
+    // This is used in the sense of file fingerprinting and is not needed by the FEs
     public string Hash { get; set; }
 
     public string OriginalHash { get; set; }
