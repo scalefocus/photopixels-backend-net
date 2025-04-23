@@ -25,4 +25,6 @@ public record MediaObjectCreated
     public Guid UserId { get; set; }
 
     public long SizeInBytes { get; set; }
+
+    public string? OriginalHash { get; set; }
 }

@@ -53,7 +53,6 @@ public class LoadThumbnailHandler : IQueryHandler<LoadThumbnailRequest, QueryRes
         var thumbnail = await LoadPhoto(metadata.GetThumbnailName(thumbnailExtension), cancellationToken);
 
         var formattedImage = await FormattedImage.LoadAsync(thumbnail, cancellationToken);
-        var ms = new MemoryStream();
         await formattedImage.SaveAsync(_memoryStream, cancellationToken);
 
         _memoryStream.Seek(0, SeekOrigin.Begin);

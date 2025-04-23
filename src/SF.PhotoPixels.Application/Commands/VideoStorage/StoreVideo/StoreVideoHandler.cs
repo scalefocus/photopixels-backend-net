@@ -29,8 +29,8 @@ public class StoreVideoHandler : IRequestHandler<StoreVideoRequest, OneOf<IMedia
     {
         using var rawVideo = new RawVideo(request.File.OpenReadStream(), request.File.FileName);
 
-        var videoHash = Convert.ToBase64String(await rawVideo.GetHashAsync());
-        if (videoHash != request.ObjectHash)
+        var videoOriginalHash = Convert.ToBase64String(await rawVideo.GetHashAsync());
+        if (videoOriginalHash != request.ObjectHash)
         {
             return new ValidationError(nameof(request.ObjectHash), "Object hash does not match");
         }
@@ -42,7 +42,7 @@ public class StoreVideoHandler : IRequestHandler<StoreVideoRequest, OneOf<IMedia
             return new Duplicate();
         }
 
-        var user = _session.Load<Domain.Entities.User>(_executionContextAccessor.UserId);
+        var user = await _session.LoadAsync<Domain.Entities.User>(_executionContextAccessor.UserId);
         if (user == null)
         {
             return new ValidationError("UserNotFound", "User not found");
