@@ -24,7 +24,7 @@ public class ObjectProperties : ISoftDeleted
     // This is used in the sense of file fingerprinting and is not needed by the FEs
     public string Hash { get; set; }
 
-    public string OriginalHash { get; set; }
+    public string? OriginalHash { get; set; }
 
     public Guid UserId { get; set; }
 
