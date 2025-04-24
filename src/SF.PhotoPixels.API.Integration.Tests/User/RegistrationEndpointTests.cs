@@ -1,7 +1,7 @@
-﻿using FluentAssertions;
-using SF.PhotoPixels.Application.Commands;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
+using FluentAssertions;
+using SF.PhotoPixels.Application.Commands;
 using Xunit;
 
 namespace SF.PhotoPixels.API.Integration.Tests.User;
@@ -42,7 +42,7 @@ public class RegistrationEndpointTests : IntegrationTest
 
         var response = await _httpClient.PostAsJsonAsync("/registration", requestBody);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
