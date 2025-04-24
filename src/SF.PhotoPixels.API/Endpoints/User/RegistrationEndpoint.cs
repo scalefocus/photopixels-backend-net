@@ -1,6 +1,7 @@
 ﻿using Ardalis.ApiEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using SF.PhotoPixels.API.Security.RequireAdminRole;
 using SF.PhotoPixels.Application.Commands;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -15,6 +16,7 @@ public class RegistrationEndpoint : EndpointBaseAsync.WithRequest<RegistrationRe
         _mediator = mediator;
     }
 
+    [RequireAdminRole]
     [HttpPost("/registration")]
     [SwaggerOperation(
             Summary = "Disable registration of new users",
