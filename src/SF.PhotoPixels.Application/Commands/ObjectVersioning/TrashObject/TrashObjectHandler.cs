@@ -1,9 +1,7 @@
 using Marten;
-using Marten.Linq.SoftDeletes;
 using Mediator;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Commands.ObjectVersioning.TrashObject;
-using SF.PhotoPixels.Application.Commands.ObjectVersioning.UpdateObject;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
