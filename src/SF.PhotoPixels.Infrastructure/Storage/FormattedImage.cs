@@ -153,8 +153,8 @@ public sealed class FormattedImage : IDisposable, IStorageItem
         if (!string.IsNullOrWhiteSpace(offsetTimeOriginal))
         {
             // return new DateTimeOffset(DateTimeOffset.Parse(offsetTimeOriginal).Offset.Ticks, DateTimeOffset.Parse(dateString));
-            return new DateTimeOffset(DateTime.Parse(dateString, CultureInfo.InvariantCulture),
-            TimeSpan.FromTicks(DateTimeOffset.Parse(offsetTimeOriginal, CultureInfo.InvariantCulture).Offset.Ticks));
+            return new DateTimeOffset(DateTime.ParseExact(dateString, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture),
+                                      TimeSpan.FromTicks(DateTimeOffset.Parse(offsetTimeOriginal, CultureInfo.InvariantCulture).Offset.Ticks));
         }
 
         if (DateTimeOffset.TryParseExact(dateString, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var dateTimeOffset))
