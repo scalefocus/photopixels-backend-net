@@ -2,7 +2,6 @@
 using System.Security.Cryptography;
 using SF.PhotoPixels.Domain.Utils;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Webp;
@@ -63,8 +62,13 @@ public sealed class FormattedImage : IDisposable, IStorageItem
     public FormattedImage GetThumbnail(int width = 160, int height = 160)
     {
         var transform = Transform(new Size(width, height));
+        var newimage = _image.Clone(context => context.Resize(new ResizeOptions
+        {
+            Size = transform,
+            Mode = ResizeMode.Max,
+        }));
 
-        _image.Mutate(context =>
+        newimage.Mutate(context =>
         {
             context.Resize(new ResizeOptions
             {
@@ -73,12 +77,12 @@ public sealed class FormattedImage : IDisposable, IStorageItem
             });
 
             // Reduce the size of the file by clearing metadata
-            _image.Metadata.ExifProfile = null;
-            _image.Metadata.IptcProfile = null;
-            _image.Metadata.XmpProfile = null;
+            newimage.Metadata.ExifProfile = null;
+            newimage.Metadata.IptcProfile = null;
+            newimage.Metadata.XmpProfile = null;
         });
 
-        return new FormattedImage(_image, WebpFormat.Instance);
+        return new FormattedImage(newimage, WebpFormat.Instance);
     }
 
     public DateTimeOffset GetDateTime()
@@ -102,6 +106,7 @@ public sealed class FormattedImage : IDisposable, IStorageItem
 
     public DateTimeOffset? GetOriginalDateTime()
     {
+        //_image.Frames[0].Metadata.ExifProfile
         var exifProfile = _image.Metadata.ExifProfile;
 
         if (exifProfile is null)
@@ -109,12 +114,14 @@ public sealed class FormattedImage : IDisposable, IStorageItem
             return null;
         }
 
-        if (!exifProfile.TryGetValue(ExifTag.DateTimeOriginal, out var exifValue))
+        if (!exifProfile.TryGetValue(ExifTag.DateTimeOriginal, out var dateTimeOriginal))
         {
             return null;
         }
 
-        return GetDateTimeInternal(exifValue.Value);
+        exifProfile.TryGetValue(ExifTag.OffsetTimeOriginal, out var offsetTimeOriginal);
+
+        return GetDateTimeInternal(dateTimeOriginal.Value, offsetTimeOriginal?.Value);
     }
 
     public DateTimeOffset? GetCreatedDateTime()
@@ -131,14 +138,23 @@ public sealed class FormattedImage : IDisposable, IStorageItem
             return null;
         }
 
-        return GetDateTimeInternal(exifValue.Value);
+        exifProfile.TryGetValue(ExifTag.OffsetTimeOriginal, out var offsetTimeOriginal);
+
+        return GetDateTimeInternal(exifValue.Value, offsetTimeOriginal?.Value);
     }
 
-    private DateTimeOffset? GetDateTimeInternal(string? dateString)
+    private DateTimeOffset? GetDateTimeInternal(string? dateString, string? offsetTimeOriginal)
     {
         if (string.IsNullOrWhiteSpace(dateString))
         {
             return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(offsetTimeOriginal))
+        {
+            // return new DateTimeOffset(DateTimeOffset.Parse(offsetTimeOriginal).Offset.Ticks, DateTimeOffset.Parse(dateString));
+            return new DateTimeOffset(DateTime.Parse(dateString, CultureInfo.InvariantCulture),
+            TimeSpan.FromTicks(DateTimeOffset.Parse(offsetTimeOriginal, CultureInfo.InvariantCulture).Offset.Ticks));
         }
 
         if (DateTimeOffset.TryParseExact(dateString, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var dateTimeOffset))
@@ -170,7 +186,6 @@ public sealed class FormattedImage : IDisposable, IStorageItem
 
             return Convert.ToUInt16(orientation.Value);
         }
-
         return ExifOrientationMode.Unknown;
     }
 
