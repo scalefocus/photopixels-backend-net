@@ -150,11 +150,18 @@ public sealed class FormattedImage : IDisposable, IStorageItem
             return null;
         }
 
+        if (!DateTime.TryParseExact(dateString, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var dateTime))
+        {
+            return null;
+        }
+
+        // If the offset is provided, parse it and combine with the date
         if (!string.IsNullOrWhiteSpace(offsetTimeOriginal))
         {
-            // return new DateTimeOffset(DateTimeOffset.Parse(offsetTimeOriginal).Offset.Ticks, DateTimeOffset.Parse(dateString));
-            return new DateTimeOffset(DateTime.ParseExact(dateString, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture),
-                                      TimeSpan.FromTicks(DateTimeOffset.Parse(offsetTimeOriginal, CultureInfo.InvariantCulture).Offset.Ticks));
+            var offset = TimeSpan.Parse(offsetTimeOriginal.Substring(1), CultureInfo.InvariantCulture);
+            return offsetTimeOriginal.StartsWith('-')
+                    ? new DateTimeOffset(dateTime, -offset)
+                    : new DateTimeOffset(dateTime, offset);
         }
 
         if (DateTimeOffset.TryParseExact(dateString, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var dateTimeOffset))
