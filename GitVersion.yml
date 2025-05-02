@@ -35,9 +35,10 @@ branches:
     is-main-branch: false
     pre-release-weight: 0
 
+
   release:
     label: beta
-    increment: None
+    increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
   
