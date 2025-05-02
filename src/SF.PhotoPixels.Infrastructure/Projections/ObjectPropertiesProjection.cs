@@ -44,7 +44,7 @@ public class ObjectPropertiesProjection : EventProjection
         var objectProperties = new ObjectProperties(mediaObjectCreated.UserId, mediaObjectCreated.Hash)
         {
             Name = mediaObjectCreated.Name,
-            DateCreated = DateTimeOffset.FromUnixTimeMilliseconds(mediaObjectCreated.Timestamp),
+            DateCreated = DateTimeOffset.FromUnixTimeMilliseconds(mediaObjectCreated.Timestamp).ToUniversalTime(),
             Extension = mediaObjectCreated.Extension,
             MimeType = mediaObjectCreated.MimeType,
             Height = mediaObjectCreated.Height,
