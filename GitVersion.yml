@@ -37,7 +37,7 @@ branches:
 
   release:
     label: beta
-    # increment: Patch
+    increment: None
     prevent-increment:
       when-current-commit-tagged: true
   
