@@ -34,7 +34,6 @@ branches:
     is-release-branch: false
     is-main-branch: false
     pre-release-weight: 0
-    assembly-informational-format: '{Major}.{Minor}.{Patch}-{PreReleaseTag}'
 
 
   release:
