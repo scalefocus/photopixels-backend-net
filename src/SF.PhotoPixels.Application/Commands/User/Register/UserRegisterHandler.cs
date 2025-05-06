@@ -22,29 +22,31 @@ namespace SF.PhotoPixels.Application.Commands.User.Register
 
         public async ValueTask<OneOf<Success, ValidationError>> Handle(UserRegisterRequest request, CancellationToken cancellationToken)
         {
-            var appConfig = await _configurationRepository.GetConfiguration();
+			if (string.Equals(request.Email, request.Name, StringComparison.InvariantCultureIgnoreCase))
+			{
+				return new ValidationError("IllegalUserInput", "User input must differ from the email address");
+			}
+
+			var appConfig = await _configurationRepository.GetConfiguration();
             if (!appConfig.GetValue<bool>(ConfigurationConstants.Registration))
             {
                 return new ValidationError("RegistrationIsDisabled", "Cannot register new user until registration is enabled by admin!");
             }
 
-            var result = await _userManager.CreateAsync(MapRequestToUser(request), request.Password);
+			var result = await _userManager.CreateAsync(MapRequestToUser(request), request.Password);
 
-            if (result.Succeeded)
-            {
-                return new Success();
-            }
+			return result.Succeeded ? 
+                new Success() : 
+                result.CreateValidationError();
+		}
 
-            return result.CreateValidationError();
-        }
-
-        private static Domain.Entities.User MapRequestToUser(UserRegisterRequest request)
+		private static Domain.Entities.User MapRequestToUser(UserRegisterRequest request)
         {
             return new Domain.Entities.User
             {
                 Name = request.Name,
                 Email = request.Email,
-                UserName = request.Email,
+                UserName = request.Name,
                 Role = Role.Contributor,
                 EmailConfirmed = true,
             };
