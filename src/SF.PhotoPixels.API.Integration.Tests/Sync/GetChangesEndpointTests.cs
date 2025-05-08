@@ -1,7 +1,7 @@
-﻿using FluentAssertions;
-using SF.PhotoPixels.Application.Query.StateChanges;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
+using FluentAssertions;
+using SF.PhotoPixels.Application.Query.StateChanges;
 using Xunit;
 
 
@@ -45,7 +45,11 @@ public class GetChangesEndpointTests : IntegrationTest
 
         var response = await _httpClient.GetAsync($"/revision/{revisionId}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var data = await response.Content.ReadFromJsonAsync<StateChangesResponseDetails>();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        data.Should().NotBeNull();
+        data.Added.Values.Should().HaveCount(0);
     }
 
     [Fact]
