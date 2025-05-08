@@ -6,6 +6,7 @@ using SF.PhotoPixels.Application.Security;
 using SF.PhotoPixels.Domain.Constants;
 using SF.PhotoPixels.Domain.Enums;
 using SF.PhotoPixels.Domain.Repositories;
+using SF.PhotoPixels.Domain.Utils;
 
 namespace SF.PhotoPixels.Application.Commands.User.Register
 {
@@ -22,18 +23,23 @@ namespace SF.PhotoPixels.Application.Commands.User.Register
 
         public async ValueTask<OneOf<Success, ValidationError>> Handle(UserRegisterRequest request, CancellationToken cancellationToken)
         {
-			if (string.Equals(request.Email, request.Name, StringComparison.InvariantCultureIgnoreCase))
-			{
-				return new ValidationError("IllegalUserInput", "User input must differ from the email address");
-			}
-
-			var appConfig = await _configurationRepository.GetConfiguration();
+            var appConfig = await _configurationRepository.GetConfiguration();
             if (!appConfig.GetValue<bool>(ConfigurationConstants.Registration))
             {
                 return new ValidationError("RegistrationIsDisabled", "Cannot register new user until registration is enabled by admin!");
             }
 
-			var result = await _userManager.CreateAsync(MapRequestToUser(request), request.Password);
+            if (request.Name.IsValidEmail())
+            {
+                return new ValidationError("IllegalUserInput", "User input cannot be an email address");
+            }
+
+            if (!request.Email.IsValidEmail())
+            {
+                return new ValidationError("IllegalEmailInput", "Email input must be an email address");
+            }
+
+            var result = await _userManager.CreateAsync(MapRequestToUser(request), request.Password);
 
 			return result.Succeeded ? 
                 new Success() : 

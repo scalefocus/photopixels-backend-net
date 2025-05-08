@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using OneOf;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Security;
+using SF.PhotoPixels.Domain.Utils;
 
 namespace SF.PhotoPixels.Application.Commands.User.Register
 {
@@ -17,12 +18,17 @@ namespace SF.PhotoPixels.Application.Commands.User.Register
 
 		public async ValueTask<OneOf<Success, ValidationError>> Handle(AdminRegisterRequest request, CancellationToken cancellationToken)
 		{
-			if (string.Equals(request.Email, request.Name, StringComparison.InvariantCultureIgnoreCase))
-			{
-				return new ValidationError("IllegalUserInput", "User input must differ from the email address");
-			}
+            if (request.Name.IsValidEmail())
+            {
+                return new ValidationError("IllegalUserInput", "User input cannot be an email address");
+            }
 
-			var result = await _userManager.CreateAsync(MapRequestToUser(request), request.Password);
+            if (!request.Email.IsValidEmail())
+            {
+                return new ValidationError("IllegalEmailInput", "Email input must be an email address");
+            }
+
+            var result = await _userManager.CreateAsync(MapRequestToUser(request), request.Password);
 
 			return result.Succeeded ? 
 				new Success() : 
@@ -40,5 +46,6 @@ namespace SF.PhotoPixels.Application.Commands.User.Register
 				EmailConfirmed = true,
 			};
 		}
-	}
+
+    }
 }

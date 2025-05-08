@@ -42,8 +42,8 @@ namespace SF.PhotoPixels.API.Integration.Tests.User
         {
             var testData = new List<AdminRegisterRequest>()
             {
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@ssword1", Role = Role.Contributor },
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@ssword1", Role = Role.Admin },
+                new (){ Email = "testUser1@test.com", Name = "testUser1", Password = "P@ssword1", Role = Role.Contributor },
+                new (){ Email = "testUser2@test.com", Name = "testUser2", Password = "P@ssword1", Role = Role.Admin },
             };
 
             return testData.Select(request => new object[] { request });
@@ -58,22 +58,22 @@ namespace SF.PhotoPixels.API.Integration.Tests.User
                 //Empty Email
                 new (){ Email = "", Name = "testUser@test.com", Password = "P@ssword1", Role = Role.Contributor },
                 //Password missing a number
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@ssword!", Role = Role.Contributor },
+                new (){ Email = "testUser@test.com", Name = "testUser", Password = "P@ssword!", Role = Role.Contributor },
                 //Password less than 8 symbols
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@s1", Role = Role.Contributor },
+                new (){ Email = "testUser@test.com", Name = "testUser", Password = "P@s1", Role = Role.Contributor },
                 //Empty Password
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "", Role = Role.Contributor },
+                new (){ Email = "testUser@test.com", Name = "testUser", Password = "", Role = Role.Contributor },
 
                 //Admin role
 
                 //Empty Email
-                new (){ Email = "", Name = "testUser@test.com", Password = "P@ssword1", Role = Role.Admin },
+                new (){ Email = "", Name = "testUser", Password = "P@ssword1", Role = Role.Admin },
                 //Password missing a number
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@ssword!", Role = Role.Admin },
+                new (){ Email = "testUser@test.com", Name = "testUser", Password = "P@ssword!", Role = Role.Admin },
                 //Password less than 8 symbols
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@s1", Role = Role.Admin },
+                new (){ Email = "testUser@test.com", Name = "testUser", Password = "P@s1", Role = Role.Admin },
                 //Empty Password
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "", Role = Role.Admin },
+                new (){ Email = "testUser@test.com", Name = "testUser", Password = "", Role = Role.Admin },
             };
 
             return testData.Select(request => new object[] { request });
