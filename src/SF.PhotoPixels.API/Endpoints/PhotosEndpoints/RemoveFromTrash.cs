@@ -30,7 +30,7 @@ public class RemoveFromTrash : EndpointBaseAsync
 
         return result.Match<ActionResult<ObjectVersioningResponse>>(
             response => new OkObjectResult(response),
-            e => new BadRequestObjectResult(e)
+            _ => new NotFoundResult()
         );
     }
 }
