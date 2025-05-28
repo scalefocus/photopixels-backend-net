@@ -43,11 +43,11 @@ public class VideoService : IVideoService
         var evt = new MediaObjectCreated
         {
             ObjectId = objectId,
-            Extension = video.GetExtension(filename),
+            Extension = extension,
             MimeType = video.GetMimeType(extension),
             Height = video.Height,
             Width = video.Width,
-            Name = video.GetName(filename),
+            Name = filename,
             Timestamp = new DateTimeOffset(video.GetDateTime()).ToUnixTimeMilliseconds(),
             Hash = fingerprint,
             OriginalHash = hash,
