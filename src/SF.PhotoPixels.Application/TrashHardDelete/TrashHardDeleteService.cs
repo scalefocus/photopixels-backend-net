@@ -27,6 +27,10 @@ public class TrashHardDeleteService : ITrashHardDeleteService
 
     public async Task<IEnumerable<string>> EmptyTrashBin(Guid userid)
     {
+        if (userid != Guid.Empty)
+        {
+            return new List<string>();
+        }
         var _applicationConfiguration = await _applicationConfigurationRepository.GetConfiguration();
 
         var _daysToDelayHardDeleteConfigValue = _applicationConfiguration.GetValue<int>("TrashHardDeleteConfiguration.DaysToDelayHardDelete");
@@ -37,12 +41,7 @@ public class TrashHardDeleteService : ITrashHardDeleteService
         var nowDate = DateOnly.FromDateTime(DateTime.UtcNow);
         var treshholdDate = new DateTimeOffset(nowDate.Year, nowDate.Month, nowDate.Day, 0, 0, 0, TimeSpan.Zero).AddDays(-_daysToDelayHardDelete);
         var itemsToRemoveExpr = _session.Query<ObjectProperties>()
-                                                   .Where(x => x.IsDeleted()
-                                                               && x.DeletedAt < treshholdDate);
-        if (userid != Guid.Empty)
-        {
-            itemsToRemoveExpr = itemsToRemoveExpr.Where(x => x.UserId == userid);
-        }
+                                                   .Where(x => x.IsDeleted() && x.UserId == userid);
 
         _logger.LogInformation($"Emptying trash bin for {userid} done");
         return await itemsToRemoveExpr.Select(x => x.Id).ToListAsync();
