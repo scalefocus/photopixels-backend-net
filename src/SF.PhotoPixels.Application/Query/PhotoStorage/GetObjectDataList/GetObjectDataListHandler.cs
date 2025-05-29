@@ -9,6 +9,7 @@ using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Application.PrivacyMode;
 using SF.PhotoPixels.Application.Query.PhotoStorage.GetObjectData;
 using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Domain.Utils;
 using SF.PhotoPixels.Infrastructure;
 using SF.PhotoPixels.Infrastructure.Storage;
 
@@ -55,10 +56,16 @@ public class GetObjectDataListHandler : IRequestHandler<GetObjectDataListRequest
             try
             {
                 var thumbnailExtension = Constants.SupportedVideoFormats.Contains($".{obj.Extension}") ? "png" : "webp";
-                var photo = await LoadPhoto(obj.GetThumbnailName(thumbnailExtension), cancellationToken);
+                var thumbnailStream = await LoadPhoto(obj.GetThumbnailName(thumbnailExtension), cancellationToken);
 
-                await using var base64Stream = new CryptoStream(photo, new ToBase64Transform(), CryptoStreamMode.Read);
+
+                await using var base64Stream = new CryptoStream(thumbnailStream, new ToBase64Transform(), CryptoStreamMode.Read);
                 using var streamReader = new StreamReader(base64Stream);
+
+                if (string.IsNullOrEmpty(obj.OriginalHash))
+                {
+                    await UpdateItemHash(obj, cancellationToken);
+                }
 
                 var thumbnail = new ObjectDataResponse
                 {
@@ -66,6 +73,7 @@ public class GetObjectDataListHandler : IRequestHandler<GetObjectDataListRequest
                     Thumbnail = await streamReader.ReadToEndAsync(cancellationToken),
                     ContentType = obj.MimeType ?? string.Empty,
                     Hash = obj.Hash,
+                    OriginalHash = obj.OriginalHash,
                     AndroidCloudId = obj.AndroidCloudId,
                     AppleCloudId = obj.AppleCloudId,
                     Width = obj.Width,
@@ -82,6 +90,17 @@ public class GetObjectDataListHandler : IRequestHandler<GetObjectDataListRequest
         }
 
         return response;
+    }
+
+    private async Task UpdateItemHash(ObjectProperties obj, CancellationToken cancellationToken)
+    {
+        var itemStream = await _objectStorage.LoadObjectAsync(obj.UserId, $"{obj.Hash}.{obj.Extension}", cancellationToken);
+
+        using var rawImage = new RawImage(itemStream);
+        obj.OriginalHash = Convert.ToBase64String(await rawImage.GetHashAsync());
+
+        _session.Update(obj);
+        await _session.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<Stream> LoadPhoto(string name, CancellationToken cancellationToken)

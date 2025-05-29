@@ -44,12 +44,13 @@ public class ObjectPropertiesProjection : EventProjection
         var objectProperties = new ObjectProperties(mediaObjectCreated.UserId, mediaObjectCreated.Hash)
         {
             Name = mediaObjectCreated.Name,
-            DateCreated = DateTimeOffset.FromUnixTimeMilliseconds(mediaObjectCreated.Timestamp),
+            DateCreated = DateTimeOffset.FromUnixTimeMilliseconds(mediaObjectCreated.Timestamp).ToUniversalTime(),
             Extension = mediaObjectCreated.Extension,
             MimeType = mediaObjectCreated.MimeType,
             Height = mediaObjectCreated.Height,
             Width = mediaObjectCreated.Width,
             Hash = mediaObjectCreated.Hash,
+            OriginalHash = mediaObjectCreated.OriginalHash,
             UserId = mediaObjectCreated.UserId,
             AppleCloudId = mediaObjectCreated.AppleCloudId,
             AndroidCloudId = mediaObjectCreated.AndroidCloudId,
@@ -83,6 +84,7 @@ public class ObjectPropertiesProjection : EventProjection
             Height = mediaObjectUpdated.Height,
             Width = mediaObjectUpdated.Width,
             Hash = mediaObjectUpdated.Hash,
+            OriginalHash = mediaObjectUpdated.Hash,
             UserId = mediaObjectUpdated.UserId,
             AppleCloudId = mediaObjectUpdated.AppleCloudId,
             AndroidCloudId = mediaObjectUpdated.AndroidCloudId,

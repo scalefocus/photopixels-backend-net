@@ -10,6 +10,8 @@ public class ObjectDataResponse
 
     public required string Hash { get; set; }
 
+    public required string? OriginalHash { get; set; }
+
     public string? AppleCloudId { get; set; }
 
     public string? AndroidCloudId { get; set; }

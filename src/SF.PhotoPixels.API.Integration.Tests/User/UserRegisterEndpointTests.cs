@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using SF.PhotoPixels.Application.Commands;
 using SF.PhotoPixels.Application.Commands.User.Register;
-using SF.PhotoPixels.Domain.Enums;
 using System.Net;
 using System.Net.Http.Json;
 using Xunit;
@@ -76,8 +75,8 @@ public class UserRegisterEndpointTests : IntegrationTest
     {
         var testData = new List<UserRegisterRequest>()
             {
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@ssword1" },
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@ssword1" },
+                new (){ Email = "testUser1@test.com", Name = "testUser1", Password = "P@ssword1" },
+                new (){ Email = "testUser2@test.com", Name = "testUser2", Password = "P@ssword1" },
             };
 
         return testData.Select(request => new object[] { request });
@@ -90,11 +89,11 @@ public class UserRegisterEndpointTests : IntegrationTest
                 //Empty Email
                 new (){ Email = "", Name = "testUser@test.com", Password = "P@ssword1" },
                 //Password missing a number
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@ssword!" },
+                new (){ Email = "testUser@test.com", Name = "testUser", Password = "P@ssword!" },
                 //Password less than 8 symbols
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "P@s1" },
+                new (){ Email = "testUser@test.com", Name = "testUser", Password = "P@s1" },
                 //Empty Password
-                new (){ Email = "testUser@test.com", Name = "testUser@test.com", Password = "" },
+                new (){ Email = "testUser@test.com", Name = "testUser", Password = "" },
             };
 
         return testData.Select(request => new object[] { request });
