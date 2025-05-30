@@ -30,7 +30,7 @@ public class TrashHardDeleteService : ITrashHardDeleteService
         if (userid == Guid.Empty)
         {
             _logger.LogWarning("EmptyTrashBin called with invalid user id: {UserId}", userid);
-            return new List<string>();
+            return Enumerable.Empty<string>();
         }
 
         _logger.LogInformation("Emptying trash bin for {UserId}", userid);
