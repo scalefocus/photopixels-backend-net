@@ -27,8 +27,9 @@ public class TrashHardDeleteService : ITrashHardDeleteService
 
     public async Task<IEnumerable<string>> EmptyTrashBin(Guid userid)
     {
-        if (userid != Guid.Empty)
+        if (userid == Guid.Empty)
         {
+            _logger.LogWarning("EmptyTrashBin called with invalid user id: {UserId}", userid);
             return new List<string>();
         }
         var _applicationConfiguration = await _applicationConfigurationRepository.GetConfiguration();
