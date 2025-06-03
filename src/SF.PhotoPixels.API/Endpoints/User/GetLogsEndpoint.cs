@@ -2,13 +2,17 @@
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
 using SF.PhotoPixels.Application.Query.GetLogs;
-using SF.PhotoPixels.Application.Query.GetStatus;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SF.PhotoPixels.API.Endpoints.User;
 
+#if DEBUG
 [AllowAnonymous]
+#else
+[RequireAdminRole]
+#endif
+
 public class GetLogsEndpoint : EndpointBaseAsync.WithoutRequest.WithActionResult<FileStream>
 {
     private readonly IMediator _mediator;
