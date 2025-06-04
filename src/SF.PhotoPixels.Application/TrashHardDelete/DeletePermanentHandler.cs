@@ -52,8 +52,10 @@ public class DeletePermanentHandler : IRequestHandler<DeletePermanentRequest, Ob
             return new NotFound();
         }
 
+#if DEBUG
         GC.Collect();
         GC.WaitForPendingFinalizers();
+#endif
 
         long revision = 0;
         foreach (var obj in objects)

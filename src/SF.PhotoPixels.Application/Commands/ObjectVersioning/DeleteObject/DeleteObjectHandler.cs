@@ -48,8 +48,10 @@ public class DeleteObjectHandler : IRequestHandler<DeleteObjectRequest, ObjectVe
             return new NotFound();
         }
 
+#if DEBUG
         GC.Collect();
         GC.WaitForPendingFinalizers();
+#endif
 
         var isPhotoDeleted = _objectStorage.DeleteObject(user.Id, objectMetadata.GetFileName());
 
