@@ -2,6 +2,7 @@
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SF.PhotoPixels.API.Security.RequireAdminRole;
 using SF.PhotoPixels.Application.Query.GetLogs;
 using Swashbuckle.AspNetCore.Annotations;
 
