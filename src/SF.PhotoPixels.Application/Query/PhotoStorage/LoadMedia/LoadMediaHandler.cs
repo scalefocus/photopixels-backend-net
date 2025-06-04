@@ -1,4 +1,5 @@
 ﻿using Marten;
+using Marten.Linq.SoftDeletes;
 using Mediator;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
@@ -21,11 +22,10 @@ public class LoadMediaHandler : IQueryHandler<LoadMediaRequest, QueryResponse<Lo
         _mediaCreationFactory = mediaCreationFactory;
     }
 
-
     public async ValueTask<QueryResponse<LoadMediaResponse>> Handle(LoadMediaRequest request, CancellationToken cancellationToken)
     {
         var metadata = await _session.Query<ObjectProperties>()
-            .SingleOrDefaultAsync(x => x.Id == request.Id && x.UserId == _executionContextAccessor.UserId, cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == request.Id && x.UserId == _executionContextAccessor.UserId && x.MaybeDeleted(), cancellationToken);
 
         if (metadata == null)
         {

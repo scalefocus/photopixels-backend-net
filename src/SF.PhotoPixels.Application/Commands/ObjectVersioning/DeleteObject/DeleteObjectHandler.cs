@@ -48,6 +48,9 @@ public class DeleteObjectHandler : IRequestHandler<DeleteObjectRequest, ObjectVe
             return new NotFound();
         }
 
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
         var isPhotoDeleted = _objectStorage.DeleteObject(user.Id, objectMetadata.GetFileName());
 
         var thumbnailExtension = Constants.SupportedVideoFormats.Contains($".{objectMetadata.Extension}") ? "png" : "webp";
@@ -61,8 +64,6 @@ public class DeleteObjectHandler : IRequestHandler<DeleteObjectRequest, ObjectVe
         user.DecreaseUsedQuota(objectMetadata.SizeInBytes);
 
         _session.Update(user);
-        _session.HardDelete(objectMetadata);
-
         await _session.SaveChangesAsync(cancellationToken);
 
         var revision = await _objectRepository.AddEvent(user.Id, new MediaObjectDeleted(request.Id), cancellationToken);
