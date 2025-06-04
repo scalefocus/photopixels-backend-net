@@ -20,7 +20,7 @@ public class ObjectPropertiesProjection : EventProjection
     private static void RemovedFromTrashObjectProperties(MediaObjectRemovedFromTrash mediaObjectRemovedFromTrash, IDocumentOperations documentOperations)
     {
         var objectProperties = documentOperations.Query<ObjectProperties>()
-            .SingleOrDefault(x => x.Id == mediaObjectRemovedFromTrash.ObjectId);
+            .SingleOrDefault(x => x.Id == mediaObjectRemovedFromTrash.ObjectId && x.MaybeDeleted());
 
         if (objectProperties is not null)
         {
@@ -70,7 +70,13 @@ public class ObjectPropertiesProjection : EventProjection
 
     private static void DeleteObjectProperties(MediaObjectDeleted mediaObjectDeleted, IDocumentOperations documentOperations)
     {
-        documentOperations.Delete<ObjectProperties>(mediaObjectDeleted.ObjectId);
+        var objectProperties = documentOperations.Query<ObjectProperties>()
+            .SingleOrDefault(x => x.Id == mediaObjectDeleted.ObjectId && x.MaybeDeleted());
+
+        if (objectProperties is not null)
+        {
+            documentOperations.HardDelete<ObjectProperties>(mediaObjectDeleted.ObjectId);
+        }
     }
 
     private static void UpdateObjectProperties(MediaObjectUpdated mediaObjectUpdated, IDocumentOperations documentOperations)

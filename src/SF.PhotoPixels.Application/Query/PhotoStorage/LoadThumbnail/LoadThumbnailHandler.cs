@@ -1,4 +1,5 @@
 ﻿using Marten;
+using Marten.Linq.SoftDeletes;
 using Mediator;
 using Microsoft.Extensions.Options;
 using OneOf.Types;
@@ -42,7 +43,7 @@ public class LoadThumbnailHandler : IQueryHandler<LoadThumbnailRequest, QueryRes
     public async ValueTask<QueryResponse<Stream>> Handle(LoadThumbnailRequest request, CancellationToken cancellationToken)
     {
         var metadata = await _session.Query<ObjectProperties>()
-            .SingleOrDefaultAsync(x => x.Id == request.ObjectId && x.UserId == _executionContextAccessor.UserId, cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == request.ObjectId && x.UserId == _executionContextAccessor.UserId && x.MaybeDeleted(), cancellationToken);
 
         if (metadata == null)
         {
