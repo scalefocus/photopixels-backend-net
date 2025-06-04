@@ -1,4 +1,5 @@
 using Marten;
+using Marten.Linq.SoftDeletes;
 using Mediator;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -38,7 +39,7 @@ public class DeletePermanentHandler : IRequestHandler<DeletePermanentRequest, Ob
     public async ValueTask<ObjectVersioningResponse> Handle(DeletePermanentRequest request, CancellationToken cancellationToken)
     {
         var objects = await _session.Query<ObjectProperties>()
-            .Where(obj => request.ObjectIds.Contains(obj.Id) && obj.Deleted)
+            .Where(obj => request.ObjectIds.Contains(obj.Id) && obj.MaybeDeleted())
             .ToListAsync();
 
         if (!objects.Any())
