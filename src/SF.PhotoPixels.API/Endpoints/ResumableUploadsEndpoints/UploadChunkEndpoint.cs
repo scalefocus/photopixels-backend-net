@@ -1,13 +1,13 @@
 ﻿using Ardalis.ApiEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using SF.PhotoPixels.Application.Commands.Tus.SendChunk;
 using SolidTUS.Attributes;
 using Swashbuckle.AspNetCore.Annotations;
-using SF.PhotoPixels.Application.Commands.Tus.SendChunk;
 
 namespace SF.PhotoPixels.API.Endpoints.TusEndpoints;
 
-public class UploadChunkEndpoint : EndpointBaseAsync.WithRequest<string>.WithActionResult
+public class UploadChunkEndpoint : EndpointBaseAsync.WithRequest<UploadChunkRequest>.WithActionResult
 {
     private readonly IMediator _mediator;
 
@@ -21,12 +21,8 @@ public class UploadChunkEndpoint : EndpointBaseAsync.WithRequest<string>.WithAct
             Summary = "Continue resumable upload",
             Tags = ["Tus"]),
     ]
-    public override async Task<ActionResult> HandleAsync([FromRoute] string fileId, CancellationToken cancellationToken = new())
+    public override async Task<ActionResult> HandleAsync([FromRoute] UploadChunkRequest request, CancellationToken cancellationToken = new())
     {
-        var request = new UploadChunkRequest()
-        {
-            FileId = fileId,
-        };
         await _mediator.Send(request, cancellationToken);
 
         return NoContent();
