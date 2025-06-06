@@ -16,7 +16,7 @@ public class UploadChunkEndpoint : EndpointBaseAsync.WithRequest<string>.WithAct
         _mediator = mediator;
     }
 
-    [TusUpload("/send_data/{fileId}")]
+    [TusUpload("send_data/{fileId}")]
     [SwaggerOperation(
             Summary = "Continue resumable upload",
             Tags = ["Tus"]),

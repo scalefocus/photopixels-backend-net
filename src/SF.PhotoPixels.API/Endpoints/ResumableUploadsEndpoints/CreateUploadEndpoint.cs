@@ -18,7 +18,7 @@ public class CreateUploadEndpoint : EndpointBaseAsync.WithoutRequest.WithActionR
     }
 
     [UpdateMetadata]
-    [TusCreation("/create_upload")]
+    [TusCreation("create_upload")]
     [SwaggerOperation(
             Summary = "Create and get info on a new upload resource",
             Tags = ["Tus"]),
