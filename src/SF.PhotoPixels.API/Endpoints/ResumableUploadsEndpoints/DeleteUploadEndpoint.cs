@@ -16,7 +16,7 @@ public class DeleteUploadEndpoint : EndpointBaseAsync.WithRequest<string>.WithAc
         _mediator = mediator;
     }
 
-    [TusDelete("/send_data/{fileId}")]
+    [TusDelete("send_data/{fileId}")]
     [SwaggerOperation(
             Summary = "Delete ongoing resumable upload",
             Tags = ["Tus"]),
