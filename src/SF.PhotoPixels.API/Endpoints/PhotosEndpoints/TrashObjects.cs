@@ -7,26 +7,27 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace SF.PhotoPixels.API.Endpoints.PhotosEndpoints;
 
-public class RemoveFromTrash : EndpointBaseAsync
-    .WithRequest<RemoveFromTrashObjectRequest>
+public class TrashObjects : EndpointBaseAsync
+    .WithRequest<TrashObjectsRequest>
     .WithActionResult<ObjectVersioningResponse>
 {
     private readonly IMediator _mediator;
 
-    public RemoveFromTrash(IMediator mediator)
+    public TrashObjects(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [HttpPost("/object/trash/remove")]
+    [HttpPost("/object/trash")]
     [SwaggerOperation(
-            Summary = "Remove item from trash",
-            Description = "Remove item from trash on the server.",
-            Tags = new[] { "Object operations" }),
+            Summary = "Trash objects",
+            Description = "Trash objects to the server")
     ]
-    public override async Task<ActionResult<ObjectVersioningResponse>> HandleAsync([FromBody] RemoveFromTrashObjectRequest request, CancellationToken cancellationToken = default)
+    public override async Task<ActionResult<ObjectVersioningResponse>> HandleAsync([FromBody] TrashObjectsRequest trashObjectsRequest, CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(request, cancellationToken);
+       // var trashObjectsRequest = new TrashObjectsRequest { ObjectIds = new List<string>() };
+
+        var result = await _mediator.Send(trashObjectsRequest, cancellationToken);
 
         return result.Match<ActionResult<ObjectVersioningResponse>>(
             response => new OkObjectResult(response),

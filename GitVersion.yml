@@ -1,5 +1,7 @@
 assembly-versioning-scheme: MajorMinorPatch
-
+workflow: GitHubFlow/v1
+strategies:
+  - Mainline
 branches:
   main:
     mode: ContinuousDelivery
@@ -19,8 +21,7 @@ branches:
     pre-release-weight: 45000
 
   develop:
-    mode: ContinuousDelivery
-    label: alpha
+    label: ''
     increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
