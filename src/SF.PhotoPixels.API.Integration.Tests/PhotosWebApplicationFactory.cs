@@ -24,7 +24,6 @@ public class PhotosWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     private const string Password = "admin";
     private const string Database = "PhotosMetadata";
     private readonly PostgreSqlContainer _postgreSqlContainer;
-    private readonly int _port = Random.Shared.Next(4000, 10000);
     private NpgsqlConnection? _dbConnection;
     private Respawner? _respawner;
 
@@ -37,7 +36,7 @@ public class PhotosWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             .WithDatabase(Database)
             .WithUsername(Username)
             .WithPassword(Password)
-            .WithPortBinding(_port, 5432)
+            .WithPortBinding(5432, true)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
             .Build();
     }
@@ -56,7 +55,7 @@ public class PhotosWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     private string ConnectionString()
     {
-        return $"Host=localhost;Port={_port};User Id={Username};Password={Password};Database={Database};";
+        return _postgreSqlContainer.GetConnectionString();
     }
 
     internal async Task ResetDb()
