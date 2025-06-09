@@ -1,0 +1,3 @@
+[submodule "src/libraries/SolidTUS"]
+	path = src/libraries/SolidTUS
+	url = https://github.com/scalefocus/solidTUS.git

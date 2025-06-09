@@ -31,6 +31,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.PhotoPixels.API.Integrat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A44A49BC-CE84-4535-BBCF-170447A43C05}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libraries", "libraries", "{AAADD7ED-D972-480F-A8B3-2D19FEF34270}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "solidtus", "src\libraries\SolidTUS\src\solidtus\solidtus.csproj", "{99B926D9-D2A8-466B-8810-5FE6458CB2E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "functional", "src\libraries\SolidTUS\src\functional\functional.csproj", "{3499CE1C-8668-4211-8F8F-53C0F5AE34C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,12 +63,22 @@ Global
 		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99B926D9-D2A8-466B-8810-5FE6458CB2E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99B926D9-D2A8-466B-8810-5FE6458CB2E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99B926D9-D2A8-466B-8810-5FE6458CB2E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99B926D9-D2A8-466B-8810-5FE6458CB2E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3499CE1C-8668-4211-8F8F-53C0F5AE34C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3499CE1C-8668-4211-8F8F-53C0F5AE34C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3499CE1C-8668-4211-8F8F-53C0F5AE34C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3499CE1C-8668-4211-8F8F-53C0F5AE34C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{06DA6E4E-D880-4F35-8C5E-FE19E23E0179} = {A44A49BC-CE84-4535-BBCF-170447A43C05}
+		{99B926D9-D2A8-466B-8810-5FE6458CB2E1} = {AAADD7ED-D972-480F-A8B3-2D19FEF34270}
+		{3499CE1C-8668-4211-8F8F-53C0F5AE34C2} = {AAADD7ED-D972-480F-A8B3-2D19FEF34270}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7542B97A-5E02-4114-B347-F53BB855C33A}
