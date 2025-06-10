@@ -33,4 +33,4 @@ branches:
     is-source-branch-for: []
     tracks-release-branches: true
     is-release-branch: false
-    is-main-branch: true
+    is-main-branch: false
