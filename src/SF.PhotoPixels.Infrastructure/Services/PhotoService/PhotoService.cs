@@ -1,4 +1,5 @@
-﻿using SF.PhotoPixels.Domain.Entities;
+﻿using System.Text;
+using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
 using SF.PhotoPixels.Infrastructure.Repositories;
 using SF.PhotoPixels.Infrastructure.Storage;
@@ -34,6 +35,7 @@ public class PhotoService : IPhotoService
     public async Task<long> StoreObjectCreatedEventAsync(RawImage rawImage, long usedQuota, string filename, Guid userId, CancellationToken cancellationToken, string? AppleCloudId = null, string? AndroidCloudId = null)
     {
         var fingerprint = await rawImage.GetSafeFingerprintAsync();
+        var hash = Convert.ToBase64String(await rawImage.GetHashAsync());
         var objectId = new ObjectId(userId, fingerprint);
         var image = await rawImage.ToFormattedImageAsync(cancellationToken);
 
@@ -47,6 +49,7 @@ public class PhotoService : IPhotoService
             Name = filename,
             Timestamp = image.GetDateTime().ToUnixTimeMilliseconds(),
             Hash = fingerprint,
+            OriginalHash = hash,
             UserId = userId,
             SizeInBytes = usedQuota,
             AppleCloudId = AppleCloudId,

@@ -112,7 +112,7 @@ public class IntegrationTest : IClassFixture<PhotosWebApplicationFactory>, IAsyn
         var registerRequest = new AdminRegisterRequest
         {
             Email = Constants.DefaultContributorCredentials.Email,
-            Name = Constants.DefaultContributorCredentials.Email,
+            Name = Constants.DefaultContributorCredentials.Name,
             Password = Constants.DefaultContributorCredentials.Password,
             Role = Role.Contributor,
         };

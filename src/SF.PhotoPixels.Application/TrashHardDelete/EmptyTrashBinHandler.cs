@@ -33,10 +33,7 @@ public class EmptyTrashBinHandler : IRequestHandler<EmptyTrashBinRequest, EmptyT
 
         var op_ids = await _trashHardDelete.EmptyTrashBin(request.UserId);
 
-        foreach (var id in op_ids)
-        {
-            await _mediatr.Send(new DeleteObjectRequest { Id = id }, cancellationToken);
-        }
+        await _mediatr.Send(new DeletePermanentRequest { ObjectIds = op_ids }, cancellationToken);
 
         var _applicationConfig = await _applicationConfigurationRepository.GetConfiguration();
         _applicationConfig.SetValue("TrashHardDeleteConfiguration.LastRun", DateTimeOffset.UtcNow);

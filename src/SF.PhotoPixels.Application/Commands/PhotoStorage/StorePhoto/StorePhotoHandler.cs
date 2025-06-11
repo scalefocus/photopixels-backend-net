@@ -29,8 +29,8 @@ public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<IMedia
         using var rawImage = new RawImage(request.File.OpenReadStream());
 
 
-        var imageHash = Convert.ToBase64String(await rawImage.GetHashAsync());
-        if (imageHash != request.ObjectHash)
+        var originalHash = Convert.ToBase64String(await rawImage.GetHashAsync());
+        if (originalHash != request.ObjectHash)
         {
             return new ValidationError(nameof(request.ObjectHash), "Object hash does not match");
         }

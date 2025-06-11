@@ -20,7 +20,7 @@ public class ObjectPropertiesProjection : EventProjection
     private static void RemovedFromTrashObjectProperties(MediaObjectRemovedFromTrash mediaObjectRemovedFromTrash, IDocumentOperations documentOperations)
     {
         var objectProperties = documentOperations.Query<ObjectProperties>()
-            .SingleOrDefault(x => x.Id == mediaObjectRemovedFromTrash.ObjectId);
+            .SingleOrDefault(x => x.Id == mediaObjectRemovedFromTrash.ObjectId && x.MaybeDeleted());
 
         if (objectProperties is not null)
         {
@@ -44,12 +44,13 @@ public class ObjectPropertiesProjection : EventProjection
         var objectProperties = new ObjectProperties(mediaObjectCreated.UserId, mediaObjectCreated.Hash)
         {
             Name = mediaObjectCreated.Name,
-            DateCreated = DateTimeOffset.FromUnixTimeMilliseconds(mediaObjectCreated.Timestamp),
+            DateCreated = DateTimeOffset.FromUnixTimeMilliseconds(mediaObjectCreated.Timestamp).ToUniversalTime(),
             Extension = mediaObjectCreated.Extension,
             MimeType = mediaObjectCreated.MimeType,
             Height = mediaObjectCreated.Height,
             Width = mediaObjectCreated.Width,
             Hash = mediaObjectCreated.Hash,
+            OriginalHash = mediaObjectCreated.OriginalHash,
             UserId = mediaObjectCreated.UserId,
             AppleCloudId = mediaObjectCreated.AppleCloudId,
             AndroidCloudId = mediaObjectCreated.AndroidCloudId,
@@ -69,7 +70,13 @@ public class ObjectPropertiesProjection : EventProjection
 
     private static void DeleteObjectProperties(MediaObjectDeleted mediaObjectDeleted, IDocumentOperations documentOperations)
     {
-        documentOperations.Delete<ObjectProperties>(mediaObjectDeleted.ObjectId);
+        var objectProperties = documentOperations.Query<ObjectProperties>()
+            .SingleOrDefault(x => x.Id == mediaObjectDeleted.ObjectId && x.MaybeDeleted());
+
+        if (objectProperties is not null)
+        {
+            documentOperations.HardDelete<ObjectProperties>(mediaObjectDeleted.ObjectId);
+        }
     }
 
     private static void UpdateObjectProperties(MediaObjectUpdated mediaObjectUpdated, IDocumentOperations documentOperations)
@@ -83,6 +90,7 @@ public class ObjectPropertiesProjection : EventProjection
             Height = mediaObjectUpdated.Height,
             Width = mediaObjectUpdated.Width,
             Hash = mediaObjectUpdated.Hash,
+            OriginalHash = mediaObjectUpdated.Hash,
             UserId = mediaObjectUpdated.UserId,
             AppleCloudId = mediaObjectUpdated.AppleCloudId,
             AndroidCloudId = mediaObjectUpdated.AndroidCloudId,
