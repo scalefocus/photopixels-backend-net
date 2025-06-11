@@ -12,8 +12,7 @@ branches:
     track-merge-target: true
     track-merge-message: true
     regex: ^master$|^main$
-    source-branches: []
-    is-source-branch-for: 
+    source-branches: 
       - develop
     tracks-release-branches: false
     is-release-branch: false
@@ -28,9 +27,8 @@ branches:
     track-merge-target: true
     track-merge-message: true
     regex: ^dev(elop)?(ment)?$
-    source-branches:
-    - main
-    is-source-branch-for: []
+    is-source-branch-for:
+      - main
     tracks-release-branches: true
     is-release-branch: false
     is-main-branch: false
