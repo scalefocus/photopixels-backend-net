@@ -15,7 +15,7 @@ branches:
     source-branches: 
       - develop
     is-source-branch-for:
-      - ^release\/(v)?\d+\.\d+\.\d+$
+      - release
     tracks-release-branches: false
     is-release-branch: false
     is-main-branch: true
@@ -31,7 +31,7 @@ branches:
     regex: ^dev(elop)?(ment)?$
     is-source-branch-for:
       - main
-      - ^release\/(v)?\d+\.\d+\.\d+$
+      - release
     tracks-release-branches: true
     is-release-branch: false
     is-main-branch: false
@@ -43,6 +43,7 @@ branches:
       when-current-commit-tagged: true
     track-merge-target: true
     track-merge-message: true
+    regex: ^release\/(v)?\d+\.\d+\.\d+$ # Regex for branches like release/1.0.0 or release/v1.0.0
     is-source-branch-for:
       - main
     tracks-release-branches: false
