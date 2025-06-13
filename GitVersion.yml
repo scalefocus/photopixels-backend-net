@@ -43,7 +43,6 @@ branches:
       when-current-commit-tagged: true
     track-merge-target: true
     track-merge-message: true
-    regex: ^release\/(v)?\d+\.\d+\.\d+$ # Regex for branches like release/1.0.0 or release/v1.0.0
     is-source-branch-for:
       - main
     tracks-release-branches: false
