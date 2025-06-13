@@ -18,7 +18,7 @@ branches:
       - release
     tracks-release-branches: false
     is-release-branch: false
-    is-main-branch: true
+    is-main-branch: false
     pre-release-weight: 45000
 
   develop:
@@ -50,4 +50,4 @@ branches:
       - main
     #   tracks-release-branches: false
     is-release-branch: true
-    is-main-branch: false
+    is-main-branch: true
