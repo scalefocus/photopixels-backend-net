@@ -4,6 +4,7 @@ strategies:
   - Mainline
 branches:
   main:
+    label: ''
     increment: Patch
     prevent-increment:
       of-merged-branch: true
@@ -20,6 +21,7 @@ branches:
     pre-release-weight: 45000
 
   develop:
+    label: ''
     increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
@@ -34,6 +36,7 @@ branches:
     is-main-branch: false
  
   release:
+    label: ''
     increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
