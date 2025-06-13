@@ -22,6 +22,7 @@ branches:
     pre-release-weight: 45000
 
   develop:
+    mode: ContinuousDelivery
     label: ''
     increment: Patch
     prevent-increment:
@@ -35,8 +36,9 @@ branches:
     tracks-release-branches: true
     is-release-branch: false
     is-main-branch: false
-
+ 
   release:
+    mode: ContinuousDelivery
     label: ''
     increment: Patch
     prevent-increment:
@@ -44,8 +46,8 @@ branches:
     track-merge-target: true
     track-merge-message: true
     regex: ^release\/(v)?\d+\.\d+\.\d+$ # Regex for branches like release/1.0.0 or release/v1.0.0
-    is-source-branch-for:
+    source-branches:
       - main
-    tracks-release-branches: false
+    #   tracks-release-branches: false
     is-release-branch: true
     is-main-branch: false
