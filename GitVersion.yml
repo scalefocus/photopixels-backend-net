@@ -4,8 +4,6 @@ strategies:
   - Mainline
 branches:
   main:
-    mode: ContinuousDelivery
-    label: ''
     increment: Patch
     prevent-increment:
       of-merged-branch: true
@@ -22,8 +20,6 @@ branches:
     pre-release-weight: 45000
 
   develop:
-    mode: ContinuousDelivery
-    label: ''
     increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
@@ -38,8 +34,6 @@ branches:
     is-main-branch: false
  
   release:
-    mode: ContinuousDelivery
-    label: ''
     increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
@@ -50,4 +44,4 @@ branches:
       - main
     #   tracks-release-branches: false
     is-release-branch: true
-    is-main-branch: true
+    is-main-branch: false
