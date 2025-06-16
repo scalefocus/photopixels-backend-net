@@ -13,4 +13,19 @@ public class SmtpOptions
     public required bool UseSsl { get; set; } = true;
 
     public required bool CheckCertificateRevocation { get; set; } = true;
+
+    public bool IsValidConfiguration()
+    {
+        if (string.IsNullOrWhiteSpace(Host))
+        {
+            return false;
+        }
+
+        if (Port is null or 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
