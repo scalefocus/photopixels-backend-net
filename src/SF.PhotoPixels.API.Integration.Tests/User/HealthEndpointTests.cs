@@ -30,15 +30,15 @@ public class HealthEndpointTests : IntegrationTest
     }
 
     [Fact]
-    public async Task Health_WithNoAuth_ShouldReturnUnauthorized()
+    public async Task Health_WithNoAuth_ShouldReturnOk()
     {
         var response = await _httpClient.GetAsync("/health");
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
-    public async Task Health_WithContributorAuth_ShouldReturnForbidden()
+    public async Task Health_WithContributorAuth_ShouldReturnOk()
     {
         await AuthenticateAsSeededAdminAsync();
         await SeedDefaultContributorAsync();
@@ -46,6 +46,6 @@ public class HealthEndpointTests : IntegrationTest
 
         var response = await _httpClient.GetAsync("/health");
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

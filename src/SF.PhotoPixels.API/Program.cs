@@ -32,25 +32,28 @@ builder.ConfigureHealthChecks();
 builder.Services.AddScoped<IAuthorizationHandler, RequireAdminRoleAuthorizationHandler>();
 
 builder.Services.AddAuthorization(options =>
-{
-    var lockedDown = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-    options.FallbackPolicy = lockedDown;
-    options.DefaultPolicy = lockedDown;
+    {
+        var lockedDown = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+        options.FallbackPolicy = lockedDown;
+        options.DefaultPolicy = lockedDown;
 
-    options.AddPolicy(RequireAdminRoleAttribute.PolicyName, policyBuilder => policyBuilder.Requirements.Add(new RequireAdminRoleRequirement()));
-})
-    .AddControllers(options => { options.Filters.Add(new AuthorizeFilter()); });
+        options.AddPolicy(RequireAdminRoleAttribute.PolicyName, policyBuilder => policyBuilder.Requirements.Add(new RequireAdminRoleRequirement()));
+    })
+    .AddControllers(options =>
+    {
+        options.Filters.Add(new AuthorizeFilter());
+    });
 
 builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment.IsDevelopment())
     .AddApplicationServices(builder.Configuration);
 
 builder.Services.AddIdentityCore<User>(opt =>
-{
-    opt.User.RequireUniqueEmail = true;
-    opt.Password.RequiredLength = 8;
-    opt.ClaimsIdentity.UserIdClaimType = CustomClaims.Id;
-    opt.ClaimsIdentity.EmailClaimType = CustomClaims.Email;
-})
+    {
+        opt.User.RequireUniqueEmail = true;
+        opt.Password.RequiredLength = 8;
+        opt.ClaimsIdentity.UserIdClaimType = CustomClaims.Id;
+        opt.ClaimsIdentity.EmailClaimType = CustomClaims.Email;
+    })
     .AddUserStore<UserStore>()
     .AddSignInManager()
     .AddClaimsPrincipalFactory<PrincipalFactory>()
@@ -58,14 +61,17 @@ builder.Services.AddIdentityCore<User>(opt =>
 
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("EmailConfiguration"));
 builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = BearerTokenDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = BearerTokenDefaults.AuthenticationScheme;
-    options.DefaultScheme = BearerTokenDefaults.AuthenticationScheme;
-    options.DefaultSignInScheme = BearerTokenDefaults.AuthenticationScheme;
-    options.DefaultSignOutScheme = BearerTokenDefaults.AuthenticationScheme;
-})
-    .AddCustomBearerToken(options => { options.BearerTokenExpiration = TimeSpan.FromMinutes(10); });
+    {
+        options.DefaultAuthenticateScheme = BearerTokenDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = BearerTokenDefaults.AuthenticationScheme;
+        options.DefaultScheme = BearerTokenDefaults.AuthenticationScheme;
+        options.DefaultSignInScheme = BearerTokenDefaults.AuthenticationScheme;
+        options.DefaultSignOutScheme = BearerTokenDefaults.AuthenticationScheme;
+    })
+    .AddCustomBearerToken(options =>
+    {
+        options.BearerTokenExpiration = TimeSpan.FromMinutes(10);
+    });
 
 builder.Services.AddSwaggerDocumentation();
 
@@ -119,9 +125,10 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.MapHealthChecks("/health", new HealthCheckOptions
-{
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-}).RequireAuthorization("RequireAdminRole");
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    })
+    .AllowAnonymous();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -142,4 +149,4 @@ await app.RunOaktonCommands(args);
 
 await app.RunAsync();
 
-public partial class Program { }
+public partial class Program;

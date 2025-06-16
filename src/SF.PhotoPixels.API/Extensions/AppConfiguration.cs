@@ -1,13 +1,14 @@
-﻿using Serilog.Debugging;
-using Serilog.Sinks.Grafana.Loki;
-using Serilog;
-using HealthChecks.Network.Core;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Diagnostics;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using FFMpegCore;
-using Microsoft.Extensions.Hosting;
+using HealthChecks.Network.Core;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Options;
+using Serilog;
+using Serilog.Debugging;
+using Serilog.Sinks.Grafana.Loki;
+using SF.PhotoPixels.Infrastructure.Options;
 
 namespace SF.PhotoPixels.API.Extensions
 {
@@ -26,6 +27,7 @@ namespace SF.PhotoPixels.API.Extensions
                 AppName = appName,
             };
             builder.Configuration.Bind(TelemetryConfiguration.SectionName, telemetryConfiguration);
+
             return telemetryConfiguration;
         }
 
@@ -59,17 +61,29 @@ namespace SF.PhotoPixels.API.Extensions
 
         public static void ConfigureHealthChecks(this WebApplicationBuilder builder)
         {
-            var smtpOptions = builder.Configuration.GetSection("EmailConfiguration");
+            var smtpOptions = builder.Configuration.GetSection("EmailConfiguration").Get<SmtpOptions>();
 
-            builder.Services.AddHealthChecks()
+            var healthCheckBuilder = builder.Services.AddHealthChecks()
                 .AddNpgSql(builder.Configuration.GetConnectionString("PhotosMetadata"))
-                .AddPingHealthCheck(options => options.AddHost("localhost", 1000))
+                .AddPingHealthCheck(options => options.AddHost("localhost", 1000));
+
+            if (smtpOptions is null)
+            {
+                return;
+            }
+
+            if (!smtpOptions.IsValidConfiguration())
+            {
+                return;
+            }
+
+            healthCheckBuilder
                 .AddSmtpHealthCheck(setup =>
                 {
-                    setup.Host = smtpOptions.GetValue<string>("Host");
-                    setup.Port = smtpOptions.GetValue<int>("Port");
-                    setup.ConnectionType = smtpOptions.GetValue<bool>("UseSsl") == true ? SmtpConnectionType.SSL : SmtpConnectionType.TLS;
-                    setup.LoginWith(smtpOptions.GetValue<string>("Username"), smtpOptions.GetValue<string>("Password"));
+                    setup.Host = smtpOptions.Host;
+                    setup.Port = smtpOptions.Port ?? 22;
+                    setup.ConnectionType = smtpOptions.UseSsl ? SmtpConnectionType.SSL : SmtpConnectionType.TLS;
+                    setup.LoginWith(smtpOptions.Username, smtpOptions.Password);
                 });
         }
 
@@ -107,12 +121,13 @@ namespace SF.PhotoPixels.API.Extensions
         public static void ConfigureWebServersUpperLimitOptions(this WebApplicationBuilder builder)
         {
             var upperLimit = builder.Configuration.GetValue<int>("UploadFileUpperLimit");
+
             if (upperLimit == 0)
             {
                 upperLimit = defaultUpperLimit; // default value 50 MB
             }
 
-            builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+            builder.Services.Configure<FormOptions>(options =>
             {
                 options.MultipartBodyLengthLimit = upperLimit;
             });
@@ -153,13 +168,12 @@ namespace SF.PhotoPixels.API.Extensions
             }
 
             // configure ffmpeg global options
-            var binaryFolder = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ?
-                "/bin"
+            var binaryFolder = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                ? "/bin"
                 : ffmpegWindowsBinaryFolder;
 
-            var temporaryFilesFolder = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ?
-                "/tmp" :
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "sf-photos", "temp");
+            var temporaryFilesFolder = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "/tmp" : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "sf-photos", "temp");
+
             if (!Directory.Exists(temporaryFilesFolder))
             {
                 Directory.CreateDirectory(temporaryFilesFolder);
