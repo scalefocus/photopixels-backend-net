@@ -23,25 +23,24 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
     {
         var utcNow = DateTimeOffset.UtcNow;
         string? sqlQuery;
-
+        
         var result = _session.Query<ObjectProperties>()
-            .Where(x => x.UserId == _executionContextAccessor.UserId
+            .Where(x => x.UserId == _executionContextAccessor.UserId 
                         && x.IsDeleted()
-                        && x.DateCreated <= utcNow)
+                        && x.DateCreated <= utcNow)  
             .OrderByDescending(x => x.DateCreated)
             .ThenByDescending(x => x.Id)
             .Take(request.PageSize + 1);
 
         if (request.LastId != null)
         {
+            DateTimeOffset? lastDateCreated = !string.IsNullOrEmpty(request.LastId) 
+                                    ? await _session.Query<ObjectProperties>().Where(x => x.Id == request.LastId).Select(x => x.DateCreated).FirstOrDefaultAsync()
+                                    : await _session.Query<ObjectProperties>().Where(x=> x.UserId == _executionContextAccessor.UserId).OrderByDescending(x => x.DateCreated).Select(x => x.DateCreated).FirstOrDefaultAsync();
 
-            DateTimeOffset? lastDateCreated = !string.IsNullOrEmpty(request.LastId)
-                                    ? result.FirstOrDefault(x => x.Id == request.LastId)?.DateCreated
-                                    : result.OrderByDescending(x => x.DateCreated).FirstOrDefault()?.DateCreated;
-
-            result = result.Where(x => x.DateCreated >= lastDateCreated);
-        }
-
+            result = result.Where(x => x.DateCreated <= lastDateCreated);
+        }    
+        
         var objectProperties = await result.ToListAsync();
 
         var properties = new List<PropertiesTrashedResponse>();
@@ -62,7 +61,7 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
 
             properties.Add(thumbnailProperty);
         }
-
+       
         var lastId = result.Count() < request.PageSize ? "" : objectProperties[^1].Id;
         return new GetObjectsTrashedResponse() { Properties = properties, LastId = lastId };
     }
