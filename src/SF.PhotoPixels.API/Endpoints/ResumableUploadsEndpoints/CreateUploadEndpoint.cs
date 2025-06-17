@@ -19,7 +19,7 @@ public class CreateUploadEndpoint : EndpointBaseAsync.WithoutRequest.WithActionR
     }
 
     [UpdateMetadata]
-    [TusCreation("create_upload")]
+    [TusCreationPhotopixels("create_upload")]
     [SwaggerOperation(
             Summary = "Create and get info on a new upload resource",
             Tags = ["Tus"]),
@@ -27,12 +27,6 @@ public class CreateUploadEndpoint : EndpointBaseAsync.WithoutRequest.WithActionR
     public override async Task<ActionResult<CreateUploadResponse>> HandleAsync(CancellationToken cancellationToken = new())
     {
         var result = await _mediator.Send(CreateUploadRequest.Instance, cancellationToken);
-
-        string location = Response.Headers["Location"];
-
-        Response.Headers["Location"] = location.StartsWith("/")
-            ? location.Substring(1)
-            : location;
 
         if (result.IsT1) return BadRequest(result.AsT1.Errors.First().Value);
         return Ok();
