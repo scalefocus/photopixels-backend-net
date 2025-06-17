@@ -58,6 +58,7 @@ jobs:
       - name: Get version suffix
         run: |
           version_suffix_string=""
+          delimiter=""
           branch_name="${GITHUB_REF##*/}"
 
           if [ "$branch_name" = "develop" ]; then
@@ -66,6 +67,11 @@ jobs:
             version_suffix_string="beta"
           fi
 
+          if [ -n "$version_suffix_string" ]; then
+            delimiter="-"
+          fi
+
+          echo "DOCKER_TAG=${{ steps.gitversion.outputs.MajorMinorPatch }}${delimiter}${version_suffix_string}" >> "$GITHUB_ENV"
           echo "VERSION_SUFFIX=$version_suffix_string" >> "$GITHUB_ENV"
 
       - name: Build docker image
@@ -75,6 +81,6 @@ jobs:
               --no-cache \
               --build-arg VERSION="${{ steps.gitversion.outputs.MajorMinorPatch }}" \
               --build-arg VERSION_SUFFIX="${{ env.VERSION_SUFFIX }}" \
-              -t scalefocusad/photopixels-backend-net:"${{ steps.gitversion.outputs.MajorMinorPatch }}-${{ env.VERSION_SUFFIX }}" \
+              -t scalefocusad/photopixels-backend-net:"${{ env.DOCKER_TAG }}" \
               -f ./src/SF.PhotoPixels.API/Dockerfile . \
               --push
