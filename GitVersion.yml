@@ -4,6 +4,7 @@ strategies:
   - Mainline
 branches:
   main:
+    mode: ContinuousDelivery
     label: ''
     increment: Patch
     prevent-increment:
@@ -14,7 +15,7 @@ branches:
     source-branches: 
       - develop
     is-source-branch-for:
-      - release
+      - ^release\/(v)?\d+\.\d+\.\d+$
     tracks-release-branches: false
     is-release-branch: false
     is-main-branch: true
@@ -30,7 +31,7 @@ branches:
     regex: ^dev(elop)?(ment)?$
     is-source-branch-for:
       - main
-      - release
+      - ^release\/(v)?\d+\.\d+\.\d+$
     tracks-release-branches: true
     is-release-branch: false
     is-main-branch: false
