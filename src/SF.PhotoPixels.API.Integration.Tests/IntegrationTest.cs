@@ -190,7 +190,7 @@ public class IntegrationTest : IClassFixture<PhotosWebApplicationFactory>, IAsyn
 
         var response = await _httpClient.SendAsync(message);
 
-        return response.Headers.GetValues("Location").First().Substring(11);
+        return response.Headers.GetValues("Location").First().Replace("send_data", string.Empty).TrimStart('/');
     }
     private async Task CleanUpDirectories()
     {

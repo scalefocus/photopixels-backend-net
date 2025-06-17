@@ -1,4 +1,5 @@
 ﻿using Ardalis.ApiEndpoints;
+using JasperFx.Core;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using SF.PhotoPixels.Application.Commands.Tus;
@@ -18,7 +19,7 @@ public class CreateUploadEndpoint : EndpointBaseAsync.WithoutRequest.WithActionR
     }
 
     [UpdateMetadata]
-    [TusCreation("create_upload")]
+    [TusCreationPhotopixels("create_upload")]
     [SwaggerOperation(
             Summary = "Create and get info on a new upload resource",
             Tags = ["Tus"]),

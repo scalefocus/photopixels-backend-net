@@ -14,7 +14,7 @@ public class GetUserUploadsEndpoint : EndpointBaseAsync.WithoutRequest.WithActio
     {
         _mediator = mediator;
     }
-    [HttpGet("/resumable_uploads")]
+    [HttpGet("resumable_uploads")]
     [SwaggerOperation(
         Summary = "Get User current resumable uploads",
         Tags = ["Tus"]),
