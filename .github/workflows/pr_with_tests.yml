@@ -1,5 +1,5 @@
 name: PR build with automated tests
-run-name: ${{ github.actor }} started the .NET CI for PRs workflow
+run-name: ${{ github.actor }} started the PRs workflow 
 
 on:
   pull_request:
