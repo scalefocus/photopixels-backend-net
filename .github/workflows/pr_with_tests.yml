@@ -1,0 +1,44 @@
+# --------------------------------------------------------------------------------------------------
+# This GitHub Actions workflow file is used to automate the build process for the PhotoPixels
+# .NET-based backend project. 
+#
+# Note: The specific jobs and steps may evolve over time as the project requirements change.
+# --------------------------------------------------------------------------------------------------
+
+name: PR build with automated tests
+run-name: ${{ github.actor }} started the .NET CI for PRs workflow
+
+on:
+  pull_request:
+    branches: ["main", "develop"]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: "recursive"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal --filter "Category!=Integration"
+
+      - name: Run automated tests
+        uses: scalefocus/photopixels-automation/.github/workflows/be-tests.yml@main
+        with:
+          branch: ${{ github.ref_name }}
+        

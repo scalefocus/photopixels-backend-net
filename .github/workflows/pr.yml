@@ -17,21 +17,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: "recursive"
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build project
-        run: dotnet build
-
       - name: Test
-        run: dotnet test --no-build --verbosity normal --filter "Category!=Integration"
+        run: |
+          echo ${{github.head_ref}}
+          echo ${{github.ref_name}}
+          echo ${{github.ref}}
+          echo ${{github.path}}
+
+      # - uses: actions/checkout@v4
+      #   with:
+      #     fetch-depth: 0
+      #     submodules: "recursive"
+
+      # - name: Setup .NET
+      #   uses: actions/setup-dotnet@v3
+      #   with:
+      #     dotnet-version: 8.0.x
+
+      # - name: Restore dependencies
+      #   run: dotnet restore
+
+      # - name: Build project
+      #   run: dotnet build
+
+      # - name: Test
+      #   run: dotnet test --no-build --verbosity normal --filter "Category!=Integration"
