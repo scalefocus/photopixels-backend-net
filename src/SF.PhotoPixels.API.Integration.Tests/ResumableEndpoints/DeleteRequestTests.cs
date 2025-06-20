@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using System.Net;
+﻿using System.Net;
+using FluentAssertions;
 using Xunit;
 
 namespace SF.PhotoPixels.API.Integration.Tests.ResumableEndpoints;
@@ -20,7 +20,7 @@ public class DeleteRequestTests : IntegrationTest
         var message = new HttpRequestMessage()
         {
             Method = HttpMethod.Delete,
-            RequestUri = new Uri($"/send_data/{id}", UriKind.Relative)
+            RequestUri = new Uri($"send_data/{id}", UriKind.Relative)
         };
 
         message.Headers.Add("Tus-Resumable", "1.0.0");
@@ -39,7 +39,7 @@ public class DeleteRequestTests : IntegrationTest
         var message = new HttpRequestMessage()
         {
             Method = HttpMethod.Delete,
-            RequestUri = new Uri($"/send_data/{Guid.NewGuid():N}", UriKind.Relative)
+            RequestUri = new Uri($"send_data/{Guid.NewGuid():N}", UriKind.Relative)
         };
 
         message.Headers.Add("Tus-Resumable", "1.0.0");
