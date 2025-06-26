@@ -36,13 +36,7 @@ public sealed class FormattedVideo : IDisposable, IStorageItem
 
     public string GetExtension(string filename)
     {
-        var extension = Path.GetExtension(filename).TrimStart('.');
-        if (_format.FormatName.IndexOf(extension, StringComparison.OrdinalIgnoreCase) == -1)
-        {
-            throw new InvalidOperationException($"{nameof(filename)} has illegal extension.");
-        }
-
-        return extension;
+        return Path.GetExtension(filename).TrimStart('.');
     }
 
     public string GetName(string filename)
