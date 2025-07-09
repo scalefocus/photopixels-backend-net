@@ -30,9 +30,8 @@ public class DeleteRequestTests : IntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
-    // If file is not found the DeleteUploadFileInfoAsync considers it has been deleted and returns true
     [Fact]
-    public async Task DeleteUpload_WithNonExistingId_ShouldReturnNotFound()
+    public async Task DeleteUpload_WithNonExistingId_ShouldReturnForbidden()
     {
         await AuthenticateAsSeededAdminAsync();
 
@@ -46,6 +45,6 @@ public class DeleteRequestTests : IntegrationTest
 
         var response = await _httpClient.SendAsync(message);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }
