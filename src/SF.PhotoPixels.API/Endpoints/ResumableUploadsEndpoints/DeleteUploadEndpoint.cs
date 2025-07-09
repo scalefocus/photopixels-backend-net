@@ -1,9 +1,9 @@
 ﻿using Ardalis.ApiEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using SF.PhotoPixels.Application.Commands.Tus.DeleteUpload;
 using SolidTUS.Attributes;
 using Swashbuckle.AspNetCore.Annotations;
-using SF.PhotoPixels.Application.Commands.Tus.DeleteUpload;
 
 namespace SF.PhotoPixels.API.Endpoints.TusEndpoints;
 
@@ -30,7 +30,8 @@ public class DeleteUploadEndpoint : EndpointBaseAsync.WithRequest<string>.WithAc
 
         var result = await _mediator.Send(request, cancellationToken);
 
-        if (result.IsT1) return NotFound(result.AsT1.Errors.First().Value);
-        return NoContent();
+        return result.Match<ActionResult<DeleteUploadResponse>>(
+            _ => NoContent(),
+            _ => Forbid());
     }
 }
