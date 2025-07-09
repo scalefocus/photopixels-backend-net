@@ -30,7 +30,7 @@ public class DeleteUploadEndpoint : EndpointBaseAsync.WithRequest<string>.WithAc
 
         var result = await _mediator.Send(request, cancellationToken);
 
-        if (result.IsT1) return NotFound(result.AsT1.Errors.First().Value);
+        if (result.IsT1) return Forbid(result.AsT1.Errors.First().Value);
         return NoContent();
     }
 }
