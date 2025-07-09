@@ -49,9 +49,9 @@ public class RawVideo : IDisposable, IStorageItem
         return Base64Url.Encode(await GetHashAsync());
     }
 
-    public async Task<FormattedVideo> ToFormattedVideoAsync(CancellationToken cancellationToken = default)
+    public async Task<FormattedVideo> ToFormattedVideoAsync(string name, CancellationToken cancellationToken = default)
     {
-        await EnsureFormattedVideoLoaded(cancellationToken);
+        await EnsureFormattedVideoLoaded(name, cancellationToken);
 
         return _formattedVideo!;
     }
@@ -61,15 +61,13 @@ public class RawVideo : IDisposable, IStorageItem
         return _rawStream.Length;
     }
 
-    private async Task EnsureFormattedVideoLoaded(CancellationToken cancellationToken = default)
+    private async Task EnsureFormattedVideoLoaded(string name, CancellationToken cancellationToken = default)
     {
         if (_formattedVideo is not null)
         {
             return;
         }
 
-        _rawStream.Seek(0, SeekOrigin.Begin);
-
-        _formattedVideo = await FormattedVideo.LoadAsync(_rawStream, cancellationToken);
+        _formattedVideo = await FormattedVideo.LoadAsync(name, cancellationToken);
     }
 }

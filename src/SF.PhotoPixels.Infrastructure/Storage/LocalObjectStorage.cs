@@ -7,23 +7,23 @@ public class LocalObjectStorage : IObjectStorage
 {
     private readonly ILogger<LocalObjectStorage> _logger;
     private const string ThumbDirectory = "thumbnails";
-    private readonly string _imagesDirectory = Path.Combine(GetRootDirectory(), "sf-photos", "images");
+    private readonly string _objectsDirectory = Path.Combine(GetRootDirectory(), "sf-photos", "images");
 
     public LocalObjectStorage(ILogger<LocalObjectStorage> logger)
     {
         _logger = logger;
 
-        _logger.LogDebug("Images directory: {ImagesDirectory}", _imagesDirectory);
+        _logger.LogDebug("Objects directory: {ObjectsDirectory}", _objectsDirectory);
     }
 
-    public ValueTask<FileStream> LoadObjectAsync(Guid userId, string imageName, CancellationToken cancellationToken = new())
+    public ValueTask<FileStream> LoadObjectAsync(Guid userId, string objectName, CancellationToken cancellationToken = new())
     {
-        return new ValueTask<FileStream>(File.OpenRead(Path.Combine(_imagesDirectory, userId.ToString(), imageName)));
+        return new ValueTask<FileStream>(File.OpenRead(Path.Combine(_objectsDirectory, userId.ToString(), objectName)));
     }
 
-    public ValueTask<FileStream> LoadThumbnailAsync(Guid userId, string imageName, CancellationToken cancellationToken = new())
+    public ValueTask<FileStream> LoadThumbnailAsync(Guid userId, string objectName, CancellationToken cancellationToken = new())
     {
-        var thumbDirectory = Path.Combine(_imagesDirectory, userId.ToString(), ThumbDirectory, imageName);
+        var thumbDirectory = Path.Combine(_objectsDirectory, userId.ToString(), ThumbDirectory, objectName);
 
         return new ValueTask<FileStream>(File.OpenRead(thumbDirectory));
     }
@@ -32,7 +32,7 @@ public class LocalObjectStorage : IObjectStorage
     {
         EnsureUserFolders(userId);
 
-        var path = Path.Combine(_imagesDirectory, userId.ToString(), name);
+        var path = Path.Combine(_objectsDirectory, userId.ToString(), name);
         await StoreObjectInternal(path, item, cancellationToken);
     }
 
@@ -40,18 +40,18 @@ public class LocalObjectStorage : IObjectStorage
     {
         EnsureUserFolders(userId);
 
-        var path = Path.Combine(_imagesDirectory, userId.ToString(), ThumbDirectory, name);
+        var path = Path.Combine(_objectsDirectory, userId.ToString(), ThumbDirectory, name);
 
         return await StoreObjectInternal(path, item, cancellationToken);
     }
 
     public bool DeleteObject(Guid userId, string name)
     {
-        var path = Path.Combine(_imagesDirectory, userId.ToString(), name);
+        var path = Path.Combine(_objectsDirectory, userId.ToString(), name);
 
         if (File.Exists(Path.Combine(path)))
         {
-            _logger.LogDebug("Deleting photo: {name}", name);
+            _logger.LogDebug("Deleting object: {name}", name);
 
             File.Delete(path);
             return true;
@@ -61,7 +61,7 @@ public class LocalObjectStorage : IObjectStorage
 
     public bool DeleteThumbnail(Guid userId, string name)
     {
-        var path = Path.Combine(_imagesDirectory, userId.ToString(), ThumbDirectory, name);
+        var path = Path.Combine(_objectsDirectory, userId.ToString(), ThumbDirectory, name);
 
         if (File.Exists(Path.Combine(path)))
         {
@@ -80,7 +80,7 @@ public class LocalObjectStorage : IObjectStorage
 
     private void EnsureUserFolders(Guid userId)
     {
-        var userDirectory = Path.Combine(_imagesDirectory, userId.ToString());
+        var userDirectory = Path.Combine(_objectsDirectory, userId.ToString());
 
         if (!Directory.Exists(Path.Combine(userDirectory)))
         {
@@ -108,7 +108,7 @@ public class LocalObjectStorage : IObjectStorage
 
     public void DeleteUserFolders(Guid userId)
     {
-        var userDirectory = Path.Combine(_imagesDirectory, userId.ToString());
+        var userDirectory = Path.Combine(_objectsDirectory, userId.ToString());
 
         if (Directory.Exists(Path.Combine(userDirectory)))
         {
@@ -123,7 +123,7 @@ public class LocalObjectStorage : IObjectStorage
         EnsureUserFolders(userId);
 
         return new(
-            Path.Combine(_imagesDirectory, userId.ToString()),
-            Path.Combine(_imagesDirectory, userId.ToString(), ThumbDirectory));
+            Path.Combine(_objectsDirectory, userId.ToString()),
+            Path.Combine(_objectsDirectory, userId.ToString(), ThumbDirectory));
     }
 }
