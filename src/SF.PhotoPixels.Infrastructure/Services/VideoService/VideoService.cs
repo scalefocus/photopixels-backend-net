@@ -23,12 +23,11 @@ public class VideoService : IVideoService
     public async Task<long> SaveFile(RawVideo rawVideo, Guid userId, CancellationToken cancellationToken)
     {
         var fingerprint = await rawVideo.GetSafeFingerprintAsync();
-        var video = await rawVideo.ToFormattedVideoAsync(cancellationToken);
         var name = $"{fingerprint}{Path.GetExtension(rawVideo.GetFileName())}";
         var thumbnailName = $"{fingerprint}.{ThumbnailExtension}";
 
         await SaveVideoAsync(userId, name, rawVideo, cancellationToken);
-        var thumbnailSize = await SaveThumbnailAsync(userId, name, thumbnailName, video, cancellationToken);
+        var thumbnailSize = await SaveThumbnailAsync(userId, name, thumbnailName, cancellationToken);
         return rawVideo.GetVideoSize() + thumbnailSize;
     }
 
@@ -37,8 +36,11 @@ public class VideoService : IVideoService
         var fingerprint = await rawVideo.GetSafeFingerprintAsync();
         var hash = Convert.ToBase64String(await rawVideo.GetHashAsync());
         var objectId = new ObjectId(userId, fingerprint);
-        var video = await rawVideo.ToFormattedVideoAsync(cancellationToken);
-        var extension = video.GetExtension(filename);
+        var extension = FormattedVideo.GetExtension(rawVideo.GetFileName());
+
+        var userFolders = _objectStorage.GetUserFolders(userId);
+        var storedObjectPathName = Path.Combine(userFolders.ObjectFolder, $"{fingerprint}.{extension}");
+        var video = await rawVideo.ToFormattedVideoAsync(storedObjectPathName, cancellationToken);
 
         var evt = new MediaObjectCreated
         {
@@ -65,14 +67,14 @@ public class VideoService : IVideoService
         return _objectStorage.StoreObjectAsync(userId, rawVideo, name, cancellationToken);
     }
 
-    private async Task<long> SaveThumbnailAsync(Guid userId, string name, string thumbnailName, FormattedVideo video, CancellationToken cancellationToken)
+    private async Task<long> SaveThumbnailAsync(Guid userId, string name, string thumbnailName, CancellationToken cancellationToken)
     {
         var userFolders = _objectStorage.GetUserFolders(userId);
 
         var objectFileName = Path.Combine(userFolders.ObjectFolder, name);
         var thumbnailFileName = Path.Combine(userFolders.ThumbFolder, thumbnailName);
 
-        await video.SaveThumbnailAsync(objectFileName, thumbnailFileName, cancellationToken);
+        await FormattedVideo.SaveThumbnailAsync(objectFileName, thumbnailFileName, cancellationToken);
 
         var thumbnailFileInfo = new FileInfo(thumbnailFileName);
         return thumbnailFileInfo.Exists ? thumbnailFileInfo.Length : 0;
