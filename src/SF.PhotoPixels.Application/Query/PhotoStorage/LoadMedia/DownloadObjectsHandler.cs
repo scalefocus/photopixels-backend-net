@@ -1,15 +1,16 @@
-using System.IO.Compression;
 using Marten;
 using Mediator;
 using OneOf;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Domain.Utils;
 using SF.PhotoPixels.Infrastructure.Storage;
+using System.IO.Compression;
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia;
 
-public class DownloadObjectsHandler : IRequestHandler<DownloadObjectsRequest, OneOf<byte[], NotFound>>
+public class DownloadObjectsHandler : IRequestHandler<DownloadObjectsRequest, OneOf<DownloadObjectsResult, NotFound>>
 {
     private readonly IExecutionContextAccessor _executionContextAccessor;
     private readonly IDocumentSession _session;
@@ -22,18 +23,36 @@ public class DownloadObjectsHandler : IRequestHandler<DownloadObjectsRequest, On
         _objectStorage = objectStorage;
     }
 
-    public async ValueTask<OneOf<byte[], NotFound>> Handle(DownloadObjectsRequest request, CancellationToken cancellationToken)
+    public async ValueTask<OneOf<DownloadObjectsResult, NotFound>> Handle(DownloadObjectsRequest request, CancellationToken cancellationToken)
     {
         var objects = await _session.Query<ObjectProperties>()
             .Where(obj => request.ObjectIds.Contains(obj.Id) && _executionContextAccessor.UserId == obj.UserId)
-            .Select(x => new { x.Hash, x.Extension, x.Name })
             .ToListAsync(cancellationToken);
 
-        if (objects.Count == 0)
-            return new NotFound();
+        return objects.Count switch
+        {
+            0 => new NotFound(),
+            1 => await HandleSingleObjectAsync(objects[0], cancellationToken),
+            _ => await HandleMultipleObjectsAsync(objects, cancellationToken)
+        };
+    }
 
+    private async ValueTask<DownloadObjectsResult> HandleSingleObjectAsync(ObjectProperties obj, CancellationToken cancellationToken)
+    {
         var userFolders = _objectStorage.GetUserFolders(_executionContextAccessor.UserId);
+        var filePath = Path.Combine(userFolders.ObjectFolder, $"{obj.Hash}.{obj.Extension}");
+        var fileBytes = await File.ReadAllBytesAsync(filePath, cancellationToken);
+        return new DownloadObjectsResult
+        {
+            FileBytes = fileBytes,
+            FileName = obj.Name,
+            ContentType = MimeTypes.GetMimeTypeFromExtension(obj.Extension)
+        };
+    }
 
+    private async ValueTask<DownloadObjectsResult> HandleMultipleObjectsAsync(IReadOnlyList<ObjectProperties> objects, CancellationToken cancellationToken)
+    {
+        var userFolders = _objectStorage.GetUserFolders(_executionContextAccessor.UserId);
         using var memoryStream = new MemoryStream();
         using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
         {
@@ -48,7 +67,11 @@ public class DownloadObjectsHandler : IRequestHandler<DownloadObjectsRequest, On
             }
         }
 
-        memoryStream.Position = 0;
-        return memoryStream.ToArray();
+        return new DownloadObjectsResult
+        {
+            FileBytes = memoryStream.ToArray(),
+            FileName = "files.zip",
+            ContentType = "application/zip"
+        };
     }
 }

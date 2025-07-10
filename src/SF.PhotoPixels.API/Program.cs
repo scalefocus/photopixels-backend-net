@@ -106,7 +106,7 @@ app.UseCors(cfg =>
         .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials()
-        .WithExposedHeaders();
+        .WithExposedHeaders("content-disposition");
 });
 
 app.Use((context, next) =>
@@ -125,9 +125,9 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.MapHealthChecks("/health", new HealthCheckOptions
-    {
-        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    })
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+})
     .AllowAnonymous();
 
 app.UseAuthentication();
