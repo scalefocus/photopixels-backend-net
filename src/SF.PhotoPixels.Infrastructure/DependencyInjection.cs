@@ -109,6 +109,16 @@ public static class DependencyInjection
                 options.Schema.For<ApplicationConfiguration>()
                     .Index(x => x.Id);
 
+                options.Schema.For<Album>()
+                    .Index(x => x.Id)
+                    .Duplicate(x => x.UserId, configure: idx => idx.IsUnique = false);
+
+
+                options.Schema.For<ObjectAlbum>()
+                    .Index(x => x.Id);
+                    // .Duplicate(x => x.AlbumId)
+                    // .Duplicate(x => x.ObjectId);
+
                 options.Projections.Add(new ObjectPropertiesProjection(), ProjectionLifecycle.Inline);
 
                 options.AutoCreateSchemaObjects = AutoCreate.None;
