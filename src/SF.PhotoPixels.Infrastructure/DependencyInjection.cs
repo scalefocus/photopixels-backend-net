@@ -109,6 +109,9 @@ public static class DependencyInjection
                 options.Schema.For<ApplicationConfiguration>()
                     .Index(x => x.Id);
 
+                options.Schema.For<Album>()
+                    .Index(x => x.Id);
+
                 options.Projections.Add(new ObjectPropertiesProjection(), ProjectionLifecycle.Inline);
 
                 options.AutoCreateSchemaObjects = AutoCreate.None;

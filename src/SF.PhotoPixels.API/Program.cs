@@ -18,6 +18,9 @@ using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Infrastructure;
 using SF.PhotoPixels.Infrastructure.Options;
 using SF.PhotoPixels.Infrastructure.Stores;
+using System.Text.Encodings.Web;
+//using System.Text.Json;
+//using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,6 +81,8 @@ builder.Services.AddSwaggerDocumentation();
 builder.Host.ApplyOaktonExtensions();
 
 builder.ConfigureWebServersUpperLimitOptions();
+
+
 
 var app = builder.Build();
 

@@ -36,6 +36,8 @@ public class ObjectProperties : ISoftDeleted
 
     public bool Deleted { get; set; }
 
+    public List<Guid> AlbumIds { get; set; } = new();
+
     [SoftDeletedAtMetadata]
     public DateTimeOffset? DeletedAt { get; set; }
 
