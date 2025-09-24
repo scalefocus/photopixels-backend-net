@@ -1,10 +1,11 @@
-using System.Runtime.InteropServices;
 using Marten;
+
 using Mediator;
+
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+
 using OneOf;
-using OneOf.Types;
+
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Application.Query.PhotoStorage.GetObjects;
 using SF.PhotoPixels.Domain.Entities;
@@ -30,7 +31,7 @@ public class GetAlbumItemsHandler : IQueryHandler<GetAlbumItemsRequest, OneOf<Ge
     {
         _logger.LogInformation("Handling {RequestType}", request.GetType().Name);
 
-        var itemsPerAlbumIds = await _session.Query<ObjectAlbum>()
+        var itemsPerAlbumIds = await _session.Query<AlbumObject>()
             .Where(x => x.AlbumId == request.AlbumId)
             .Select(x => x.ObjectId)
             .ToListAsync(cancellationToken);

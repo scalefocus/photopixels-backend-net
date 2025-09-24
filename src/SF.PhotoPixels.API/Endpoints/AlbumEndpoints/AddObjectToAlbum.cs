@@ -8,6 +8,7 @@ using OneOf;
 using OneOf.Types;
 
 using SF.PhotoPixels.Application;
+using SF.PhotoPixels.Application.Commands.AlbumObjects;
 
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -22,14 +23,14 @@ namespace SF.PhotoPixels.API.Endpoints.AlbumEndpoints
             _mediator = mediator;
         }
 
-        [HttpPut("/album/{albumId}/object/{objectId}")]
+        [HttpPut("/album/{albumId}/objects/")]
         [SwaggerOperation(
-                Summary = "Add an object to an album",
-                Description = "Add an object to an album",
+                Summary = "Add object(s) to an album",
+                Description = "Add object(s) to an album",
                 OperationId = "Add_Object_To_Album",
                 Tags = new[] { "Album operations" }),
         ]
-        public override async Task<ActionResult<OneOf<Success, ValidationError>>> HandleAsync([FromBody] AddObjectToAlbumRequest request, CancellationToken cancellationToken = default)
+        public override async Task<ActionResult<OneOf<Success, ValidationError>>> HandleAsync(AddObjectToAlbumRequest request, CancellationToken cancellationToken = default)
         {
             var result = await _mediator.Send(request, cancellationToken);
 

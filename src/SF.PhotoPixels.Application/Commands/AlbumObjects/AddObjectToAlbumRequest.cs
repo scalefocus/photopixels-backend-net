@@ -1,16 +1,23 @@
 using Mediator;
+
+using Microsoft.AspNetCore.Mvc;
+
 using OneOf;
 using OneOf.Types;
-using SF.PhotoPixels.Application;
+
+namespace SF.PhotoPixels.Application.Commands.AlbumObjects;
 
 public class AddObjectToAlbumRequest : IRequest<OneOf<Success, ValidationError>>
 {
-    public required string ObjectId { get; set; }
+    [FromRoute(Name = "albumId")]
     public required string AlbumId { get; set; }
 
-    public AddObjectToAlbumRequest(string objectId, string albumId)
+    [FromBody]
+    public required string[] ObjectIds { get; set; }    
+
+    public AddObjectToAlbumRequest(string[] objectIds, string albumId)
     {
-        ObjectId = objectId;
+        ObjectIds = objectIds;
         AlbumId = albumId;
     }
 

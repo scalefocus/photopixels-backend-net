@@ -114,7 +114,7 @@ public static class DependencyInjection
                     .Duplicate(x => x.UserId, configure: idx => idx.IsUnique = false);
 
 
-                options.Schema.For<ObjectAlbum>()
+                options.Schema.For<AlbumObject>()
                 .Index(x => x.Id)
                 .Duplicate(x => x.ObjectId)
                 .Duplicate(x => x.AlbumId);                

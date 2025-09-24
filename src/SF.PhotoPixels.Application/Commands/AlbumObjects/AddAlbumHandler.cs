@@ -10,7 +10,7 @@ using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 
-namespace SF.PhotoPixels.Application.Commands;
+namespace SF.PhotoPixels.Application.Commands.AlbumObjects;
 
 public class AddObjectToAlbumHandler : IRequestHandler<AddObjectToAlbumRequest, OneOf<Success, ValidationError>>
 {
@@ -32,14 +32,22 @@ public class AddObjectToAlbumHandler : IRequestHandler<AddObjectToAlbumRequest, 
             return new ValidationError("IllegalUserInput", "Album cannot be null or empty");
         }
 
-        if (string.IsNullOrEmpty(request.ObjectId))
+        if (request.ObjectIds == null || request.ObjectIds.Length == 0 )
         {
-            return new ValidationError("IllegalUserInput", "Object cannot be null or empty");
+            return new ValidationError("IllegalUserInput", "Add objects to be atached to the album");
         }
 
-        var objectAlbum = new ObjectAlbum(request.ObjectId, request.AlbumId);
+        foreach (var objectId in request.ObjectIds)
+        {
+            if (string.IsNullOrEmpty(objectId))
+            {
+                return new ValidationError("IllegalUserInput", "ObjectId cannot be null or empty");
+            }
+
+            var albumObject = new AlbumObject(request.AlbumId, objectId);            
+            _session.Store(albumObject);
+        }
         
-        _session.Store(objectAlbum);
         await _session.SaveChangesAsync();
 
         return new Success();

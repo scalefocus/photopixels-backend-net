@@ -36,20 +36,11 @@ public class AddToAlbumHandler : IRequestHandler<AddToAlbumRequest, OneOf<AddToA
         if (objectProperties == null || objectProperties.UserId != _executionContextAccessor.UserId)
             return new NotFound();
 
-        var objectAlbum = new ObjectAlbum(request.ObjectId, request.AlbumId);
+        var objectAlbum = new AlbumObject(request.ObjectId, request.AlbumId);
 
         _session.Store(objectAlbum);
         await _session.SaveChangesAsync(cancellationToken);
 
-
-        // await _session.SaveAsync(album, cancellationToken);    
-
-        // var objects = await _session.Query<ObjectProperties>()
-        //     .Where(obj => request.ObjectIds.Contains(obj.Id) && _executionContextAccessor.UserId == obj.UserId)
-        //     .Select(x => new { x.Hash, x.Extension, x.Name })
-        //     .ToListAsync(cancellationToken);
-
-        // if (objects.Count == 0)
 
         return new AddToAlbumResponse { AlbumId = request.AlbumId, ObjectId = request.ObjectId };
     }
