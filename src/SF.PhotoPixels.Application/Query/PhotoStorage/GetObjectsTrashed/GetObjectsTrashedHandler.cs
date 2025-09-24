@@ -57,7 +57,8 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
             {
                 Id = obj.Id,
                 DateCreated = obj.DateCreated,
-                DateTrashed = obj.DeletedAt
+                DateTrashed = obj.DeletedAt,
+                MediaType = MediaHelper.GetMediaType(obj.Extension)
             };
 
             properties.Add(thumbnailProperty);

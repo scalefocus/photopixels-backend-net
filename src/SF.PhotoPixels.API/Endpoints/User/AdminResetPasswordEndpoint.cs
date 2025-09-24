@@ -28,8 +28,8 @@ public class AdminResetPasswordEndpoint : EndpointBaseAsync.WithRequest<AdminRes
 
         return response.Match<ActionResult>(
             response => Ok(response),
-            validationError => new BadRequestObjectResult(validationError),
-            BusinessLogicError => new BadRequestObjectResult(BusinessLogicError)
+            validationError => new BadRequestObjectResult(validationError.Errors),
+            BusinessLogicError => new BadRequestObjectResult(BusinessLogicError.Errors)
         );
     }
 }

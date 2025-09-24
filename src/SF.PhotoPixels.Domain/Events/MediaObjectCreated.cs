@@ -27,4 +27,6 @@ public record MediaObjectCreated
     public long SizeInBytes { get; set; }
 
     public string? OriginalHash { get; set; }
+
+    public bool IsFavorite { get; set; }
 }

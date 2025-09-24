@@ -39,6 +39,8 @@ public class ObjectProperties : ISoftDeleted
     [SoftDeletedAtMetadata]
     public DateTimeOffset? DeletedAt { get; set; }
 
+    public bool? IsFavorite { get; set; } = false;
+
     // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
     internal ObjectProperties()
     {

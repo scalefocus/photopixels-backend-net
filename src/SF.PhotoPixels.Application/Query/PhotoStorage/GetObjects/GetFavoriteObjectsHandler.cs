@@ -8,18 +8,18 @@ using SF.PhotoPixels.Domain.Entities;
 
 namespace SF.PhotoPixels.Application.Query.PhotoStorage.GetObjects;
 
-public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjectsResponse, None>>
+public class GetFavoriteObjectsHandler : IQueryHandler<GetFavoriteObjectsRequest, OneOf<GetObjectsResponse, None>>
 {
     private readonly IExecutionContextAccessor _executionContextAccessor;
     private readonly IDocumentSession _session;
 
-    public GetObjectsHandler(IDocumentSession session, IExecutionContextAccessor executionContextAccessor)
+    public GetFavoriteObjectsHandler(IDocumentSession session, IExecutionContextAccessor executionContextAccessor)
     {
         _session = session;
         _executionContextAccessor = executionContextAccessor;
     }
 
-    public async ValueTask<OneOf<GetObjectsResponse, None>> Handle(GetObjectsRequest request, CancellationToken cancellationToken)
+    public async ValueTask<OneOf<GetObjectsResponse, None>> Handle(GetFavoriteObjectsRequest request, CancellationToken cancellationToken)
     {
         var utcNow = DateTimeOffset.UtcNow;
         string? sqlQuery;
@@ -28,9 +28,11 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
             sqlQuery = $@"
                 SELECT  data
                 FROM photos.mt_doc_objectproperties
-                WHERE mt_deleted = false 
+                WHERE mt_deleted = false
+                AND (Data ->> 'IsFavorite' IS NOT NULL
+                    AND (Data ->> 'IsFavorite')::boolean = true)
                 AND (data->>'DateCreated')::timestamptz <= :timeNow
-                        AND (data->>'UserId')::uuid = :userId
+                    AND (data->>'UserId')::uuid = :userId
                 ORDER BY data->>'DateCreated' desc ,id desc
                 FETCH FIRST :pageSize ROWS ONLY";
         }
@@ -40,6 +42,8 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                 SELECT  data
                 FROM photos.mt_doc_objectproperties
                 WHERE mt_deleted = false 
+                AND (Data ->> 'IsFavorite' IS NOT NULL
+                    AND (Data ->> 'IsFavorite')::boolean = true)
                 AND ((data->>'DateCreated')::timestamptz = (SELECT (data->>'DateCreated')::timestamptz
                                                               FROM photos.mt_doc_objectproperties
                                                               WHERE id = :lastId)
@@ -70,7 +74,7 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                 Id = obj.Id,
                 DateCreated = obj.DateCreated,
                 MediaType = MediaHelper.GetMediaType(obj.Extension),
-                IsFavorite = obj.IsFavorite ?? false
+                IsFavorite = true
             };
 
             properties.Add(thumbnailProperty);

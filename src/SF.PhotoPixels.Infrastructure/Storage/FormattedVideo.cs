@@ -1,19 +1,22 @@
-﻿using System.Drawing;
-using System.Globalization;
-using FFMpegCore;
+﻿using FFMpegCore;
 using SF.PhotoPixels.Domain.Utils;
+using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
 
 namespace SF.PhotoPixels.Infrastructure.Storage;
 
 public sealed class FormattedVideo : IDisposable, IStorageItem
 {
-    private readonly MediaFormat _format;
-    private readonly IMediaAnalysis _video;
+    private readonly MediaFormat? _format; 
+    private readonly IMediaAnalysis? _video;
 
-    public int Width => _video.PrimaryVideoStream?.Width ?? 0;
-    public int Height => _video.PrimaryVideoStream?.Height ?? 0;
+    public int Width => _video?.PrimaryVideoStream?.Width ?? 0;    
+    public int Height => _video?.PrimaryVideoStream?.Height ?? 0;
 
-    private FormattedVideo(IMediaAnalysis video, MediaFormat format)
+    private static readonly string _FfmpegExeFilePath = Path.Combine(GlobalFFOptions.Current.BinaryFolder, "ffmpeg");
+
+    private FormattedVideo(IMediaAnalysis? video, MediaFormat? format) // Updated parameters to nullable types
     {
         _video = video;
         _format = format;
@@ -23,7 +26,7 @@ public sealed class FormattedVideo : IDisposable, IStorageItem
     {
     }
 
-    public async static Task<FormattedVideo> LoadAsync(Stream source, CancellationToken cancellationToken = default)
+    public async static Task<FormattedVideo> LoadAsync(string source, CancellationToken cancellationToken = default)
     {
         var video = await FFProbe.AnalyseAsync(source);
         return new FormattedVideo(video, video.Format);
@@ -34,25 +37,26 @@ public sealed class FormattedVideo : IDisposable, IStorageItem
         return MimeTypes.GetMimeTypeFromExtension(extension);
     }
 
-    public string GetExtension(string filename)
+    public static string GetExtension(string filename)
     {
-        var extension = Path.GetExtension(filename).TrimStart('.');
-        if (_format.FormatName.IndexOf(extension, StringComparison.OrdinalIgnoreCase) == -1)
-        {
-            throw new InvalidOperationException($"{nameof(filename)} has illegal extension.");
-        }
-
-        return extension;
+        return Path.GetExtension(filename).TrimStart('.');
     }
 
-    public string GetName(string filename)
+    public static string GetName(string filename)
     {
         return Path.GetFileNameWithoutExtension(filename);
     }
 
-    public async Task<bool> SaveThumbnailAsync(string inputPath, string outputPath, CancellationToken cancellationToken = default)
+    public static async Task<bool> SaveThumbnailAsync(string inputPath, string outputPath, CancellationToken cancellationToken = default)
     {
-        await FFMpeg.SnapshotAsync(inputPath, outputPath, new Size(200, -1), TimeSpan.FromSeconds(1));
+        try
+        {
+            await FFMpeg.SnapshotAsync(inputPath, outputPath, new Size(200, -1), TimeSpan.FromSeconds(1));
+        }
+        catch (Exception)
+        {
+            await CreateThumbnailUsingFfmpeg(inputPath, outputPath, new ThumbnailSize(200, 200, 1));
+        }
         return true;
     }
 
@@ -63,12 +67,53 @@ public sealed class FormattedVideo : IDisposable, IStorageItem
 
     public DateTime GetDateTime()
     {
-        if (_format.Tags != null && _format.Tags.TryGetValue("creation_time", out var tag) &&
+        if (_format?.Tags != null && _format.Tags.TryGetValue("creation_time", out var tag) &&
             DateTime.TryParse(tag, CultureInfo.InvariantCulture, out DateTime parsedDateTime))
         {
             return parsedDateTime;
         }
 
         return DateTime.UtcNow;
+    }
+
+    static Task<long> CreateThumbnailUsingFfmpeg(string mediaFilePath, string outputPath, ThumbnailSize thumbnailSize)
+    {
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        string additionalVideoParameters = "-ss 5 -an";
+        var tcs = new TaskCompletionSource<long>();
+
+        var process = new Process
+        {
+            StartInfo =
+                    {
+                        FileName = _FfmpegExeFilePath,
+                        Arguments = $"{additionalVideoParameters} -i \"{mediaFilePath}\" -vframes 1 -s {thumbnailSize.Width}x{thumbnailSize.Height} -y \"{outputPath}\""
+                    },
+            EnableRaisingEvents = true
+        };
+
+        process.Exited += (sender, args) =>
+        {
+            process.Dispose();
+            stopwatch.Stop();
+            tcs.SetResult(stopwatch.ElapsedMilliseconds);
+        };
+        process.Start();
+        return tcs.Task;
+    }
+
+    private class ThumbnailSize
+    {
+        public ThumbnailSize(uint originalWidth, uint originalHeight, uint sizeDivider)
+        {
+            Max = Math.Max(originalWidth, originalHeight) / sizeDivider;
+            Width = originalWidth / sizeDivider;
+            Height = originalHeight / sizeDivider;
+        }
+        public uint Width;
+        public uint Height;
+        public uint Max;
     }
 }

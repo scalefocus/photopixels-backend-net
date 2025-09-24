@@ -8,4 +8,6 @@ public class PropertiesResponse
 
     public string? MediaType { get; set; }
 
+    public bool? IsFavorite { get; set; }
+
 }
