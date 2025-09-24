@@ -1,11 +1,13 @@
 DROP TABLE IF EXISTS photos.mt_doc_objectalbum CASCADE;
 CREATE TABLE photos.mt_doc_objectalbum (
-    id                  varchar                     NOT NULL,
-    data                jsonb                       NOT NULL,
-    mt_last_modified    timestamp with time zone    NULL DEFAULT (transaction_timestamp()),
-    mt_version          uuid                        NOT NULL DEFAULT (md5(random()::text || clock_timestamp()::text)::uuid),
-    mt_dotnet_type      varchar                     NULL,
-CONSTRAINT pkey_mt_doc_objectalbum_id PRIMARY KEY (id)
+    id               varchar                     NOT NULL,
+    data             jsonb                       NOT NULL,
+    mt_last_modified timestamp with time zone    NULL DEFAULT (transaction_timestamp()),
+    mt_version       uuid                        NOT NULL DEFAULT (md5(random()::text || clock_timestamp()::text)::uuid),
+    mt_dotnet_type   varchar                     NULL,    
+    object_id        varchar                     NULL,
+    album_id         varchar                     NULL,    
+    CONSTRAINT pkey_mt_doc_objectalbum_id PRIMARY KEY (id)
 );
 
 CREATE INDEX mt_doc_objectalbum_idx_id ON photos.mt_doc_objectalbum USING btree ((id));

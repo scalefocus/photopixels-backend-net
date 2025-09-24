@@ -115,13 +115,15 @@ public static class DependencyInjection
 
 
                 options.Schema.For<ObjectAlbum>()
-                    .Index(x => x.Id);
-                    // .Duplicate(x => x.AlbumId)
-                    // .Duplicate(x => x.ObjectId);
+                .Index(x => x.Id)
+                .Duplicate(x => x.ObjectId)
+                .Duplicate(x => x.AlbumId);                
 
                 options.Projections.Add(new ObjectPropertiesProjection(), ProjectionLifecycle.Inline);
-
-                options.AutoCreateSchemaObjects = AutoCreate.None;
+                
+                options.AutoCreateSchemaObjects = isDevelopment
+                    ? AutoCreate.CreateOrUpdate
+                    : AutoCreate.None;
 
                 options.Events.AddEventType<MediaObjectCreated>();
                 options.Events.AddEventType<MediaObjectUpdated>();
