@@ -1,13 +1,10 @@
-using System.Runtime.InteropServices;
 using Marten;
 using Mediator;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using OneOf;
-using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
 
-namespace SF.PhotoPixels.Application.Query.Albums;
+namespace SF.PhotoPixels.Application.Query.Album;
 
 public class GetAlbumsHandler : IQueryHandler<GetAlbumsRequest, OneOf<GetAlbumsResponse, ValidationError>>
 {

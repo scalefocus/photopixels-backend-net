@@ -26,7 +26,7 @@ public class AddToAlbumHandler : IRequestHandler<AddToAlbumRequest, OneOf<AddToA
         if (string.IsNullOrEmpty(request.ObjectId) || string.IsNullOrEmpty(request.AlbumId))
             return new NotFound();
 
-        var album = await _session.LoadAsync<Album>(request.AlbumId, cancellationToken);
+        var album = await _session.LoadAsync<Domain.Entities.Album>(request.AlbumId, cancellationToken);
 
         if (album == null || album.UserId != _executionContextAccessor.UserId)
             return new NotFound();

@@ -1,9 +1,8 @@
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
-using OneOf.Types;
 
-namespace SF.PhotoPixels.Application.Query.Albums;
+namespace SF.PhotoPixels.Application.Query.Album;
 
 public class GetAlbumItemsRequest : IQuery<OneOf<GetAlbumItemsResponse, ValidationError>>
 {

@@ -1,18 +1,14 @@
 using Marten;
-
 using Mediator;
-
 using Microsoft.Extensions.Logging;
-
 using OneOf;
-
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Application.Query.PhotoStorage.GetObjects;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Enums;
 using SF.PhotoPixels.Infrastructure;
 
-namespace SF.PhotoPixels.Application.Query.Albums;
+namespace SF.PhotoPixels.Application.Query.Album;
 
 public class GetAlbumItemsHandler : IQueryHandler<GetAlbumItemsRequest, OneOf<GetAlbumItemsResponse, ValidationError>>
 {

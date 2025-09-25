@@ -1,17 +1,13 @@
 using Ardalis.ApiEndpoints;
-using Marten;
 using Mediator;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
-using OneOf.Types;
 using SF.PhotoPixels.Application;
-using SF.PhotoPixels.Application.Query.Albums;
-using SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia;
-using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Application.Query.Album;
+
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace SF.PhotoPixels.API.Endpoints.PhotosEndpoints;
+namespace SF.PhotoPixels.API.Endpoints.AlbumEndpoints;
 
 public class GetAlbums : EndpointBaseAsync.WithoutRequest.WithActionResult<OneOf<GetAlbumsResponse, ValidationError>>
 {

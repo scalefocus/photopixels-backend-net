@@ -1,10 +1,6 @@
-using Mediator;
-using Microsoft.AspNetCore.Mvc;
-using OneOf;
-using OneOf.Types;
 using SF.PhotoPixels.Application.Query.PhotoStorage.GetObjects;
 
-namespace SF.PhotoPixels.Application.Query.Albums;
+namespace SF.PhotoPixels.Application.Query.Album;
 
 public class GetAlbumItemsResponse
 {

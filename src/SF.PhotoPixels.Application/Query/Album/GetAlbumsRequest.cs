@@ -1,8 +1,7 @@
 using Mediator;
 using OneOf;
-using OneOf.Types;
 
-namespace SF.PhotoPixels.Application.Query.Albums;
+namespace SF.PhotoPixels.Application.Query.Album;
 
 public class GetAlbumsRequest : IQuery<OneOf<GetAlbumsResponse, ValidationError>>
 {
