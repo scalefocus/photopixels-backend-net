@@ -20,7 +20,7 @@ namespace SF.PhotoPixels.API.Endpoints.AlbumEndpoints
             _mediator = mediator;
         }
 
-        [HttpPut("/album/{albumId}/objects/")]
+        [HttpPost("/album/{albumId}/objects/")]
         [SwaggerOperation(
                 Summary = "Add object(s) to an album",
                 Description = "Add object(s) to an album",
