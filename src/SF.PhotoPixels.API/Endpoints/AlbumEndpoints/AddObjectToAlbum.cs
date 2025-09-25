@@ -1,20 +1,17 @@
 ﻿using Ardalis.ApiEndpoints;
-
 using Mediator;
-
 using Microsoft.AspNetCore.Mvc;
-
 using OneOf;
 using OneOf.Types;
-
 using SF.PhotoPixels.Application;
 using SF.PhotoPixels.Application.Commands.AlbumObjects;
-
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SF.PhotoPixels.API.Endpoints.AlbumEndpoints
 {
-    public class AddObjectToAlbum: EndpointBaseAsync.WithRequest<AddObjectToAlbumRequest>.WithActionResult<OneOf<Success, ValidationError>>
+    public class AddObjectToAlbum: EndpointBaseAsync
+        .WithRequest<AddObjectToAlbumRequest>
+        .WithActionResult<OneOf<Success, ValidationError>>
     {
         private readonly IMediator _mediator;
 

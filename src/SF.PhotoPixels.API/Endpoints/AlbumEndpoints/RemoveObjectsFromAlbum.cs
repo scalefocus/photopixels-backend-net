@@ -4,28 +4,29 @@ using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using OneOf.Types;
 using SF.PhotoPixels.Application;
-using SF.PhotoPixels.Application.Commands.Albums;
+using SF.PhotoPixels.Application.Commands.AlbumObjects;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SF.PhotoPixels.API.Endpoints.AlbumEndpoints;
 
-public class AddAlbum : EndpointBaseAsync.WithRequest<AddAlbumRequest>.WithActionResult<OneOf<Success, ValidationError>>
+public class RemoveObjectsFromAlbum : EndpointBaseAsync
+    .WithRequest<DeleteAlbumObjectRequest>
+    .WithActionResult<OneOf<Success, ValidationError>>
 {
     private readonly IMediator _mediator;
 
-    public AddAlbum(IMediator mediator)
+    public RemoveObjectsFromAlbum(IMediator mediator)
     {
         _mediator = mediator;
     }
-
-    [HttpPost("/album/")]
+    
+    [HttpPost("/albums/{albumId}/objects:bulk-delete")]
     [SwaggerOperation(
-            Summary = "Add a new album",
-            Description = "Creates a new album",
-            OperationId = "Add_Album",
+            Summary = "Remove item(s) from album",
+            Description = "Remove item(s) from albumn. The actual items remain intact. Just the album relation is removed.",
             Tags = new[] { "Album operations" }),
     ]
-    public override async Task<ActionResult<OneOf<Success, ValidationError>>> HandleAsync([FromBody] AddAlbumRequest request, CancellationToken cancellationToken = default)
+    public override async Task<ActionResult<OneOf<Success, ValidationError>>> HandleAsync(DeleteAlbumObjectRequest request, CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(request, cancellationToken);
 

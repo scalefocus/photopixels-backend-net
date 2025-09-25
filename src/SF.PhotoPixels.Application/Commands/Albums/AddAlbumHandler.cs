@@ -4,14 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using OneOf;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
-using SF.PhotoPixels.Application.Security;
-using SF.PhotoPixels.Domain.Constants;
-using SF.PhotoPixels.Domain.Entities;
-using SF.PhotoPixels.Domain.Enums;
-using SF.PhotoPixels.Domain.Repositories;
-using SF.PhotoPixels.Domain.Utils;
 
-namespace SF.PhotoPixels.Application.Commands;
+namespace SF.PhotoPixels.Application.Commands.Albums;
 
 public class AddAlbumHandler : IRequestHandler<AddAlbumRequest, OneOf<Success, ValidationError>>
 {

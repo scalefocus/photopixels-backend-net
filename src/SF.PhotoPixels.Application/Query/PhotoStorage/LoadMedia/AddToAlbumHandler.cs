@@ -36,9 +36,9 @@ public class AddToAlbumHandler : IRequestHandler<AddToAlbumRequest, OneOf<AddToA
         if (objectProperties == null || objectProperties.UserId != _executionContextAccessor.UserId)
             return new NotFound();
 
-        var objectAlbum = new AlbumObject(request.ObjectId, request.AlbumId);
+        var albumObject = new AlbumObject(request.ObjectId, request.AlbumId);
 
-        _session.Store(objectAlbum);
+        _session.Store(albumObject);
         await _session.SaveChangesAsync(cancellationToken);
 
 

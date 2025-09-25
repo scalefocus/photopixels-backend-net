@@ -1,7 +1,8 @@
 using Mediator;
 using OneOf;
 using OneOf.Types;
-using SF.PhotoPixels.Application;
+
+namespace SF.PhotoPixels.Application.Commands.Albums;
 
 public class AddAlbumRequest : IRequest<OneOf<Success, ValidationError>>
 {

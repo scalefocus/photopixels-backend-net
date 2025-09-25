@@ -1,25 +1,18 @@
 using Marten;
 using Mediator;
-using Microsoft.AspNetCore.Identity;
 using OneOf;
 using OneOf.Types;
-using SF.PhotoPixels.Application.Commands.Albums;
-using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 
-namespace SF.PhotoPixels.Application.Commands.ObjectVersioning.DeleteObject;
+namespace SF.PhotoPixels.Application.Commands.Albums;
 
 public class DeleteAlbumHandler : IRequestHandler<DeleteAlbumRequest, OneOf<Success, ValidationError>>
-{
-    private readonly UserManager<Domain.Entities.User> _userManager;
+{    
     private readonly IDocumentSession _session;
-    private readonly IExecutionContextAccessor _executionContextAccessor;
-
-    public DeleteAlbumHandler(UserManager<Domain.Entities.User> userManager, IDocumentSession session, IExecutionContextAccessor executionContextAccessor)
-    {
-        _userManager = userManager;
-        _session = session;
-        _executionContextAccessor = executionContextAccessor;
+    
+    public DeleteAlbumHandler(IDocumentSession session)
+    {        
+        _session = session;    
     }
 
     public async ValueTask<OneOf<Success, ValidationError>> Handle(DeleteAlbumRequest request, CancellationToken cancellationToken)
