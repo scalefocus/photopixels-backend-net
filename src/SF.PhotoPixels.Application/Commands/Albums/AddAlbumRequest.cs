@@ -4,7 +4,7 @@ using OneOf.Types;
 
 namespace SF.PhotoPixels.Application.Commands.Albums;
 
-public class AddAlbumRequest : IRequest<OneOf<Success, ValidationError>>
+public class AddAlbumRequest : IRequest<OneOf<AddAlbumResponse, ValidationError>>
 {
     public required string Name { get; set; }
     public bool IsSystem { get; set; } = false;

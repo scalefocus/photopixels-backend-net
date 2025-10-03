@@ -7,7 +7,7 @@ using SF.PhotoPixels.Application.Core;
 
 namespace SF.PhotoPixels.Application.Commands.Albums;
 
-public class AddAlbumHandler : IRequestHandler<AddAlbumRequest, OneOf<Success, ValidationError>>
+public class AddAlbumHandler : IRequestHandler<AddAlbumRequest, OneOf<AddAlbumResponse, ValidationError>>
 {
     private readonly UserManager<Domain.Entities.User> _userManager;
     private readonly IDocumentSession _session;
@@ -20,7 +20,7 @@ public class AddAlbumHandler : IRequestHandler<AddAlbumRequest, OneOf<Success, V
         _executionContextAccessor = executionContextAccessor;
     }
 
-    public async ValueTask<OneOf<Success, ValidationError>> Handle(AddAlbumRequest request, CancellationToken cancellationToken)
+    public async ValueTask<OneOf<AddAlbumResponse, ValidationError>> Handle(AddAlbumRequest request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(request.Name))
         {
@@ -38,6 +38,10 @@ public class AddAlbumHandler : IRequestHandler<AddAlbumRequest, OneOf<Success, V
         _session.Store(album);
         await _session.SaveChangesAsync();
 
-        return new Success();
+        return new AddAlbumResponse
+        {
+            Id = album.Id,
+            Name = album.Name,
+        };
     }
 }
