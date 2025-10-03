@@ -26,7 +26,7 @@ public class GetAlbumItemsHandler : IQueryHandler<GetAlbumItemsRequest, OneOf<Ge
     public async ValueTask<OneOf<GetAlbumItemsResponse, ValidationError>> Handle(GetAlbumItemsRequest request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Handling {RequestType}", request.GetType().Name);
-
+        
         var itemsPerAlbumIds = await _session.Query<AlbumObject>()
             .Where(x => x.AlbumId == request.AlbumId)
             .Select(x => x.ObjectId)
@@ -57,8 +57,3 @@ public class GetAlbumItemsHandler : IQueryHandler<GetAlbumItemsRequest, OneOf<Ge
     }
 
 }
-
-
-
-
-

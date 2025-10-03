@@ -31,8 +31,10 @@ public class DeleteAlbumHandler : IRequestHandler<DeleteAlbumRequest, OneOf<Succ
             _session.DeleteWhere<AlbumObject>(x => x.AlbumId == request.AlbumId);
 
             await _session.SaveChangesAsync(cancellationToken);
+            //The system should keep a log on the back-end. A timestamp of when an album was deleted.
+
         }
-                                
+
         return new Success();
     }    
 }
