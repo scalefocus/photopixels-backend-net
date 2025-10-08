@@ -1,23 +1,20 @@
-using Marten;
 using Mediator;
-using Microsoft.AspNetCore.Identity;
 using OneOf;
-using OneOf.Types;
 using SF.PhotoPixels.Application.Core;
+using SF.PhotoPixels.Domain.Events;
+using SF.PhotoPixels.Infrastructure.Repositories;
 
 namespace SF.PhotoPixels.Application.Commands.Albums;
 
 public class AddAlbumHandler : IRequestHandler<AddAlbumRequest, OneOf<AddAlbumResponse, ValidationError>>
-{
-    private readonly UserManager<Domain.Entities.User> _userManager;
-    private readonly IDocumentSession _session;
+{        
     private readonly IExecutionContextAccessor _executionContextAccessor;
+    private readonly IAlbumRepository _albumRepository;
 
-    public AddAlbumHandler(UserManager<Domain.Entities.User> userManager, IDocumentSession session, IExecutionContextAccessor executionContextAccessor)
-    {
-        _userManager = userManager;
-        _session = session;
+    public AddAlbumHandler(IExecutionContextAccessor executionContextAccessor, IAlbumRepository albumRepository)
+    { 
         _executionContextAccessor = executionContextAccessor;
+        _albumRepository = albumRepository;
     }
 
     public async ValueTask<OneOf<AddAlbumResponse, ValidationError>> Handle(AddAlbumRequest request, CancellationToken cancellationToken)
@@ -27,21 +24,21 @@ public class AddAlbumHandler : IRequestHandler<AddAlbumRequest, OneOf<AddAlbumRe
             return new ValidationError("IllegalUserInput", "Name cannot be null or empty");
         }
 
-        var album = new Domain.Entities.Album
+        var evt = new AlbumCreated
         {
-            Id = Guid.NewGuid().ToString(),
+            AlbumId = Guid.NewGuid(),
             Name = request.Name,
             IsSystem = false,
-            DateCreated = DateTimeOffset.UtcNow,
+            Timestamp = DateTimeOffset.UtcNow,            
             UserId = _executionContextAccessor.UserId
         };
-        _session.Store(album);
-        await _session.SaveChangesAsync();
+
+        await _albumRepository.AddAlbumEvent(evt.AlbumId, evt, cancellationToken);
 
         return new AddAlbumResponse
         {
-            Id = album.Id,
-            Name = album.Name,
+            Id = evt.AlbumId.ToString(),
+            Name = evt.Name,
         };
     }
 }

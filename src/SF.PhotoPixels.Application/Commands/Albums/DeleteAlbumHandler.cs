@@ -3,16 +3,20 @@ using Mediator;
 using OneOf;
 using OneOf.Types;
 using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Domain.Events;
+using SF.PhotoPixels.Infrastructure.Repositories;
 
 namespace SF.PhotoPixels.Application.Commands.Albums;
 
 public class DeleteAlbumHandler : IRequestHandler<DeleteAlbumRequest, OneOf<Success, ValidationError>>
 {    
     private readonly IDocumentSession _session;
-    
-    public DeleteAlbumHandler(IDocumentSession session)
+    private readonly IAlbumRepository _albumRepository;
+
+    public DeleteAlbumHandler(IDocumentSession session, IAlbumRepository albumRepository)
     {        
-        _session = session;    
+        _session = session;
+        _albumRepository = albumRepository;
     }
 
     public async ValueTask<OneOf<Success, ValidationError>> Handle(DeleteAlbumRequest request, CancellationToken cancellationToken)
@@ -22,17 +26,17 @@ public class DeleteAlbumHandler : IRequestHandler<DeleteAlbumRequest, OneOf<Succ
             return new ValidationError("IllegalUserInput", "Album cannot be null or empty");
         }
 
+        if(!Guid.TryParse(request.AlbumId, out var albumGuid))
+        {
+            return new ValidationError("IllegalUserInput", "AlbumId shoud be guid");
+        }
+
         var album = await _session.LoadAsync<Album>(request.AlbumId, cancellationToken);
         if (album != null)
         {
-            _session.Delete(album);
+            var evt = new AlbumDeleted(albumGuid);
 
-            var albumObjects = _session.Query<AlbumObject>().Where(x => x.AlbumId == request.AlbumId);
-            _session.DeleteWhere<AlbumObject>(x => x.AlbumId == request.AlbumId);
-
-            await _session.SaveChangesAsync(cancellationToken);
-            //The system should keep a log on the back-end. A timestamp of when an album was deleted.
-
+            await _albumRepository.AddAlbumEvent(albumGuid, evt, cancellationToken);            
         }
 
         return new Success();

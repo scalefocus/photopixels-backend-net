@@ -1,7 +1,3 @@
-
-using Marten.Metadata;
-using Marten.Schema;
-
 namespace SF.PhotoPixels.Domain.Entities;
 
 public class Album

@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IVideoService, VideoService>();
 
         services.AddTransient<IObjectRepository, ObjectRepository>();
+        services.AddTransient<IAlbumRepository, AlbumRepository>();
 
         services.AddIdentityCore<User>(opt => opt.User.RequireUniqueEmail = true);
         services.AddTransient<IUserStore<User>, UserStore>();
@@ -120,7 +121,8 @@ public static class DependencyInjection
                 .Duplicate(x => x.AlbumId);                
 
                 options.Projections.Add(new ObjectPropertiesProjection(), ProjectionLifecycle.Inline);
-                
+                options.Projections.Add(new AlbumProjection(), ProjectionLifecycle.Inline);
+
                 options.AutoCreateSchemaObjects = isDevelopment
                     ? AutoCreate.CreateOrUpdate
                     : AutoCreate.None;
@@ -130,6 +132,12 @@ public static class DependencyInjection
                 options.Events.AddEventType<MediaObjectTrashed>();
                 options.Events.AddEventType<MediaObjectRemovedFromTrash>();
                 options.Events.AddEventType<MediaObjectDeleted>();
+                options.Events.AddEventType<AlbumCreated>();
+                options.Events.AddEventType<AlbumDeleted>();
+                options.Events.AddEventType<AlbumUpdated>();
+                options.Events.AddEventType<ObjectToAlbumCreated>();
+
+
             })
             .UseLightweightSessions();
 

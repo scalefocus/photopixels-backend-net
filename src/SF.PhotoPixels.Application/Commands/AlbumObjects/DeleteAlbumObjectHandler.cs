@@ -1,18 +1,18 @@
-using Marten;
 using Mediator;
 using OneOf;
 using OneOf.Types;
-using SF.PhotoPixels.Domain.Entities;
+using SF.PhotoPixels.Domain.Events;
+using SF.PhotoPixels.Infrastructure.Repositories;
 
 namespace SF.PhotoPixels.Application.Commands.AlbumObjects;
 
 public class DeleteAlbumObjectHandler : IRequestHandler<DeleteAlbumObjectRequest, OneOf<Success, ValidationError>>
-{    
-    private readonly IDocumentSession _session;    
+{        
+    private readonly IAlbumRepository _albumRepository;
 
-    public DeleteAlbumObjectHandler(IDocumentSession session)
-    { 
-        _session = session;     
+    public DeleteAlbumObjectHandler(IAlbumRepository albumRepository)
+    {
+        _albumRepository = albumRepository;
     }
 
     public async ValueTask<OneOf<Success, ValidationError>> Handle(DeleteAlbumObjectRequest request, CancellationToken cancellationToken)
@@ -22,10 +22,32 @@ public class DeleteAlbumObjectHandler : IRequestHandler<DeleteAlbumObjectRequest
             return new ValidationError("IllegalUserInput", "Album cannot be null or empty");
         }
 
-        _session.DeleteWhere<AlbumObject>(x => x.AlbumId == request.AlbumId && request.ObjectIds.Contains(x.ObjectId));
-        
-        await _session.SaveChangesAsync(cancellationToken);
-        
+        if (!Guid.TryParse(request.AlbumId, out var albumGuid))
+        {
+            return new ValidationError("IllegalUserInput", "AlbumId shoud be guid");
+        }
+
+        if (request.ObjectIds == null || request.ObjectIds.Length == 0)
+        {
+            return new ValidationError("IllegalUserInput", "Add objects to be removed from the album");
+        }
+
+        foreach (var objectId in request.ObjectIds)
+        {
+            if (string.IsNullOrEmpty(objectId))
+            {
+                return new ValidationError("IllegalUserInput", "ObjectId cannot be null or empty");
+            }
+
+            var evt = new ObjectToAlbumDeleted
+            {
+                AlbumId = albumGuid,
+                ObjectId = objectId
+            };
+
+            await _albumRepository.AddAlbumEvent(evt.AlbumId, evt, cancellationToken);
+        }
+
         return new Success();
     }    
 }
