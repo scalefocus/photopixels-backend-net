@@ -8,7 +8,11 @@
 name: dotNET CI for Push
 run-name: ${{ github.actor }} started the .NET CI for Push workflow
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - 'v*' # trigger an action on attaching tag
+  workflow_dispatch:  # Allows manual triggering from GitHub UI
 
 jobs:
   build:
