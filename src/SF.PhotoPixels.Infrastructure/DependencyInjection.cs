@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IVideoService, VideoService>();
 
         services.AddTransient<IObjectRepository, ObjectRepository>();
+        services.AddTransient<IAlbumRepository, AlbumRepository>();
 
         services.AddIdentityCore<User>(opt => opt.User.RequireUniqueEmail = true);
         services.AddTransient<IUserStore<User>, UserStore>();
@@ -109,15 +110,34 @@ public static class DependencyInjection
                 options.Schema.For<ApplicationConfiguration>()
                     .Index(x => x.Id);
 
-                options.Projections.Add(new ObjectPropertiesProjection(), ProjectionLifecycle.Inline);
+                options.Schema.For<Album>()
+                    .Index(x => x.Id)
+                    .Duplicate(x => x.UserId, configure: idx => idx.IsUnique = false);
 
-                options.AutoCreateSchemaObjects = AutoCreate.None;
+
+                options.Schema.For<AlbumObject>()
+                .Index(x => x.Id)
+                .Duplicate(x => x.ObjectId)
+                .Duplicate(x => x.AlbumId);                
+
+                options.Projections.Add(new ObjectPropertiesProjection(), ProjectionLifecycle.Inline);
+                options.Projections.Add(new AlbumProjection(), ProjectionLifecycle.Inline);
+
+                options.AutoCreateSchemaObjects = isDevelopment
+                    ? AutoCreate.CreateOrUpdate
+                    : AutoCreate.None;
 
                 options.Events.AddEventType<MediaObjectCreated>();
                 options.Events.AddEventType<MediaObjectUpdated>();
                 options.Events.AddEventType<MediaObjectTrashed>();
                 options.Events.AddEventType<MediaObjectRemovedFromTrash>();
                 options.Events.AddEventType<MediaObjectDeleted>();
+                options.Events.AddEventType<AlbumCreated>();
+                options.Events.AddEventType<AlbumDeleted>();
+                options.Events.AddEventType<AlbumUpdated>();
+                options.Events.AddEventType<ObjectToAlbumCreated>();
+
+
             })
             .UseLightweightSessions();
 

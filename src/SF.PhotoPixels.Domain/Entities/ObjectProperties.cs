@@ -66,4 +66,6 @@ public class ObjectProperties : ISoftDeleted
     {
         return $"{Hash}.{Extension}";
     }
+
+
 }
