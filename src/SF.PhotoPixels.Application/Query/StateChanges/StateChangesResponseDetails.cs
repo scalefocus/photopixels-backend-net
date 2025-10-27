@@ -28,7 +28,7 @@ public class StateChangesResponseDetails
     public void Apply(AlbumCreated album)
     {
         //Add the album
-        Albums.Added.TryAdd(album.AlbumId.ToString(), album.Timestamp);
+        Albums.Added.TryAdd(album.AlbumId.ToString(), album.CreatedAt.ToUnixTimeMilliseconds());
 
         //Remove its id if already exist due to previous apply invocations
         Albums.Updated.Remove(album.AlbumId.ToString());
@@ -38,7 +38,7 @@ public class StateChangesResponseDetails
     public void Apply(AlbumUpdated ev)
     {
         //Set the album as updated
-        Albums.Updated[ev.AlbumId.ToString()] = ev.UpdatedAt;
+        Albums.Updated[ev.AlbumId.ToString()] = ev.UpdatedAt.ToUnixTimeMilliseconds();
     }
 
     public void Apply(MediaObjectTrashed media)
@@ -72,7 +72,7 @@ public class StateChangesResponseDetails
 
 public class Album
 {
-    public Dictionary<string, DateTimeOffset> Added { get; set; } = new();
-    public Dictionary<string, DateTimeOffset> Updated { get; set; } = new();
+    public Dictionary<string, long> Added { get; set; } = new();
+    public Dictionary<string, long> Updated { get; set; } = new();
     public HashSet<string> Deleted { get; set; } = new();
 }

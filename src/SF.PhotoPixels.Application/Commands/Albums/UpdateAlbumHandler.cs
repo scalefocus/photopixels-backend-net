@@ -12,14 +12,14 @@ namespace SF.PhotoPixels.Application.Commands.Albums;
 public class UpdateAlbumHandler : IRequestHandler<UpdateAlbumRequest, OneOf<Success, ValidationError>>
 {
     private readonly IDocumentSession _session;
-    private readonly IAlbumRepository _albumRepository;
+    private readonly IObjectRepository _objectRepository;
     private readonly IExecutionContextAccessor _executionContextAccessor;
 
-    public UpdateAlbumHandler(IDocumentSession session, IAlbumRepository albumRepository,
+    public UpdateAlbumHandler(IDocumentSession session, IObjectRepository objectRepository,
         IExecutionContextAccessor executionContextAccessor)
     {
         _session = session;
-        _albumRepository = albumRepository;
+        _objectRepository = objectRepository;
         _executionContextAccessor = executionContextAccessor;
     }
 
@@ -53,7 +53,7 @@ public class UpdateAlbumHandler : IRequestHandler<UpdateAlbumRequest, OneOf<Succ
             IsSystem = request.IsSystem,
         };
 
-        await _albumRepository.AddAlbumEvent(evt.UserId, evt, cancellationToken);
+        await _objectRepository.AddEvent(evt.UserId, evt, cancellationToken);
         return new Success();
     }
 }

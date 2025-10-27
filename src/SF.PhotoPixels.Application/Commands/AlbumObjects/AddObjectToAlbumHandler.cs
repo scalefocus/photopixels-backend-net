@@ -43,7 +43,7 @@ public class AddObjectToAlbumHandler : IRequestHandler<AddObjectToAlbumRequest, 
             {
                 AlbumId = albumGuid,
                 ObjectId = objectId,
-                TimeStamp = DateTimeOffset.Now
+                AddedAt = DateTimeOffset.Now
             };
 
             await _albumRepository.AddAlbumEvent(evt.AlbumId, evt, cancellationToken);

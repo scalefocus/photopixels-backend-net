@@ -11,7 +11,7 @@ public class AlbumStateChangesResponseDetails
 
     public void Apply(ObjectToAlbumCreated objectsAdded)
     {
-        Added.TryAdd(objectsAdded.ObjectId, objectsAdded.TimeStamp.ToUnixTimeMilliseconds());
+        Added.TryAdd(objectsAdded.ObjectId, objectsAdded.AddedAt.ToUnixTimeMilliseconds());
         Removed.Remove(objectsAdded.ObjectId);
     }
 

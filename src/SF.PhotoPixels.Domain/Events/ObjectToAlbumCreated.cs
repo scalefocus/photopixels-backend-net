@@ -4,5 +4,5 @@ public record ObjectToAlbumCreated
 {
     public required Guid AlbumId { get; init; }
     public required string ObjectId { get; init; }
-    public required DateTimeOffset TimeStamp { get; init; }
+    public required DateTimeOffset AddedAt { get; init; }
 }
