@@ -7,7 +7,7 @@ using SF.PhotoPixels.Infrastructure.Repositories;
 namespace SF.PhotoPixels.Application.Commands.AlbumObjects;
 
 public class DeleteAlbumObjectHandler : IRequestHandler<DeleteAlbumObjectRequest, OneOf<Success, ValidationError>>
-{        
+{
     private readonly IAlbumRepository _albumRepository;
 
     public DeleteAlbumObjectHandler(IAlbumRepository albumRepository)
@@ -24,10 +24,10 @@ public class DeleteAlbumObjectHandler : IRequestHandler<DeleteAlbumObjectRequest
 
         if (!Guid.TryParse(request.AlbumId, out var albumGuid))
         {
-            return new ValidationError("IllegalUserInput", "AlbumId shoud be guid");
+            return new ValidationError("IllegalUserInput", "AlbumId should be guid");
         }
 
-        if (request.ObjectIds == null || request.ObjectIds.Length == 0)
+        if (request.ObjectIds.Length == 0)
         {
             return new ValidationError("IllegalUserInput", "Add objects to be removed from the album");
         }
@@ -42,12 +42,13 @@ public class DeleteAlbumObjectHandler : IRequestHandler<DeleteAlbumObjectRequest
             var evt = new ObjectToAlbumDeleted
             {
                 AlbumId = albumGuid,
-                ObjectId = objectId
+                ObjectId = objectId,
+                RemovedAt = DateTimeOffset.Now
             };
 
             await _albumRepository.AddAlbumEvent(evt.AlbumId, evt, cancellationToken);
         }
 
         return new Success();
-    }    
+    }
 }

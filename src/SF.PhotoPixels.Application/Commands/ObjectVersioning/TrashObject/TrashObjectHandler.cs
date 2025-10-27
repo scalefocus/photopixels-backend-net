@@ -1,13 +1,12 @@
 using Marten;
 using Mediator;
 using OneOf.Types;
-using SF.PhotoPixels.Application.Commands.ObjectVersioning.TrashObject;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
 using SF.PhotoPixels.Infrastructure.Repositories;
 
-namespace SF.PhotoPixels.Application.Commands.ObjectVersioning.DeleteObject;
+namespace SF.PhotoPixels.Application.Commands.ObjectVersioning.TrashObject;
 
 public class TrashObjectHandler : IRequestHandler<TrashObjectRequest, ObjectVersioningResponse>
 {
@@ -32,7 +31,7 @@ public class TrashObjectHandler : IRequestHandler<TrashObjectRequest, ObjectVers
             return new NotFound();
         }
 
-        var user = await _session.LoadAsync<Domain.Entities.User>(_executionContextAccessor.UserId);
+        var user = await _session.LoadAsync<Domain.Entities.User>(_executionContextAccessor.UserId, cancellationToken);
 
         if (user == null)
         {
@@ -40,7 +39,7 @@ public class TrashObjectHandler : IRequestHandler<TrashObjectRequest, ObjectVers
         }
 
         _session.DeleteWhere<ObjectProperties>(op => op.Id == objectMetadata.Id);
-        await _session.SaveChangesAsync();
+        await _session.SaveChangesAsync(cancellationToken);
 
         var revision = await _objectRepository.AddEvent(_executionContextAccessor.UserId, new MediaObjectTrashed(request.ObjectId, DateTimeOffset.UtcNow), cancellationToken);
 

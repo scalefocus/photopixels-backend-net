@@ -7,11 +7,11 @@ using SF.PhotoPixels.Infrastructure.Repositories;
 namespace SF.PhotoPixels.Application.Commands.AlbumObjects;
 
 public class AddObjectToAlbumHandler : IRequestHandler<AddObjectToAlbumRequest, OneOf<Success, ValidationError>>
-{         
+{
     private readonly IAlbumRepository _albumRepository;
 
     public AddObjectToAlbumHandler(IAlbumRepository albumRepository)
-    {      
+    {
         _albumRepository = albumRepository;
     }
 
@@ -24,12 +24,12 @@ public class AddObjectToAlbumHandler : IRequestHandler<AddObjectToAlbumRequest, 
 
         if (!Guid.TryParse(request.AlbumId, out var albumGuid))
         {
-            return new ValidationError("IllegalUserInput", "AlbumId shoud be guid");
+            return new ValidationError("IllegalUserInput", "AlbumId should be guid");
         }
 
-        if (request.ObjectIds == null || request.ObjectIds.Length == 0 )
+        if (request.ObjectIds.Length == 0 )
         {
-            return new ValidationError("IllegalUserInput", "Add objects to be atached to the album");
+            return new ValidationError("IllegalUserInput", "Add objects to be attached to the album");
         }
 
         foreach (var objectId in request.ObjectIds)
@@ -42,12 +42,13 @@ public class AddObjectToAlbumHandler : IRequestHandler<AddObjectToAlbumRequest, 
             var evt = new ObjectToAlbumCreated
             {
                 AlbumId = albumGuid,
-                ObjectId = objectId
+                ObjectId = objectId,
+                TimeStamp = DateTimeOffset.Now
             };
 
             await _albumRepository.AddAlbumEvent(evt.AlbumId, evt, cancellationToken);
         }
-                
+
         return new Success();
     }
 }

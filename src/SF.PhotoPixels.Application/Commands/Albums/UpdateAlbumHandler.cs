@@ -2,12 +2,12 @@ using Marten;
 using Mediator;
 using OneOf;
 using OneOf.Types;
-using SF.PhotoPixels.Application;
-using SF.PhotoPixels.Application.Commands.Albums;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
 using SF.PhotoPixels.Infrastructure.Repositories;
+
+namespace SF.PhotoPixels.Application.Commands.Albums;
 
 public class UpdateAlbumHandler : IRequestHandler<UpdateAlbumRequest, OneOf<Success, ValidationError>>
 {
@@ -37,7 +37,7 @@ public class UpdateAlbumHandler : IRequestHandler<UpdateAlbumRequest, OneOf<Succ
 
         if (!Guid.TryParse(request.Id, out var albumGuid))
         {
-            return new ValidationError("IllegalUserInput", "AlbumId shoud be guid");
+            return new ValidationError("IllegalUserInput", "AlbumId should be guid");
         }
 
         var album = await _session.LoadAsync<Album>(request.Id, cancellationToken);
@@ -49,6 +49,7 @@ public class UpdateAlbumHandler : IRequestHandler<UpdateAlbumRequest, OneOf<Succ
             AlbumId = albumGuid,
             UserId = _executionContextAccessor.UserId,
             Name = request.Name,
+            UpdatedAt = DateTimeOffset.Now,
             IsSystem = request.IsSystem,
         };
 
