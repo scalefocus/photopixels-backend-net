@@ -10,7 +10,6 @@ public class StateChangesResponseDetails
 
     // ReSharper disable once CollectionNeverQueried.Global
     public Dictionary<string, long> Added { get; set; } = new();
-    public Dictionary<string, DateTimeOffset> AddedTime { get; set; } = new();
     public Dictionary<string, DateTimeOffset> Trashed { get; set; } = new();
 
     // ReSharper disable once CollectionNeverQueried.Global
@@ -21,49 +20,73 @@ public class StateChangesResponseDetails
         Trashed.Remove(media.ObjectId);
         Deleted.Remove(media.ObjectId);
 
-        Added.TryAdd(media.ObjectId, media.Timestamp);
-        AddedTime.TryAdd(media.ObjectId, DateTimeOffset.FromUnixTimeMilliseconds(media.Timestamp));
-    }
-
-    public void Apply(AlbumCreated album)
-    {
-        //Add the album
-        Albums.Added.TryAdd(album.AlbumId.ToString(), album.CreatedAt.ToUnixTimeMilliseconds());
-
-        //Remove its id if already exist due to previous apply invocations
-        Albums.Updated.Remove(album.AlbumId.ToString());
-        Albums.Deleted.Remove(album.AlbumId.ToString());
-    }
-
-    public void Apply(AlbumUpdated ev)
-    {
-        //Set the album as updated
-        Albums.Updated[ev.AlbumId.ToString()] = ev.UpdatedAt.ToUnixTimeMilliseconds();
+        Added[media.ObjectId] = media.Timestamp;
     }
 
     public void Apply(MediaObjectTrashed media)
     {
         Added.Remove(media.ObjectId);
-        AddedTime.Remove(media.ObjectId);
         Deleted.Remove(media.ObjectId);
 
         Trashed.TryAdd(media.ObjectId, media.trashedAt);
     }
 
+    public void Apply(MediaObjectRemovedFromTrash media)
+    {
+        Trashed.Remove(media.ObjectId);
+        Deleted.Remove(media.ObjectId);
+
+        Added.TryAdd(media.ObjectId, media.removedFromTrashAt.ToUnixTimeMilliseconds());
+    }
+
     public void Apply(MediaObjectDeleted media)
     {
         Trashed.Remove(media.ObjectId);
-        Added.Remove(media.ObjectId);
-        AddedTime.Remove(media.ObjectId);
+
+        if (Added.Remove(media.ObjectId))
+        {
+            // if the item has been added and is not removed
+            // we don't need its data at all
+            return;
+        }
 
         Deleted.Add(media.ObjectId);
     }
 
+    public void Apply(AlbumCreated album)
+    {
+        Albums.Updated.Remove(album.AlbumId.ToString());
+        Albums.Deleted.Remove(album.AlbumId.ToString());
+
+        //keep the last timestamp if the album is added twice
+        Albums.Added[album.AlbumId.ToString()] = album.CreatedAt.ToUnixTimeMilliseconds();
+    }
+
+    public void Apply(AlbumUpdated ev)
+    {
+        if(Albums.Added.ContainsKey(ev.AlbumId.ToString()))
+        {
+            //if the album has been added state during time interval,
+            //we don't need to keep in added and and in updated twice.
+            //we can keep it as a new album in added and to update its latest information (if needed)
+            //Albums.Added[ev.AlbumId.ToString()] = ev.UpdatedAt.ToUnixTimeMilliseconds();
+            return;
+        }
+
+        Albums.Deleted.Remove(ev.AlbumId.ToString());
+        Albums.Updated[ev.AlbumId.ToString()] = ev.UpdatedAt.ToUnixTimeMilliseconds();
+    }
+
     public void Apply(AlbumDeleted ev)
     {
-        //Remove the album id from the previous collection if exist
-        Albums.Added.Remove(ev.AlbumId.ToString());
         Albums.Updated.Remove(ev.AlbumId.ToString());
+
+        if (Albums.Added.Remove(ev.AlbumId.ToString()))
+        {
+            //the album has been added but now it is removed in the current time interval
+            //we don't need to keep it in our records, so we remove it from added, updated and don't insert it in deleted
+            return;
+        }
 
         //Add it as deleted
         Albums.Deleted.Add(ev.AlbumId.ToString());

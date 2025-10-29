@@ -11,13 +11,19 @@ public class AlbumStateChangesResponseDetails
 
     public void Apply(ObjectToAlbumCreated objectsAdded)
     {
-        Added.TryAdd(objectsAdded.ObjectId, objectsAdded.AddedAt.ToUnixTimeMilliseconds());
+        Added[objectsAdded.ObjectId] = objectsAdded.AddedAt.ToUnixTimeMilliseconds();
         Removed.Remove(objectsAdded.ObjectId);
     }
 
     public void Apply(ObjectToAlbumDeleted objectsRemoved)
     {
+        if (Added.Remove(objectsRemoved.ObjectId))
+        {
+            // the photo has been added and removed in the current time interval
+            // so just remove it from added and don't add unnecessary information in removed
+            return;
+        }
+
         Removed.Add(objectsRemoved.ObjectId);
-        Added.Remove(objectsRemoved.ObjectId);
     }
 }
