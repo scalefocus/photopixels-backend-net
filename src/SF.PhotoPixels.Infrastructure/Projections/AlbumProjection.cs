@@ -22,7 +22,7 @@ namespace SF.PhotoPixels.Infrastructure.Projections
             {
                 Id = albumCreated.AlbumId.ToString(),
                 Name = albumCreated.Name,
-                DateCreated = albumCreated.Timestamp,
+                DateCreated = albumCreated.CreatedAt,
                 UserId = albumCreated.UserId,
                 IsSystem = albumCreated.IsSystem
             };

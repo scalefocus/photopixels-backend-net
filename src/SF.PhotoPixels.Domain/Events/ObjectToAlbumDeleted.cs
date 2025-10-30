@@ -4,4 +4,5 @@ public record ObjectToAlbumDeleted
 {
     public required Guid AlbumId { get; init; }
     public required string ObjectId { get; init; }
+    public required DateTimeOffset RemovedAt { get; init; }
 }

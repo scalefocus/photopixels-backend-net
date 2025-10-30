@@ -2,21 +2,25 @@ using Marten;
 using Mediator;
 using OneOf;
 using OneOf.Types;
-using SF.PhotoPixels.Application;
-using SF.PhotoPixels.Application.Commands.Albums;
+using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
 using SF.PhotoPixels.Infrastructure.Repositories;
 
-public class UpdateAlbumHandler : IRequestHandler<UpdateAlbumRequest, OneOf<Success, ValidationError>>
-{    
-    private readonly IDocumentSession _session;    
-    private readonly IAlbumRepository _albumRepository;
+namespace SF.PhotoPixels.Application.Commands.Albums;
 
-    public UpdateAlbumHandler(IDocumentSession session, IAlbumRepository albumRepository)
-    {        
-        _session = session;        
-        _albumRepository = albumRepository;
+public class UpdateAlbumHandler : IRequestHandler<UpdateAlbumRequest, OneOf<Success, ValidationError>>
+{
+    private readonly IDocumentSession _session;
+    private readonly IObjectRepository _objectRepository;
+    private readonly IExecutionContextAccessor _executionContextAccessor;
+
+    public UpdateAlbumHandler(IDocumentSession session, IObjectRepository objectRepository,
+        IExecutionContextAccessor executionContextAccessor)
+    {
+        _session = session;
+        _objectRepository = objectRepository;
+        _executionContextAccessor = executionContextAccessor;
     }
 
     public async ValueTask<OneOf<Success, ValidationError>> Handle(UpdateAlbumRequest request, CancellationToken cancellationToken)
@@ -33,21 +37,23 @@ public class UpdateAlbumHandler : IRequestHandler<UpdateAlbumRequest, OneOf<Succ
 
         if (!Guid.TryParse(request.Id, out var albumGuid))
         {
-            return new ValidationError("IllegalUserInput", "AlbumId shoud be guid");
+            return new ValidationError("IllegalUserInput", "AlbumId should be guid");
         }
 
         var album = await _session.LoadAsync<Album>(request.Id, cancellationToken);
-        if (album != null)
-        {
-            var evt = new AlbumUpdated
-            {  
-                AlbumId = albumGuid,
-                Name = request.Name,
-                IsSystem = request.IsSystem,                
-            };
 
-            await _albumRepository.AddAlbumEvent(albumGuid, evt, cancellationToken);
-        }                
+        if (album == null) return new ValidationError("AlbumNotFound","Album cannot be loaded");
+
+        var evt = new AlbumUpdated
+        {
+            AlbumId = albumGuid,
+            UserId = _executionContextAccessor.UserId,
+            Name = request.Name,
+            UpdatedAt = DateTimeOffset.Now,
+            IsSystem = request.IsSystem,
+        };
+
+        await _objectRepository.AddEvent(evt.UserId, evt, cancellationToken);
         return new Success();
     }
 }

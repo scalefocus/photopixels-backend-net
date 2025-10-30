@@ -7,14 +7,14 @@ using SF.PhotoPixels.Infrastructure.Repositories;
 namespace SF.PhotoPixels.Application.Commands.Albums;
 
 public class AddAlbumHandler : IRequestHandler<AddAlbumRequest, OneOf<AddAlbumResponse, ValidationError>>
-{        
+{
     private readonly IExecutionContextAccessor _executionContextAccessor;
-    private readonly IAlbumRepository _albumRepository;
+    private readonly IObjectRepository _objectRepository;
 
-    public AddAlbumHandler(IExecutionContextAccessor executionContextAccessor, IAlbumRepository albumRepository)
-    { 
+    public AddAlbumHandler(IExecutionContextAccessor executionContextAccessor, IObjectRepository objectRepository)
+    {
         _executionContextAccessor = executionContextAccessor;
-        _albumRepository = albumRepository;
+        _objectRepository = objectRepository;
     }
 
     public async ValueTask<OneOf<AddAlbumResponse, ValidationError>> Handle(AddAlbumRequest request, CancellationToken cancellationToken)
@@ -29,11 +29,11 @@ public class AddAlbumHandler : IRequestHandler<AddAlbumRequest, OneOf<AddAlbumRe
             AlbumId = Guid.NewGuid(),
             Name = request.Name,
             IsSystem = false,
-            Timestamp = DateTimeOffset.UtcNow,            
+            CreatedAt = DateTimeOffset.UtcNow,
             UserId = _executionContextAccessor.UserId
         };
 
-        await _albumRepository.AddAlbumEvent(evt.AlbumId, evt, cancellationToken);
+        await _objectRepository.AddEvent(evt.UserId, evt, cancellationToken);
 
         return new AddAlbumResponse
         {
