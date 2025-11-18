@@ -8,10 +8,10 @@ namespace SF.PhotoPixels.Infrastructure.Storage;
 
 public sealed class FormattedVideo : IDisposable, IStorageItem
 {
-    private readonly MediaFormat? _format; 
+    private readonly MediaFormat? _format;
     private readonly IMediaAnalysis? _video;
 
-    public int Width => _video?.PrimaryVideoStream?.Width ?? 0;    
+    public int Width => _video?.PrimaryVideoStream?.Width ?? 0;
     public int Height => _video?.PrimaryVideoStream?.Height ?? 0;
 
     private static readonly string _FfmpegExeFilePath = Path.Combine(GlobalFFOptions.Current.BinaryFolder, "ffmpeg");
@@ -103,6 +103,78 @@ public sealed class FormattedVideo : IDisposable, IStorageItem
         process.Start();
         return tcs.Task;
     }
+
+    public static Task<string> ConvertHevcVideoAsync(string inputPath, string outputPath, CancellationToken cancellationToken = default)
+    {
+        if (File.Exists(outputPath))
+        {
+            return Task.FromResult(outputPath);
+        }
+
+        var tcs = new TaskCompletionSource<string>();
+
+        var process = new Process
+        {
+            StartInfo =
+            {
+                FileName = _FfmpegExeFilePath,
+                Arguments = $"-y -i \"{inputPath}\" -c:v libx264 -c:a aac -movflags +faststart \"{outputPath}\"",
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = false,
+                CreateNoWindow = true
+            },
+            EnableRaisingEvents = true
+        };
+
+        process.Exited += (_, _) =>
+        {
+            try
+            {
+                if (process.ExitCode == 0)
+                {
+                    tcs.TrySetResult(outputPath);
+                }
+                else
+                {
+                    tcs.TrySetException(
+                        new InvalidOperationException($"FFmpeg exited with code {process.ExitCode}."));
+                }
+            }
+            finally
+            {
+                process.Dispose();
+            }
+        };
+
+        if (!process.Start())
+        {
+            tcs.SetException(new InvalidOperationException("Failed to start ffmpeg process."));
+        }
+
+        process.BeginErrorReadLine();
+
+        if (cancellationToken != CancellationToken.None)
+        {
+            cancellationToken.Register(() =>
+            {
+                try
+                {
+                    if (!process.HasExited)
+                        process.Kill();
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                tcs.TrySetCanceled(cancellationToken);
+            });
+        }
+
+        return tcs.Task;
+    }
+
 
     private class ThumbnailSize
     {
