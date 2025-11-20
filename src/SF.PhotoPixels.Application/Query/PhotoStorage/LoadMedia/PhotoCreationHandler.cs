@@ -26,7 +26,9 @@ public class PhotoCreationHandler : IMediaCreationHandler
 
     public async ValueTask<QueryResponse<LoadMediaResponse>> Handle(LoadMediaCreationModel model, CancellationToken cancellationToken)
     {
-        var photo = await LoadPhoto(model.FileName, cancellationToken);
+        var photo = FormattedVideo.GetExtension(model.FileName.ToLower()) is "heif" or "heic"
+            ? await LoadIphoneFormatPhoto(model.FileName, cancellationToken)
+            : await LoadPhoto(model.FileName, cancellationToken);
 
         if (string.IsNullOrWhiteSpace(model.Format))
         {
@@ -50,7 +52,6 @@ public class PhotoCreationHandler : IMediaCreationHandler
         };
     }
 
-
     private async Task<Stream> LoadPhoto(string name, CancellationToken cancellationToken)
     {
         if (!_systemConfig.PrivacyTestMode)
@@ -66,5 +67,11 @@ public class PhotoCreationHandler : IMediaCreationHandler
         _memoryStream.Seek(0, SeekOrigin.Begin);
 
         return _memoryStream;
+    }
+
+    private async Task<Stream> LoadIphoneFormatPhoto(string name, CancellationToken cancellationToken)
+    {
+        using var inputStream = await _objectStorage.LoadObjectAsync(_executionContextAccessor.UserId, name, cancellationToken);
+        return await FormattedImage.LoadHeifAsync(inputStream, cancellationToken, _memoryStream);
     }
 }
