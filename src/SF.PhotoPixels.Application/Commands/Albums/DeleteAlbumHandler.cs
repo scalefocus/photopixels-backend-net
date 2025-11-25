@@ -37,7 +37,16 @@ public class DeleteAlbumHandler : IRequestHandler<DeleteAlbumRequest, OneOf<Succ
 
         var album = await _session.LoadAsync<Album>(request.AlbumId, cancellationToken);
 
-        if (album == null) return new ValidationError("AlbumNotFound","Album cannot be loaded");
+        if (album == null)
+        {
+            return new ValidationError("AlbumNotFound","Album cannot be loaded");
+        }
+
+        var hasImages = await _session.Query<AlbumObject>()
+            .AnyAsync(x => x.AlbumId == request.AlbumId, cancellationToken);
+
+        if (hasImages)
+            return new ValidationError("AlbumNotEmpty", "Album contains images and cannot be deleted.");
 
         var evt = new AlbumDeleted
         {
