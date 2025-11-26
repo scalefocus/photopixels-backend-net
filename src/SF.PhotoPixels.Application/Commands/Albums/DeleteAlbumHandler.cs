@@ -41,7 +41,7 @@ public class DeleteAlbumHandler : IRequestHandler<DeleteAlbumRequest, OneOf<Succ
 
         if (album == null)
         {
-            return new ValidationError("AlbumNotFound","Album cannot be loaded");
+            return new ValidationError("AlbumNotFound", "Album cannot be loaded");
         }
 
         var albumImages = _session.Query<AlbumObject>()
