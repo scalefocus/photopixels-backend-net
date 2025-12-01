@@ -29,6 +29,8 @@ public class User : IIdentity, ISoftDeleted
 
     public long UsedQuota { get; set; }
 
+    public bool AllowPreviewConversion { get; set; }
+
     public required string Name { get; set; }
 
     public bool IsAuthenticated { get; set; } = false;

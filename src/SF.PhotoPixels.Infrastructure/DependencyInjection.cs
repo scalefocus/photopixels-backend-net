@@ -118,7 +118,7 @@ public static class DependencyInjection
                 options.Schema.For<AlbumObject>()
                 .Index(x => x.Id)
                 .Duplicate(x => x.ObjectId)
-                .Duplicate(x => x.AlbumId);                
+                .Duplicate(x => x.AlbumId);
 
                 options.Projections.Add(new ObjectPropertiesProjection(), ProjectionLifecycle.Inline);
                 options.Projections.Add(new AlbumProjection(), ProjectionLifecycle.Inline);
@@ -136,6 +136,7 @@ public static class DependencyInjection
                 options.Events.AddEventType<AlbumDeleted>();
                 options.Events.AddEventType<AlbumUpdated>();
                 options.Events.AddEventType<ObjectToAlbumCreated>();
+                options.Events.AddEventType<PreviewConversionSet>();//todo add it to projection
 
 
             })
