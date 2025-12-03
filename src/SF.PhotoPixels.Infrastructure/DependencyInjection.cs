@@ -1,5 +1,7 @@
 ﻿using DbUp;
 using HeyRed.ImageSharp.Heif.Formats.Heif;
+using JasperFx;
+using JasperFx.Events.Projections;
 using Marten;
 using Marten.Events.Projections;
 using Microsoft.AspNetCore.Identity;
@@ -141,10 +143,10 @@ public static class DependencyInjection
             })
             .UseLightweightSessions();
 
-        if (!isDevelopment)
-        {
-            martenConfig.OptimizeArtifactWorkflow();
-        }
+        //if (!isDevelopment)
+        //{
+        //    martenConfig.OptimizeArtifactWorkflow();
+        //}
 
         new HeifConfigurationModule().Configure(Configuration.Default);
 
