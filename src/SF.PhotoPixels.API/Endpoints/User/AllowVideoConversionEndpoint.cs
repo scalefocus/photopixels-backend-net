@@ -1,28 +1,28 @@
 using Ardalis.ApiEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
-using SF.PhotoPixels.Application.Commands.User.SetPreviewConversion;
+using SF.PhotoPixels.Application.Commands.User.AllowVideoConversion;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace SF.PhotoPixels.API.Endpoints.User;
 
-public class SetPreviewConversionEndpoint : EndpointBaseAsync.WithRequest<SetPreviewConversionRequest>.WithActionResult
+public class AllowVideoConversionEndpoint : EndpointBaseAsync.WithRequest<AllowVideoConversionRequest>.WithActionResult
 {
     private readonly IMediator _mediator;
 
-    public SetPreviewConversionEndpoint(IMediator mediator)
+    public AllowVideoConversionEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [HttpPut("/user/previewconversion/{PreviewConversion}")]
+    [HttpPut("/user/allowvideoconversion/{AllowVideoConversion}")]
     [SwaggerOperation(
         Summary = "Set the option for the user to be able to convert vidoes for preview",
-        Description = "Get user by id",
-        OperationId = "Set_PreviewConversion",
+        Description = "Set the user settings, which allows the user to convert ihpone viode preview",
+        OperationId = "",
         Tags = new[] { "Users" })
     ]
-    public override async Task<ActionResult> HandleAsync([FromRoute] SetPreviewConversionRequest request, CancellationToken cancellationToken = default)
+    public override async Task<ActionResult> HandleAsync([FromRoute] AllowVideoConversionRequest request, CancellationToken cancellationToken = default)
     {
         var response = await _mediator.Send(request, cancellationToken);
 

@@ -136,9 +136,6 @@ public static class DependencyInjection
                 options.Events.AddEventType<AlbumDeleted>();
                 options.Events.AddEventType<AlbumUpdated>();
                 options.Events.AddEventType<ObjectToAlbumCreated>();
-                options.Events.AddEventType<PreviewConversionSet>();//todo add it to projection
-
-
             })
             .UseLightweightSessions();
 
