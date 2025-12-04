@@ -4,7 +4,7 @@ namespace SF.PhotoPixels.Application.Query.User.GetUserSettings
 {
     public class GetUserSettingsResponse
     {
-        public required Guid Id { get; set; }
+        public required Guid UserId { get; set; }
 
         public UserSettings Settings { get; set; }
     }
