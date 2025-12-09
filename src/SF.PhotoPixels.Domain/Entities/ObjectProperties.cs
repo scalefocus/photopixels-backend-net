@@ -1,5 +1,4 @@
-﻿
-using Marten.Metadata;
+﻿using Marten.Metadata;
 using Marten.Schema;
 
 namespace SF.PhotoPixels.Domain.Entities;
@@ -16,6 +15,8 @@ public class ObjectProperties : ISoftDeleted
     public required string Extension { get; set; }
 
     public required string? MimeType { get; set; }
+
+    public string? MediaCodec { get; set; }
 
     public required int Height { get; set; }
 
