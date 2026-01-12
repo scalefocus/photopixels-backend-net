@@ -60,7 +60,7 @@ public class TusService : ITusService
 
     private async Task<RawImage> SavePhoto(UploadFileInfo fileInfo, CancellationTokenSource ctx, FileStream fs)
     {
-        var rawImage = new RawImage(fs);
+        var rawImage = new RawImage(fs, fileInfo.Metadata!["fileName"]);
 
         var imageHash = Convert.ToBase64String(await rawImage.GetHashAsync());
         if (!imageHash.Equals(fileInfo.Metadata!["fileHash"]))

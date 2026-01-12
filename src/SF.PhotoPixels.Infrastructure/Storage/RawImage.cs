@@ -7,12 +7,17 @@ public class RawImage : IDisposable, IStorageItem
 {
     private readonly Stream _rawStream;
     private FormattedImage? _formattedImage;
+    private readonly string _filename;
 
     private byte[]? _hash;
 
-    public RawImage(Stream stream)
+    public string GetFileName() => _filename;
+    public Stream GetStream() => _rawStream;
+
+    public RawImage(Stream stream, string filename)
     {
         _rawStream = new MemoryStream((int)stream.Length);
+        _filename = filename;
         stream.CopyTo(_rawStream);
     }
 
@@ -67,6 +72,6 @@ public class RawImage : IDisposable, IStorageItem
 
         _rawStream.Seek(0, SeekOrigin.Begin);
 
-        _formattedImage = await FormattedImage.LoadAsync(_rawStream, cancellationToken);
+        _formattedImage = await FormattedImage.LoadAsync(_rawStream, _filename, cancellationToken);
     }
 }

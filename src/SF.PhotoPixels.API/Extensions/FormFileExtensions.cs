@@ -4,7 +4,7 @@
     {
         public static bool SupportFormats(this IFormFile file, string[] allowedExtensions)
         {
-            var extension = Path.GetExtension(file.FileName);
+            var extension = Path.GetExtension(file.FileName.ToLower());
             return allowedExtensions.Contains(extension);
         }
     }
