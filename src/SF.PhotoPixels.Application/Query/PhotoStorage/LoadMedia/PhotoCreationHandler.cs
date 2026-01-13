@@ -26,7 +26,7 @@ public class PhotoCreationHandler : IMediaCreationHandler
 
     public async ValueTask<QueryResponse<LoadMediaResponse>> Handle(LoadMediaCreationModel model, CancellationToken cancellationToken)
     {
-        var photo = FormattedVideo.GetExtension(model.FileName.ToLower()) is "heif" or "heic"
+        var photo = FormattedImage.GetExtension(model.FileName.ToLower()) is "heif" or "heic"
             ? await LoadIphoneFormatPhoto(model.FileName, cancellationToken)
             : await LoadPhoto(model.FileName, cancellationToken);
 
@@ -39,7 +39,7 @@ public class PhotoCreationHandler : IMediaCreationHandler
             };
         }
 
-        var formattedImage = await FormattedImage.LoadAsync(photo, cancellationToken);
+        var formattedImage = await FormattedImage.LoadAsync(photo, model.FileName, cancellationToken);
         var ms = new MemoryStream();
         await formattedImage.SaveToFormat(ms, model.Format, cancellationToken);
 

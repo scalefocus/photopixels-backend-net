@@ -1,5 +1,4 @@
-﻿using System.Text;
-using SF.PhotoPixels.Domain.Entities;
+﻿using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
 using SF.PhotoPixels.Infrastructure.Repositories;
 using SF.PhotoPixels.Infrastructure.Storage;
@@ -24,9 +23,20 @@ public class PhotoService : IPhotoService
         var fingerprint = await rawImage.GetSafeFingerprintAsync();
         var image = await rawImage.ToFormattedImageAsync(cancellationToken);
 
-        var saveImage = SaveImageAsync(userId, fingerprint, image, rawImage, cancellationToken);
-        var saveThumbnail = SaveThumbnailAsync(userId, fingerprint, image, cancellationToken);
+        var saveImage = SaveImageAsync(userId, fingerprint, rawImage, cancellationToken);
 
+        if (image.IsHeicFormat)
+        {
+            var userFolders = _objectStorage.GetUserFolders(userId);
+            var thumbnailFileName = Path.Combine(userFolders.ThumbFolder, $"{fingerprint}.webp");
+            var saveThumbnailHeic = FormattedImage.CreateThumbnailFromExifData(rawImage.GetStream(), thumbnailFileName);
+            await Task.WhenAll(saveImage, saveThumbnailHeic);
+
+            return rawImage.GetImageSize() + saveThumbnailHeic.Result;
+        }
+
+        var saveThumbnail = SaveThumbnailAsync(userId, fingerprint, image, cancellationToken);
+        
         await Task.WhenAll(saveImage, saveThumbnail);
 
         return rawImage.GetImageSize() + saveThumbnail.Result;
@@ -38,12 +48,13 @@ public class PhotoService : IPhotoService
         var hash = Convert.ToBase64String(await rawImage.GetHashAsync());
         var objectId = new ObjectId(userId, fingerprint);
         var image = await rawImage.ToFormattedImageAsync(cancellationToken);
+        var extension = rawImage.GetFileName().Split('.').Last().ToLower();
 
         var evt = new MediaObjectCreated
         {
             ObjectId = objectId,
-            Extension = image.GetExtension(),
-            MimeType = image.GetMimeType(),
+            Extension = extension,
+            MimeType = image.GetMimeType(extension),
             Height = image.Height,
             Width = image.Width,
             Name = filename,
@@ -59,9 +70,10 @@ public class PhotoService : IPhotoService
         return await _objectRepository.AddEvent(userId, evt, cancellationToken);
     }
 
-    private Task SaveImageAsync(Guid userId, string fingerprint, FormattedImage image, RawImage rawImage, CancellationToken cancellationToken)
+    private Task SaveImageAsync(Guid userId, string fingerprint, RawImage rawImage, CancellationToken cancellationToken)
     {
-        var name = $"{fingerprint}.{image.GetExtension()}";
+        var extension = Path.GetExtension(rawImage.GetFileName()).TrimStart('.').ToLower();
+        var name = $"{fingerprint}.{extension}";
 
         return _objectStorage.StoreObjectAsync(userId, rawImage, name, cancellationToken);
     }

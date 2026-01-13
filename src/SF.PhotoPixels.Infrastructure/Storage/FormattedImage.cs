@@ -1,5 +1,4 @@
-﻿using HeyRed.ImageSharp.Heif;
-using SF.PhotoPixels.Domain.Utils;
+﻿using SF.PhotoPixels.Domain.Utils;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
@@ -15,26 +14,40 @@ namespace SF.PhotoPixels.Infrastructure.Storage;
 public sealed class FormattedImage : IDisposable, IStorageItem
 {
     // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
-    private readonly IImageFormat _format;
-    private readonly Image _image;
+    private readonly IImageFormat? _format;
+    private readonly Image? _image;
+    private readonly int _width;
+    private readonly int _height;
 
     private byte[]? _hash;
     private readonly ImageFormatManager _imageFormatsManager;
 
-    public int Width => _image.Width;
+    public int Width => _width;
 
-    public int Height => _image.Height;
+    public int Height => _height;
+
+    public bool IsHeicFormat => _image == null;
 
     private FormattedImage(Image image, IImageFormat format)
     {
         _image = image;
         _format = format;
         _imageFormatsManager = image.Configuration.ImageFormatsManager;
+        _width = _image.Width;
+        _height = _image.Height;
     }
+
+    private FormattedImage(int width, int height)
+    {
+        _width = width;
+        _height = height;
+        _imageFormatsManager = new ImageFormatManager();
+    }
+
 
     public void Dispose()
     {
-        _image.Dispose();
+        _image?.Dispose();
     }
 
     public Task SaveAsync(Stream stream, CancellationToken cancellationToken = default)
@@ -54,17 +67,23 @@ public sealed class FormattedImage : IDisposable, IStorageItem
         return _image.SaveAsync(stream, _imageFormatsManager.GetEncoder(format), cancellationToken);
     }
 
-    public static async Task<FormattedImage> LoadAsync(Stream source, CancellationToken cancellationToken = default)
+    public static async Task<FormattedImage> LoadAsync(Stream source, string filename, CancellationToken cancellationToken = default)
     {
-        var image = await Image.LoadAsync(source, cancellationToken);
+        if (GetExtension(filename.ToLower()) is "heif" or "heic")
+        {
+            using var magickImage = new ImageMagick.MagickImage(source);
+            return new FormattedImage(Convert.ToInt32(magickImage.Width), Convert.ToInt32(magickImage.Height));
+        }
 
+        var image = await Image.LoadAsync(source, cancellationToken);
         return new FormattedImage(image, image.Metadata.DecodedImageFormat!);
     }
+
 
     public FormattedImage GetThumbnail(int width = 160, int height = 160)
     {
         var transform = Transform(new Size(width, height));
-        var newimage = _image.Clone(context => context.Resize(new ResizeOptions
+        var newimage = _image!.Clone(context => context.Resize(new ResizeOptions
         {
             Size = transform,
             Mode = ResizeMode.Max,
@@ -109,7 +128,7 @@ public sealed class FormattedImage : IDisposable, IStorageItem
     public DateTimeOffset? GetOriginalDateTime()
     {
         //_image.Frames[0].Metadata.ExifProfile
-        var exifProfile = _image.Metadata.ExifProfile;
+        var exifProfile = _image?.Metadata.ExifProfile;
 
         if (exifProfile is null)
         {
@@ -128,7 +147,7 @@ public sealed class FormattedImage : IDisposable, IStorageItem
 
     public DateTimeOffset? GetCreatedDateTime()
     {
-        var exifProfile = _image.Metadata.ExifProfile;
+        var exifProfile = _image?.Metadata.ExifProfile;
 
         if (exifProfile is null)
         {
@@ -181,7 +200,7 @@ public sealed class FormattedImage : IDisposable, IStorageItem
 
     public int GetExifOrientation()
     {
-        if (_image.Metadata.ExifProfile != null)
+        if (_image?.Metadata.ExifProfile != null)
         {
             if (!_image.Metadata.ExifProfile.TryGetValue(ExifTag.Orientation, out var orientation))
             {
@@ -216,7 +235,7 @@ public sealed class FormattedImage : IDisposable, IStorageItem
             ? new Size(size.Height, size.Width)
             : size;
 
-        if (_image.Width > _image.Height)
+        if (_image!.Width > _image.Height)
         {
             return new Size(0, s.Height);
         }
@@ -231,14 +250,24 @@ public sealed class FormattedImage : IDisposable, IStorageItem
 
     public string GetExtension()
     {
-        return _format.FileExtensions.First();
+        return _format?.FileExtensions.First() ?? string.Empty;
+    }
+
+    public static string GetExtension(string filename)
+    {
+        return Path.GetExtension(filename).TrimStart('.');
     }
 
     public string? GetMimeType()
     {
-        var imageFormat = _image.Metadata.DecodedImageFormat;
+        var imageFormat = _image?.Metadata.DecodedImageFormat;
 
         return imageFormat?.DefaultMimeType;
+    }
+
+    public string GetMimeType(string extension)
+    {
+        return MimeTypes.GetMimeTypeFromExtension(extension);
     }
 
     public async Task<string> GetSafeFingerprintAsync()
@@ -255,27 +284,54 @@ public sealed class FormattedImage : IDisposable, IStorageItem
 
         using var ms = new MemoryStream();
 
-        await _image.SaveAsync(ms, new JpegEncoder());
+        await _image!.SaveAsync(ms, new JpegEncoder());
 
         ms.Seek(0, SeekOrigin.Begin);
 
         return _hash = await SHA1.HashDataAsync(ms);
     }
 
+    public static async Task<long> CreateThumbnailFromExifData(Stream stream, string path)
+    {
+        stream.Seek(0, SeekOrigin.Begin);
+        using (var collection = new ImageMagick.MagickImageCollection(stream))
+        {
+            if (collection.Count == 0)
+            {
+                // 1. Create a blank 160x160 image (e.g., white background) if collection is empty
+                using (var placeholder = new ImageMagick.MagickImage(ImageMagick.MagickColors.White, 160, 160))
+                {
+                    placeholder.Settings.FontPointsize = 18;
+                    placeholder.Settings.FillColor = ImageMagick.MagickColors.Black;
+                    placeholder.Settings.TextGravity = ImageMagick.Gravity.Center;
+
+                    // Draw the text
+                    placeholder.Annotate("No Thumbnail Found", ImageMagick.Gravity.Center);
+                    placeholder.Format = ImageMagick.MagickFormat.WebP;
+                    placeholder.WriteAsync(path);
+                }
+            }
+            else
+            {
+                var image = collection[0];
+
+                image.Format = ImageMagick.MagickFormat.WebP;
+
+                // 2. Resize the image to fit 160x160 (maintains aspect ratio)
+                image.Thumbnail(160, 160);
+
+                image.WriteAsync(path);
+
+            }
+
+            return stream.Length;
+        }
+    }
+
     public static async Task<Stream> LoadHeifAsync(FileStream inputStream, CancellationToken cancellationToken, MemoryStream? memoryStream = null)
     {
-        var decoderOptions = new HeifDecoderOptions
-        {
-            DecodingMode = DecodingMode.TopLevelImages,
-            GeneralOptions = new DecoderOptions
-            {
-                MaxFrames = 16,
-            }
-        };
-
-        using var heifImage = HeifDecoder.Instance.Decode(decoderOptions, inputStream);
-
-        var frameCount = heifImage.Frames.Count;
+        var collection = new ImageMagick.MagickImageCollection(inputStream);
+        var frameCount = collection.Count;
         if (frameCount == 0)
         {
             throw new InvalidDataException("HEIC/HEIF image contains no frames.");
@@ -283,8 +339,8 @@ public sealed class FormattedImage : IDisposable, IStorageItem
 
         (float cellScale, int gridRows, int gridCols) = GetGridDimension(frameCount);
 
-        var frameWidth = heifImage.Frames[0].Width;
-        var frameHeight = heifImage.Frames[0].Height;
+        var frameWidth = collection[0].Width;
+        var frameHeight = collection[0].Height;
 
         var cellWidth = (int)(frameWidth * cellScale);
         var cellHeight = (int)(frameHeight * cellScale);
@@ -293,17 +349,23 @@ public sealed class FormattedImage : IDisposable, IStorageItem
 
         for (var i = 0; i < Math.Min(frameCount, gridCols * gridRows); i++)
         {
-            using var frame = heifImage.Frames.CloneFrame(i);
-
-            // Resize frame if needed
-            if (cellScale != 1f)
+            using (var ms = new MemoryStream())
             {
-                frame.Mutate(ctx => ctx.Resize(cellWidth, cellHeight));
-            }
+                var image = collection[i];
+                await image.WriteAsync(ms, ImageMagick.MagickFormat.Jpeg);
+                ms.Position = 0;
+                Image frame = await Image.LoadAsync(ms);
 
-            var x = (i % gridCols) * cellWidth;
-            int y = (i / gridCols) * cellHeight;
-            outputImage.Mutate(ctx => ctx.DrawImage(frame, new Point(x, y), 1f));
+                // Resize frame if needed
+                if (cellScale != 1f)
+                {
+                    frame.Mutate(ctx => ctx.Resize(cellWidth, cellHeight));
+                }
+
+                var x = (i % gridCols) * cellWidth;
+                int y = (i / gridCols) * cellHeight;
+                outputImage.Mutate(ctx => ctx.DrawImage(frame, new Point(x, y), 1f));
+            }
         }
 
         // Ensure memoryStream is not null before dereferencing

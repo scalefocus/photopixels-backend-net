@@ -53,7 +53,7 @@ public class LoadThumbnailHandler : IQueryHandler<LoadThumbnailRequest, QueryRes
         var thumbnailExtension = Constants.SupportedVideoFormats.Contains($".{metadata.Extension}") ? "png" : "webp";
         var thumbnail = await LoadPhoto(metadata.GetThumbnailName(thumbnailExtension), cancellationToken);
 
-        var formattedImage = await FormattedImage.LoadAsync(thumbnail, cancellationToken);
+        var formattedImage = await FormattedImage.LoadAsync(thumbnail, metadata.GetThumbnailName(thumbnailExtension), cancellationToken);
         await formattedImage.SaveAsync(_memoryStream, cancellationToken);
 
         _memoryStream.Seek(0, SeekOrigin.Begin);

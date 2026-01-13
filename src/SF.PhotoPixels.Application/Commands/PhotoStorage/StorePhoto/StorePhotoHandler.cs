@@ -26,8 +26,7 @@ public class StorePhotoHandler : IRequestHandler<StorePhotoRequest, OneOf<IMedia
 
     public async ValueTask<OneOf<IMediaResponse, Duplicate, ValidationError>> Handle(StorePhotoRequest request, CancellationToken cancellationToken)
     {
-        using var rawImage = new RawImage(request.File.OpenReadStream());
-
+        using var rawImage = new RawImage(request.File.OpenReadStream(), request.File.FileName);
 
         var originalHash = Convert.ToBase64String(await rawImage.GetHashAsync());
         if (originalHash != request.ObjectHash)
