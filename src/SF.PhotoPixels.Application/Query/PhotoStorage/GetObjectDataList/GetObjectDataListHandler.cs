@@ -96,7 +96,7 @@ public class GetObjectDataListHandler : IRequestHandler<GetObjectDataListRequest
     {
         var itemStream = await _objectStorage.LoadObjectAsync(obj.UserId, $"{obj.Hash}.{obj.Extension}", cancellationToken);
 
-        using var rawImage = new RawImage(itemStream);
+        using var rawImage = new RawImage(itemStream, obj.Name);
         obj.OriginalHash = Convert.ToBase64String(await rawImage.GetHashAsync());
 
         _session.Update(obj);
