@@ -43,7 +43,7 @@ public class ObjectProperties : ISoftDeleted
     public bool? IsFavorite { get; set; } = false;
 
     // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
-    internal ObjectProperties()
+    public ObjectProperties()
     {
     }
 

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Oakton;
+//using Oakton;
 using Serilog;
 using SF.PhotoPixels.API.Extensions;
 using SF.PhotoPixels.API.Middlewares;
@@ -75,7 +75,8 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddSwaggerDocumentation();
 
-builder.Host.ApplyOaktonExtensions();
+//builder.Host.ApplyOaktonExtensions();
+builder.Host.ConfigureWolverineSupport();
 
 builder.ConfigureWebServersUpperLimitOptions();
 
@@ -145,7 +146,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await intiService.FirstTimeSetup();
 }
 
-await app.RunOaktonCommands(args);
+//await app.RunOaktonCommands(args);
 
 await app.RunAsync();
 
