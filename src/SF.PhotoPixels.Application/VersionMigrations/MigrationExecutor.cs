@@ -180,7 +180,7 @@ public class MigrationExecutor
     {
         var rawImage = await objectStorage.LoadObjectAsync(properties.UserId, properties.GetFileName());
 
-        return await FormattedImage.LoadAsync(rawImage);
+        return await FormattedImage.LoadAsync(rawImage, properties.GetFileName());
     }
 
     private static Type[] GetMigrations()

@@ -133,8 +133,7 @@ public class ImportDirectoryService : BackgroundService, IImportDirectoryService
         foreach (var file in files)
         {
             using var stream = new FileStream(file, FileMode.Open, FileAccess.Read);
-            var rawImage = new RawImage(stream);
-            var filename = Path.GetFileNameWithoutExtension(file).Trim();
+            var rawImage = new RawImage(stream, file);
             var imageFingerprint = await rawImage.GetSafeFingerprintAsync();
             var objectId = new ObjectId(user.Id, imageFingerprint);
 
@@ -153,7 +152,7 @@ public class ImportDirectoryService : BackgroundService, IImportDirectoryService
             documentSession.Update(user);
             await documentSession.SaveChangesAsync(stoppingToken);
 
-            var version = await photoService.StoreObjectCreatedEventAsync(rawImage, usedQuota, filename, user.Id, stoppingToken);
+            var version = await photoService.StoreObjectCreatedEventAsync(rawImage, usedQuota, file, user.Id, stoppingToken);
 
             _currentProgress!.ProcessedFiles++;
 

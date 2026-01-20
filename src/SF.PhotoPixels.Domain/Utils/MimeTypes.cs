@@ -153,6 +153,8 @@
         {".hdf", "application/x-hdf"},
         {".hdml", "text/x-hdml"},
         {".hhc", "application/x-oleobject"},
+        {".heic", "image/heic"},
+        {".heif", "image/heif"},
         {".hhk", "application/octet-stream"},
         {".hhp", "application/octet-stream"},
         {".hlp", "application/winhlp"},
