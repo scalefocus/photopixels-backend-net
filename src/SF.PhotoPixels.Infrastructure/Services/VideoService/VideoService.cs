@@ -1,7 +1,9 @@
 ﻿using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
+using SF.PhotoPixels.Domain.Models;
 using SF.PhotoPixels.Infrastructure.Repositories;
 using SF.PhotoPixels.Infrastructure.Storage;
+using Wolverine;
 
 namespace SF.PhotoPixels.Infrastructure.Services.VideoService;
 
@@ -9,15 +11,19 @@ public class VideoService : IVideoService
 {
     private readonly IObjectRepository _objectRepository;
     private readonly IObjectStorage _objectStorage;
+    private readonly IMessageBus _bus;
 
     private const string ThumbnailExtension = "png";
 
     public VideoService(
         IObjectStorage objectStorage,
-        IObjectRepository objectRepository)
+        IObjectRepository objectRepository, 
+        IMessageBus bus
+        )
     {
         _objectStorage = objectStorage;
         _objectRepository = objectRepository;
+        _bus = bus;
     }
 
     public async Task<long> SaveFile(RawVideo rawVideo, Guid userId, CancellationToken cancellationToken)
@@ -42,6 +48,9 @@ public class VideoService : IVideoService
         var storedObjectPathName = Path.Combine(userFolders.ObjectFolder, $"{fingerprint}.{extension}");
         var video = await rawVideo.ToFormattedVideoAsync(storedObjectPathName, cancellationToken);
 
+        //create video conversion command if necessery
+        await _bus.PublishAsync(new ConvertVideoCommand { Path = storedObjectPathName });
+
         var evt = new MediaObjectCreated
         {
             ObjectId = objectId,
@@ -59,6 +68,7 @@ public class VideoService : IVideoService
             AndroidCloudId = AndroidCloudId,
         };
 
+        //create video event projection
         return await _objectRepository.AddEvent(userId, evt, cancellationToken);
     }
 

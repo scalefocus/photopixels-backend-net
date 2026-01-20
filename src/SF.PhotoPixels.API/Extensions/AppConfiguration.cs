@@ -1,14 +1,18 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
-using FFMpegCore;
+﻿using FFMpegCore;
 using HealthChecks.Network.Core;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using Serilog;
 using Serilog.Debugging;
 using Serilog.Sinks.Grafana.Loki;
+using SF.PhotoPixels.Domain.Models;
 using SF.PhotoPixels.Infrastructure.Options;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Wolverine;
+using Wolverine.ErrorHandling;
 
 namespace SF.PhotoPixels.API.Extensions
 {
@@ -185,6 +189,21 @@ namespace SF.PhotoPixels.API.Extensions
                 TemporaryFilesFolder = temporaryFilesFolder
             };
             GlobalFFOptions.Configure(ffOptions);
+        }
+
+        public static void ConfigureWolverineSupport(this ConfigureHostBuilder host)
+        {
+            host.UseWolverine(opts =>
+            {
+                // Just setting up some retries on transient database connectivity errors
+                opts.Policies.OnException<NpgsqlException>().OrInner<NpgsqlException>()
+                    .RetryWithCooldown(TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(250));
+
+                opts.PublishMessage<ConvertVideoCommand>()
+                    .ToLocalQueue("EncodeVideoQueue")
+                    .MaximumParallelMessages(2)
+                    .UseDurableInbox();
+            });
         }
     }
 }

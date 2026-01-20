@@ -38,6 +38,7 @@ public class User : IIdentity, ISoftDeleted
     public string? SecurityStamp { get; set; }
 
     public bool Deleted { get; set; }
+    public UserSettings Settings { get; set; } = new();
 
     [SoftDeletedAtMetadata]
     public DateTimeOffset? DeletedAt { get; set; }
@@ -58,4 +59,9 @@ public class User : IIdentity, ISoftDeleted
     {
         UsedQuota -= size;
     }
+}
+
+public class UserSettings
+{
+    public bool AllowVideoConversion { get; set; }
 }
