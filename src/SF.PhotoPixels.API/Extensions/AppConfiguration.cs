@@ -154,20 +154,39 @@ namespace SF.PhotoPixels.API.Extensions
             // install ffmpeg on windows os
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var scriptPath = Path.Combine(Environment.CurrentDirectory, "Install-FFmpeg.ps1");
-                var processInfo = new ProcessStartInfo("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"")
+                try
                 {
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
+                    var scriptPath = Path.Combine(Environment.CurrentDirectory, "Install-FFmpeg.ps1");
 
-                using (var process = Process.Start(processInfo))
+                    if (!File.Exists(scriptPath))
+                    {
+                        logger.LogWarning($"FFmpeg installation script not found at: {scriptPath}");
+                        return;
+                    }
+
+                    var processInfo = new ProcessStartInfo("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"")
+                    {
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using (var process = Process.Start(processInfo))
+                    {
+                        logger.LogInformation("Starting FFmpeg configuration...");
+                        process.WaitForExit();
+                        var output = process.StandardOutput.ReadToEnd();
+                        logger.LogInformation(output);
+
+                        if (process.ExitCode != 0)
+                        {
+                            logger.LogError($"FFmpeg installation failed with exit code: {process.ExitCode}");
+                        }
+                    }
+                }
+                catch (Exception ex)
                 {
-                    logger.LogInformation("Starting FFmpeg configuration...");
-                    process.WaitForExit();
-                    var output = process.StandardOutput.ReadToEnd();
-                    logger.LogInformation(output);
+                    logger.LogError(ex, "Error during FFmpeg configuration");
                 }
             }
 
@@ -195,7 +214,7 @@ namespace SF.PhotoPixels.API.Extensions
         {
             host.UseWolverine(opts =>
             {
-                // Just setting up some retries on transient database connectivity errors
+                // set retries on transient database connectivity errors
                 opts.Policies.OnException<NpgsqlException>().OrInner<NpgsqlException>()
                     .RetryWithCooldown(TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(250));
 

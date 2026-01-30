@@ -3,7 +3,6 @@ using HeyRed.ImageSharp.Heif.Formats.Heif;
 using JasperFx;
 using JasperFx.Events.Projections;
 using Marten;
-using Marten.Events.Projections;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
@@ -25,7 +24,6 @@ using SF.PhotoPixels.Infrastructure.Stores;
 using SixLabors.ImageSharp;
 using SolidTUS.Extensions;
 using SolidTUS.Models;
-using Weasel.Core;
 
 namespace SF.PhotoPixels.Infrastructure;
 
@@ -140,11 +138,6 @@ public static class DependencyInjection
                 options.Events.AddEventType<ObjectToAlbumCreated>();
             })
             .UseLightweightSessions();
-
-        //if (!isDevelopment)
-        //{
-        //    martenConfig.OptimizeArtifactWorkflow();
-        //}
 
         new HeifConfigurationModule().Configure(Configuration.Default);
 
