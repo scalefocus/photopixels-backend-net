@@ -22,7 +22,6 @@ public class GetObjectsTrashedHandler : IQueryHandler<GetObjectsTrashedRequest, 
     public async ValueTask<OneOf<GetObjectsTrashedResponse, None>> Handle(GetObjectsTrashedRequest request, CancellationToken cancellationToken)
     {
         var utcNow = DateTimeOffset.UtcNow;
-        string? sqlQuery;
 
         var result = _session.Query<ObjectProperties>()
             .Where(x => x.UserId == _executionContextAccessor.UserId

@@ -48,7 +48,7 @@ public class StoreVideoHandler : IRequestHandler<StoreVideoRequest, OneOf<IMedia
             return new ValidationError("UserNotFound", "User not found");
         }
 
-        var usedQuota = await _videoService.SaveFile(rawVideo, user.Id, cancellationToken);
+        var usedQuota = await _videoService.SaveFile(rawVideo, user.Id, cancellationToken, user.Settings.AllowVideoConversion);
         if (!user.IncreaseUsedQuota(usedQuota))
         {
             return new ValidationError("QuotaReached", "User quota is reached, not enough capacity for new upload");

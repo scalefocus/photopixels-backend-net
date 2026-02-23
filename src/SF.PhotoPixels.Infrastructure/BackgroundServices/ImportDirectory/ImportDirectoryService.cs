@@ -17,7 +17,6 @@ public class ImportDirectoryService : BackgroundService, IImportDirectoryService
     private static ImportTaskProgress? _currentProgress;
     private List<string> _filesToDelete;
 
-    private static readonly string[] SupportedFormats = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".heic" };
     private readonly ILogger<ImportDirectoryService> _logger;
     private readonly IServiceProvider _serviceProvider;
 
@@ -73,7 +72,7 @@ public class ImportDirectoryService : BackgroundService, IImportDirectoryService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.LogError("Error ImportDirectoryService ExecuteAsync with exeption {Ex}", ex);
                 }
             }
         }
@@ -89,12 +88,12 @@ public class ImportDirectoryService : BackgroundService, IImportDirectoryService
             IsInQueue = false
         };
 
-        _logger.LogInformation("Starting import with id {id}", _currentTask!.Id);
+        _logger.LogInformation("Starting import with id {Id}", _currentTask!.Id);
 
         var canRead = await CanReadDirectory();
         if (!canRead)
         {
-            throw new Exception("CantReadDirectory");
+            throw new InvalidOperationException("Can't Read Directory");
         }
 
         var files = await GetCompatibleFiles();
@@ -117,7 +116,10 @@ public class ImportDirectoryService : BackgroundService, IImportDirectoryService
 
     private Task<IEnumerable<string>> GetCompatibleFiles()
     {
-        var files = Directory.EnumerateFiles(_currentTask!.Directory).Where(f => SupportedFormats.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase));
+        var files = Directory
+            .EnumerateFiles(_currentTask!.Directory)
+            .Where(f => Constants.SupportedPhotoFormats.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase) 
+                || Constants.SupportedVideoFormats.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase));
 
         return Task.FromResult(files);
     }
@@ -146,13 +148,13 @@ public class ImportDirectoryService : BackgroundService, IImportDirectoryService
             var usedQuota = await photoService!.SaveFile(rawImage, user.Id, stoppingToken);
             if (!user.IncreaseUsedQuota(usedQuota))
             {
-                throw new Exception("MaxQuotaReached");
+                throw new InvalidOperationException("Max Quota Reached");
             }
 
             documentSession.Update(user);
             await documentSession.SaveChangesAsync(stoppingToken);
 
-            var version = await photoService.StoreObjectCreatedEventAsync(rawImage, usedQuota, file, user.Id, stoppingToken);
+            await photoService.StoreObjectCreatedEventAsync(rawImage, usedQuota, file, user.Id, stoppingToken);
 
             _currentProgress!.ProcessedFiles++;
 
@@ -165,7 +167,7 @@ public class ImportDirectoryService : BackgroundService, IImportDirectoryService
 
     private Task DeleteImportedFiles()
     {
-        _logger.LogInformation("Deleting {filecount} Imported Files", _filesToDelete.Count);
+        _logger.LogInformation("Deleting {Filecount} Imported Files", _filesToDelete.Count);
         _filesToDelete.ForEach(File.Delete);
         _logger.LogInformation($"Deletion Complete");
 

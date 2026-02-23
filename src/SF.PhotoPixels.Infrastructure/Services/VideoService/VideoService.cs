@@ -26,14 +26,33 @@ public class VideoService : IVideoService
         _bus = bus;
     }
 
-    public async Task<long> SaveFile(RawVideo rawVideo, Guid userId, CancellationToken cancellationToken)
+    public async Task<long> SaveFile(RawVideo rawVideo, Guid userId, CancellationToken cancellationToken, bool allowVideoConversion = false)
     {
+        var filename = rawVideo.GetFileName();
         var fingerprint = await rawVideo.GetSafeFingerprintAsync();
-        var name = $"{fingerprint}{Path.GetExtension(rawVideo.GetFileName())}";
+        var name = $"{fingerprint}{Path.GetExtension(filename)}";
         var thumbnailName = $"{fingerprint}.{ThumbnailExtension}";
 
         await SaveVideoAsync(userId, name, rawVideo, cancellationToken);
         var thumbnailSize = await SaveThumbnailAsync(userId, name, thumbnailName, cancellationToken);
+
+        //create video conversion command if necessery
+        if (FormattedVideo.GetExtension(filename).ToLower() is "hevc" && allowVideoConversion)
+        {
+            var userFolders = _objectStorage.GetUserFolders(userId);
+            var convertedFolders = _objectStorage.GetUserConvertedVideosFolder(userId);
+
+            var command = new ConvertVideoCommand
+            {
+                Filename = name,
+                objectPath = userFolders.ObjectFolder,
+                convertedVideoPath = convertedFolders,
+                thumbVideoPath = userFolders.ThumbFolder,
+                UserId = userId
+            };
+            await _bus.PublishAsync(command);
+        }
+
         return rawVideo.GetVideoSize() + thumbnailSize;
     }
 
@@ -47,9 +66,6 @@ public class VideoService : IVideoService
         var userFolders = _objectStorage.GetUserFolders(userId);
         var storedObjectPathName = Path.Combine(userFolders.ObjectFolder, $"{fingerprint}.{extension}");
         var video = await rawVideo.ToFormattedVideoAsync(storedObjectPathName, cancellationToken);
-
-        //create video conversion command if necessery
-        await _bus.PublishAsync(new ConvertVideoCommand { Path = storedObjectPathName });
 
         var evt = new MediaObjectCreated
         {

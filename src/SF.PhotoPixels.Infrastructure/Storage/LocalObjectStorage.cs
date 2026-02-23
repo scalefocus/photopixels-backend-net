@@ -1,5 +1,5 @@
-﻿using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
 
 namespace SF.PhotoPixels.Infrastructure.Storage;
 
@@ -7,6 +7,7 @@ public class LocalObjectStorage : IObjectStorage
 {
     private readonly ILogger<LocalObjectStorage> _logger;
     private const string ThumbDirectory = "thumbnails";
+    private const string ConvertedVideoDirectory = "convertedVideos";
     private readonly string _objectsDirectory = Path.Combine(GetRootDirectory(), "sf-photos", "images");
 
     public LocalObjectStorage(ILogger<LocalObjectStorage> logger)
@@ -21,9 +22,23 @@ public class LocalObjectStorage : IObjectStorage
         return new ValueTask<FileStream>(File.OpenRead(Path.Combine(_objectsDirectory, userId.ToString(), objectName)));
     }
 
+    public ValueTask<FileStream> LoadPreviewVideoAsync(Guid userId, string objectName, CancellationToken cancellationToken = default)
+    {
+        var previewFileName = $"{Path.GetFileNameWithoutExtension(objectName)}{Constants.PreviewSufix}.mp4";
+        if (!File.Exists(Path.Combine(_objectsDirectory, userId.ToString(), ConvertedVideoDirectory, previewFileName)))
+        {
+            return new ValueTask<FileStream>(VideoPreviewNotSupportedProvider.Instance.Get());
+        }
+        return new ValueTask<FileStream>(File.OpenRead(Path.Combine(_objectsDirectory, userId.ToString(), ConvertedVideoDirectory, previewFileName)));
+    }
+
     public ValueTask<FileStream> LoadThumbnailAsync(Guid userId, string objectName, CancellationToken cancellationToken = new())
     {
         var thumbDirectory = Path.Combine(_objectsDirectory, userId.ToString(), ThumbDirectory, objectName);
+        if (!File.Exists(thumbDirectory))
+        {
+            return new ValueTask<FileStream>(ThumbnailNotAvailableProvider.Instance.Get());
+        }
 
         return new ValueTask<FileStream>(File.OpenRead(thumbDirectory));
     }
@@ -70,6 +85,22 @@ public class LocalObjectStorage : IObjectStorage
             File.Delete(path);
             return true;
         }
+        return false;
+    }
+
+    public bool DeletePreview(Guid userId, string name, out long fileSize)
+    {
+        var path = Path.Combine(_objectsDirectory, userId.ToString(), ConvertedVideoDirectory, name);
+
+        if (File.Exists(Path.Combine(path)))
+        {
+            _logger.LogDebug("Deleting Preview: {name}", name);
+
+            fileSize = new FileInfo(path).Length;
+            File.Delete(path);
+            return true;
+        }
+        fileSize = 0;
         return false;
     }
 
@@ -125,5 +156,46 @@ public class LocalObjectStorage : IObjectStorage
         return new(
             Path.Combine(_objectsDirectory, userId.ToString()),
             Path.Combine(_objectsDirectory, userId.ToString(), ThumbDirectory));
+    }
+
+    public string GetUserConvertedVideosFolder(Guid userId)
+    {
+        var convertedVideoDirectory = Path.Combine(_objectsDirectory, userId.ToString(), ConvertedVideoDirectory);
+        if (!Directory.Exists(convertedVideoDirectory))
+        {
+            _logger.LogDebug("Creating converted video directory: {ConvertedVideoDirectory}", convertedVideoDirectory);
+            Directory.CreateDirectory(convertedVideoDirectory);
+        }
+
+        return convertedVideoDirectory;
+    }
+
+    public long GetUserConvertedVideosSize(Guid userId)
+    {
+        var convertedVideoDirectory = Path.Combine(_objectsDirectory, userId.ToString(), ConvertedVideoDirectory);
+        long totalSize = new DirectoryInfo(convertedVideoDirectory)
+            .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
+            .Sum(fi => fi.Length);
+
+        return totalSize;
+    }
+
+    public void DeleteUserConvertedVideos(Guid userId)
+    {
+        var convertedVideoDirectory = Path.Combine(_objectsDirectory, userId.ToString(), ConvertedVideoDirectory);
+        var files = Directory.EnumerateFiles(convertedVideoDirectory);
+
+        // Optional: Use Parallel.ForEach to potentially speed up deletion by using multiple threads
+        Parallel.ForEach(files, (file) =>
+        {
+            try
+            {
+                File.Delete(file);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Delete User Converted Videos, Could not delete file {@UploadFileInfo} with {Message}", file, ex.Message);
+            }
+        });
     }
 }

@@ -1,10 +1,12 @@
 using Mediator;
 using Microsoft.AspNetCore.Identity;
-using OneOf.Types;
 using OneOf;
+using OneOf.Types;
+using SF.PhotoPixels.Application.Commands.VideoStorage;
 using SF.PhotoPixels.Application.Core;
-using SF.PhotoPixels.Domain.Events;
-using SF.PhotoPixels.Infrastructure.Repositories;
+using SF.PhotoPixels.Domain.Models;
+using SF.PhotoPixels.Infrastructure.Storage;
+using Wolverine;
 
 namespace SF.PhotoPixels.Application.Commands.User.AllowVideoConversion;
 
@@ -12,13 +14,15 @@ public class AllowVideoConversionHandler : IRequestHandler<AllowVideoConversionR
 {
     private readonly UserManager<Domain.Entities.User> _userManager;
     private readonly IExecutionContextAccessor _executionContextAccessor;
-    private readonly IObjectRepository _objectRepository;
+    private readonly IObjectStorage _objectStorage;
+    private readonly IMessageBus _bus;
 
-    public AllowVideoConversionHandler(UserManager<Domain.Entities.User> userManager, IExecutionContextAccessor executionContextAccessor, IObjectRepository objectRepository)
+    public AllowVideoConversionHandler(UserManager<Domain.Entities.User> userManager, IExecutionContextAccessor executionContextAccessor, IObjectStorage objectStorage, IMessageBus bus)
     {
         _userManager = userManager;
         _executionContextAccessor = executionContextAccessor;
-        _objectRepository = objectRepository;
+        _objectStorage = objectStorage;
+        _bus = bus;
     }
 
     public async ValueTask<OneOf<Success, ValidationError>> Handle(AllowVideoConversionRequest request, CancellationToken cancellationToken)
@@ -40,6 +44,47 @@ public class AllowVideoConversionHandler : IRequestHandler<AllowVideoConversionR
             return new ValidationError("UserUpdateFailed", errorMessage);
         }
 
+        if (!request.AllowVideoConversion)
+        {
+            UserCancellationStore.AddUser(_executionContextAccessor.UserId, DateTime.UtcNow);
+            return new Success();
+        }
+
+        UserCancellationStore.RemoveUser(_executionContextAccessor.UserId);
+        await ConvertedFilesAsync();
+
         return new Success();
+    }
+
+    public async Task ConvertedFilesAsync()
+    {
+        // Ensure destination directory exists
+        var userFolders = _objectStorage.GetUserFolders(_executionContextAccessor.UserId);
+        var previewVideosFolders = _objectStorage.GetUserConvertedVideosFolder(_executionContextAccessor.UserId);
+
+        // Get all files in source directory, filter by supported video formats
+        var sourceFiles = Directory.GetFiles(userFolders.ObjectFolder)
+            .Where(f => FormattedVideo.GetExtension(f).ToLower() is "hevc");
+
+        // Build a set of dest file names (without extension, but with "-preview" suffix)
+        var destFiles = new HashSet<string>(
+            Directory.GetFiles(previewVideosFolders)
+                .Select(f => Path.GetFileNameWithoutExtension(f)), StringComparer.OrdinalIgnoreCase);
+
+        foreach (var sourceFile in sourceFiles)
+        {
+            if (!destFiles.Contains($"{Path.GetFileNameWithoutExtension(sourceFile)}{Infrastructure.Constants.PreviewSufix}"))
+            {
+                var command = new ConvertVideoCommand
+                {
+                    Filename = Path.GetFileName(sourceFile),
+                    objectPath = userFolders.ObjectFolder,
+                    convertedVideoPath = previewVideosFolders,
+                    thumbVideoPath = userFolders.ThumbFolder,
+                    UserId = _executionContextAccessor.UserId
+                };
+                await _bus.PublishAsync(command);
+            }
+        }
     }
 }
