@@ -2,8 +2,9 @@
 
 public class GetVideoPreviewFilesSizeResponse
 {
-    //public required Guid UserId { get; set; }
     public required long Size { get; set; }
+
+    public required long SizeOfFilesToConvert { get; set; }    
 
     public required long Quota { get; set; }
 
@@ -12,6 +13,8 @@ public class GetVideoPreviewFilesSizeResponse
     public required int NumberOfPreviewFiles { get; set; }
 
     public required int NumberOfFilesToConvert { get; set; }
+
+    public bool ToDeletePreviewFiles { get; set; }
 
 }
 

@@ -4,5 +4,5 @@ namespace SF.PhotoPixels.Application.Commands.Tus.DeleteUpload;
 
 public class DeleteUploadRequest : IRequest<DeleteUploadResponses>
 {
-    public string FileId { get; set; }
+    public required string FileId { get; set; }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace SF.PhotoPixels.Application.Commands.VideoStorage;
+namespace SF.PhotoPixels.Infrastructure.Stores;
 
 public static class UserCancellationStore
 {

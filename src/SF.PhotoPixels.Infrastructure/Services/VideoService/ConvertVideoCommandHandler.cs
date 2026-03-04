@@ -2,8 +2,8 @@
 using Marten;
 using SF.PhotoPixels.Domain.Models;
 using SF.PhotoPixels.Infrastructure.Storage;
+using SF.PhotoPixels.Infrastructure.Stores;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Wolverine.Attributes;
 
 namespace SF.PhotoPixels.Infrastructure.Services.VideoService;
@@ -50,6 +50,9 @@ public class ConvertVideoCommandHandler
             user.IncreaseUsedQuota(size);
             _session.Update(user);
             await _session.SaveChangesAsync(CancellationToken.None);
+            
+            if (user.UsedQuota > user.Quota)
+                UserCancellationStore.AddUser(user.Id);
         }
 
         // delete the temp video from object temp storage

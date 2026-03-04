@@ -60,6 +60,7 @@ public class DeletePermanentHandler : IRequestHandler<DeletePermanentRequest, Ob
         long revision = 0;
         foreach (var obj in objects)
         {
+            _logger.LogDebug("Permanently deleting object {Filename}", obj.GetFileName());
             _ = _objectStorage.DeleteObject(user.Id, obj.GetFileName());
 
             var thumbnailExtension = Constants.SupportedVideoFormats.Contains($".{obj.Extension}") ? "png" : "webp";

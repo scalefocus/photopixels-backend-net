@@ -34,6 +34,7 @@ public static class DependencyInjection
 
         services.AddHostedService<TrashHardDeleteBackgroundService>();
         services.AddScoped<ITrashHardDeleteService, TrashHardDeleteService>();
+        services.AddHostedService<VideoPrevewDeleteBackgroundService>();
 
         services.RegisterMigrations();
 

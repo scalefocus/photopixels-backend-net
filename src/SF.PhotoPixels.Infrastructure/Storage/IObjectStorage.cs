@@ -26,6 +26,4 @@ public interface IObjectStorage
 
     public long GetUserConvertedVideosSize(Guid userId);
 
-    public void DeleteUserConvertedVideos(Guid userId);
-
 }

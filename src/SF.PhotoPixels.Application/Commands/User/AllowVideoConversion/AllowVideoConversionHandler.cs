@@ -2,10 +2,11 @@ using Mediator;
 using Microsoft.AspNetCore.Identity;
 using OneOf;
 using OneOf.Types;
-using SF.PhotoPixels.Application.Commands.VideoStorage;
+using SF.PhotoPixels.Application.Commands.User.DeleteVideoPreviewFiles;
 using SF.PhotoPixels.Application.Core;
 using SF.PhotoPixels.Domain.Models;
 using SF.PhotoPixels.Infrastructure.Storage;
+using SF.PhotoPixels.Infrastructure.Stores;
 using Wolverine;
 
 namespace SF.PhotoPixels.Application.Commands.User.AllowVideoConversion;
@@ -16,13 +17,15 @@ public class AllowVideoConversionHandler : IRequestHandler<AllowVideoConversionR
     private readonly IExecutionContextAccessor _executionContextAccessor;
     private readonly IObjectStorage _objectStorage;
     private readonly IMessageBus _bus;
+    private readonly IMediator _mediator;
 
-    public AllowVideoConversionHandler(UserManager<Domain.Entities.User> userManager, IExecutionContextAccessor executionContextAccessor, IObjectStorage objectStorage, IMessageBus bus)
+    public AllowVideoConversionHandler(UserManager<Domain.Entities.User> userManager, IExecutionContextAccessor executionContextAccessor, IObjectStorage objectStorage, IMessageBus bus, IMediator mediator)
     {
         _userManager = userManager;
         _executionContextAccessor = executionContextAccessor;
         _objectStorage = objectStorage;
         _bus = bus;
+        _mediator = mediator;
     }
 
     public async ValueTask<OneOf<Success, ValidationError>> Handle(AllowVideoConversionRequest request, CancellationToken cancellationToken)
@@ -47,16 +50,18 @@ public class AllowVideoConversionHandler : IRequestHandler<AllowVideoConversionR
         if (!request.AllowVideoConversion)
         {
             UserCancellationStore.AddUser(_executionContextAccessor.UserId, DateTime.UtcNow);
+            await _mediator.Send(new DeleteVideoPreviewFilesRequest(), cancellationToken);
+
             return new Success();
         }
 
         UserCancellationStore.RemoveUser(_executionContextAccessor.UserId);
-        await ConvertedFilesAsync();
+        await ConvertFilesAsync();
 
         return new Success();
     }
 
-    public async Task ConvertedFilesAsync()
+    public async Task ConvertFilesAsync()
     {
         // Ensure destination directory exists
         var userFolders = _objectStorage.GetUserFolders(_executionContextAccessor.UserId);

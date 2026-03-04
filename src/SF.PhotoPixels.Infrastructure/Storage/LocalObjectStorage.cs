@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 using System.Runtime.InteropServices;
 
 namespace SF.PhotoPixels.Infrastructure.Storage;
@@ -9,10 +11,24 @@ public class LocalObjectStorage : IObjectStorage
     private const string ThumbDirectory = "thumbnails";
     private const string ConvertedVideoDirectory = "convertedVideos";
     private readonly string _objectsDirectory = Path.Combine(GetRootDirectory(), "sf-photos", "images");
+    private const int MaxRetryAttempts = 4;
+
+    private readonly RetryPolicy _retryPolicy;
 
     public LocalObjectStorage(ILogger<LocalObjectStorage> logger)
     {
         _logger = logger;
+        _retryPolicy = Policy
+        .Handle<IOException>()
+        .Or<UnauthorizedAccessException>()
+        .WaitAndRetry(
+            retryCount: MaxRetryAttempts,
+            sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)), // Exponential backoff: 2s, 4s, 8s
+            onRetry: (exception, timeSpan, retryCount, context) =>
+            {
+                // Optionally log retry attempts here if needed
+                _logger.LogInformation(exception, "Retry {RetryCount} for path {Path} after {Delay} due to {ExceptionMessage}", retryCount, context["path"], timeSpan, exception.Message);
+            });
 
         _logger.LogDebug("Objects directory: {ObjectsDirectory}", _objectsDirectory);
     }
@@ -97,7 +113,19 @@ public class LocalObjectStorage : IObjectStorage
             _logger.LogDebug("Deleting Preview: {name}", name);
 
             fileSize = new FileInfo(path).Length;
-            File.Delete(path);
+            try
+            {
+                _retryPolicy.Execute(() =>
+                {
+                    File.Delete(path);
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete preview after {MaxRetryAttempts} retries: {name}", name, MaxRetryAttempts);
+                fileSize = 0;
+                return false;
+            }
             return true;
         }
         fileSize = 0;
@@ -173,29 +201,15 @@ public class LocalObjectStorage : IObjectStorage
     public long GetUserConvertedVideosSize(Guid userId)
     {
         var convertedVideoDirectory = Path.Combine(_objectsDirectory, userId.ToString(), ConvertedVideoDirectory);
+        if (!Directory.Exists(convertedVideoDirectory))
+        {
+            _logger.LogDebug("Creating converted video directory: {ConvertedVideoDirectory}", convertedVideoDirectory);
+            Directory.CreateDirectory(convertedVideoDirectory);
+        }
         long totalSize = new DirectoryInfo(convertedVideoDirectory)
             .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
             .Sum(fi => fi.Length);
 
         return totalSize;
-    }
-
-    public void DeleteUserConvertedVideos(Guid userId)
-    {
-        var convertedVideoDirectory = Path.Combine(_objectsDirectory, userId.ToString(), ConvertedVideoDirectory);
-        var files = Directory.EnumerateFiles(convertedVideoDirectory);
-
-        // Optional: Use Parallel.ForEach to potentially speed up deletion by using multiple threads
-        Parallel.ForEach(files, (file) =>
-        {
-            try
-            {
-                File.Delete(file);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Delete User Converted Videos, Could not delete file {@UploadFileInfo} with {Message}", file, ex.Message);
-            }
-        });
     }
 }

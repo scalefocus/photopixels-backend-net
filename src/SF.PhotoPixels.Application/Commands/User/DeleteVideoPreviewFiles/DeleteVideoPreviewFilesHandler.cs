@@ -23,13 +23,32 @@ public class DeleteVideoPreviewFilesHandler : IRequestHandler<DeleteVideoPreview
     {
         var user = await _session.Query<Domain.Entities.User>()
             .SingleOrDefaultAsync(x => x.Id == _executionContextAccessor.UserId, cancellationToken);
-
+        
         if (user == null)
         {
             return new NotFound();
         }
 
-        _objectStorage.DeleteUserConvertedVideos(_executionContextAccessor.UserId);
+        var previewVideosFolders = _objectStorage.GetUserConvertedVideosFolder(_executionContextAccessor.UserId);
+        var filesToConvert = new DirectoryInfo(previewVideosFolders)
+            .EnumerateFiles("*", SearchOption.AllDirectories)
+            .Select(x => x.FullName)
+            .ToList();
+
+        if (filesToConvert.Count == 0)
+        {
+            new Success();
+        }
+
+        foreach (var file in filesToConvert)
+        {
+            if (_objectStorage.DeletePreview(user.Id, file, out long fileSize))
+                user.DecreaseUsedQuota(fileSize);
+        }
+
+        _session.Update(user);
+        await _session.SaveChangesAsync(cancellationToken);
+
         return new Success();
     }
 }
