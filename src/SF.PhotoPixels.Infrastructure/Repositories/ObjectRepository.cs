@@ -1,4 +1,5 @@
-﻿using Marten;
+﻿using JasperFx;
+using Marten;
 using Marten.Exceptions;
 using Microsoft.Extensions.Logging;
 using Polly;

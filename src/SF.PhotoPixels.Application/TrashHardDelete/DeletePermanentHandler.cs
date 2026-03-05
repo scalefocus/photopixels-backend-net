@@ -1,7 +1,6 @@
 using Marten;
 using Marten.Linq.SoftDeletes;
 using Mediator;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using OneOf.Types;
 using SF.PhotoPixels.Application.Commands.ObjectVersioning;
@@ -47,7 +46,7 @@ public class DeletePermanentHandler : IRequestHandler<DeletePermanentRequest, Ob
             return new NotFound();
         }
 
-        var user = await _session.LoadAsync<Domain.Entities.User>(_executionContextAccessor.UserId);
+        var user = await _session.LoadAsync<User>(_executionContextAccessor.UserId);
         if (user == null)
         {
             return new NotFound();
@@ -61,10 +60,18 @@ public class DeletePermanentHandler : IRequestHandler<DeletePermanentRequest, Ob
         long revision = 0;
         foreach (var obj in objects)
         {
+            _logger.LogDebug("Permanently deleting object {Filename}", obj.GetFileName());
             _ = _objectStorage.DeleteObject(user.Id, obj.GetFileName());
 
             var thumbnailExtension = Constants.SupportedVideoFormats.Contains($".{obj.Extension}") ? "png" : "webp";
             _ = _objectStorage.DeleteThumbnail(user.Id, obj.GetThumbnailName(thumbnailExtension));
+
+            if (string.Equals(obj.Extension, "hevc", StringComparison.OrdinalIgnoreCase))
+            {
+                var outputFileName = $"{Path.GetFileNameWithoutExtension(obj.GetFileName())}{Constants.PreviewSufix}.mp4";
+                if (_objectStorage.DeletePreview(user.Id, outputFileName, out long fileSize))
+                    user.DecreaseUsedQuota(fileSize);
+            }
 
             user.DecreaseUsedQuota(obj.SizeInBytes);
 

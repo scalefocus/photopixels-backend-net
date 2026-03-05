@@ -1,7 +1,9 @@
 ﻿using SF.PhotoPixels.Domain.Entities;
 using SF.PhotoPixels.Domain.Events;
+using SF.PhotoPixels.Domain.Models;
 using SF.PhotoPixels.Infrastructure.Repositories;
 using SF.PhotoPixels.Infrastructure.Storage;
+using Wolverine;
 
 namespace SF.PhotoPixels.Infrastructure.Services.VideoService;
 
@@ -9,25 +11,48 @@ public class VideoService : IVideoService
 {
     private readonly IObjectRepository _objectRepository;
     private readonly IObjectStorage _objectStorage;
+    private readonly IMessageBus _bus;
 
     private const string ThumbnailExtension = "png";
 
     public VideoService(
         IObjectStorage objectStorage,
-        IObjectRepository objectRepository)
+        IObjectRepository objectRepository, 
+        IMessageBus bus
+        )
     {
         _objectStorage = objectStorage;
         _objectRepository = objectRepository;
+        _bus = bus;
     }
 
-    public async Task<long> SaveFile(RawVideo rawVideo, Guid userId, CancellationToken cancellationToken)
+    public async Task<long> SaveFile(RawVideo rawVideo, Guid userId, CancellationToken cancellationToken, bool allowVideoConversion = false)
     {
+        var filename = rawVideo.GetFileName();
         var fingerprint = await rawVideo.GetSafeFingerprintAsync();
-        var name = $"{fingerprint}{Path.GetExtension(rawVideo.GetFileName())}";
+        var name = $"{fingerprint}{Path.GetExtension(filename)}";
         var thumbnailName = $"{fingerprint}.{ThumbnailExtension}";
 
         await SaveVideoAsync(userId, name, rawVideo, cancellationToken);
         var thumbnailSize = await SaveThumbnailAsync(userId, name, thumbnailName, cancellationToken);
+
+        //create video conversion command if necessery
+        if (FormattedVideo.GetExtension(filename).ToLower() is "hevc" && allowVideoConversion)
+        {
+            var userFolders = _objectStorage.GetUserFolders(userId);
+            var convertedFolders = _objectStorage.GetUserConvertedVideosFolder(userId);
+
+            var command = new ConvertVideoCommand
+            {
+                Filename = name,
+                objectPath = userFolders.ObjectFolder,
+                convertedVideoPath = convertedFolders,
+                thumbVideoPath = userFolders.ThumbFolder,
+                UserId = userId
+            };
+            await _bus.PublishAsync(command);
+        }
+
         return rawVideo.GetVideoSize() + thumbnailSize;
     }
 
@@ -59,6 +84,7 @@ public class VideoService : IVideoService
             AndroidCloudId = AndroidCloudId,
         };
 
+        //create video event projection
         return await _objectRepository.AddEvent(userId, evt, cancellationToken);
     }
 

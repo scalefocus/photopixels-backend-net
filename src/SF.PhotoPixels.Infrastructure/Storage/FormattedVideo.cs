@@ -116,4 +116,75 @@ public sealed class FormattedVideo : IDisposable, IStorageItem
         public uint Height;
         public uint Max;
     }
+
+    public static Task<string> ConvertHevcVideoAsync(string inputPath, string outputPath, CancellationToken cancellationToken = default)
+    {
+        if (File.Exists(outputPath))
+        {
+            return Task.FromResult(outputPath);
+        }
+
+        var tcs = new TaskCompletionSource<string>();
+
+        var process = new Process
+        {
+            StartInfo =
+            {
+                FileName = _FfmpegExeFilePath,
+                Arguments = $"-y -i \"{inputPath}\" -c:v libx264 -c:a aac -movflags +faststart \"{outputPath}\"",
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = false,
+                CreateNoWindow = true
+            },
+            EnableRaisingEvents = true
+        };
+
+        process.Exited += (_, _) =>
+        {
+            try
+            {
+                if (process.ExitCode == 0)
+                {
+                    tcs.TrySetResult(outputPath);
+                }
+                else
+                {
+                    tcs.TrySetException(
+                        new InvalidOperationException($"FFmpeg exited with code {process.ExitCode}."));
+                }
+            }
+            finally
+            {
+                process.Dispose();
+            }
+        };
+
+        if (!process.Start())
+        {
+            tcs.SetException(new InvalidOperationException("Failed to start ffmpeg process."));
+        }
+
+        process.BeginErrorReadLine();
+
+        if (cancellationToken != CancellationToken.None)
+        {
+            cancellationToken.Register(() =>
+            {
+                try
+                {
+                    if (!process.HasExited)
+                        process.Kill();
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                tcs.TrySetCanceled(cancellationToken);
+            });
+        }
+
+        return tcs.Task;
+    }
 }

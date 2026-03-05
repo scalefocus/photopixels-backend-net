@@ -18,12 +18,14 @@ namespace SF.PhotoPixels.Application.Query.PhotoStorage.LoadMedia
 
         public async ValueTask<QueryResponse<LoadMediaResponse>> Handle(LoadMediaCreationModel model, CancellationToken cancellationToken)
         {
-            var videoStream = await _objectStorage.LoadObjectAsync(_executionContextAccessor.UserId, model.FileName, cancellationToken);
+            var videoStream = (FormattedVideo.GetExtension(model.FileName.ToLower()) is "hevc") ?
+                    await _objectStorage.LoadPreviewVideoAsync(_executionContextAccessor.UserId, model.FileName, cancellationToken) :
+                    await _objectStorage.LoadObjectAsync(_executionContextAccessor.UserId, model.FileName, cancellationToken);            
 
             return new LoadMediaResponse
             {
                 Media = videoStream,
-                ContentType = model.MimeType,
+                ContentType = model.MimeType ?? "video/mp4",
             };
         }
     }

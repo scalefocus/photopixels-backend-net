@@ -155,6 +155,7 @@
         {".hhc", "application/x-oleobject"},
         {".heic", "image/heic"},
         {".heif", "image/heif"},
+        {".hevc", "video/mp4"},
         {".hhk", "application/octet-stream"},
         {".hhp", "application/octet-stream"},
         {".hlp", "application/winhlp"},

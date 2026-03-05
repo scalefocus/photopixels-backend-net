@@ -1,7 +1,8 @@
 ﻿using DbUp;
 using HeyRed.ImageSharp.Heif.Formats.Heif;
+using JasperFx;
+using JasperFx.Events.Projections;
 using Marten;
-using Marten.Events.Projections;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +24,6 @@ using SF.PhotoPixels.Infrastructure.Stores;
 using SixLabors.ImageSharp;
 using SolidTUS.Extensions;
 using SolidTUS.Models;
-using Weasel.Core;
 
 namespace SF.PhotoPixels.Infrastructure;
 
@@ -118,7 +118,7 @@ public static class DependencyInjection
                 options.Schema.For<AlbumObject>()
                 .Index(x => x.Id)
                 .Duplicate(x => x.ObjectId)
-                .Duplicate(x => x.AlbumId);                
+                .Duplicate(x => x.AlbumId);
 
                 options.Projections.Add(new ObjectPropertiesProjection(), ProjectionLifecycle.Inline);
                 options.Projections.Add(new AlbumProjection(), ProjectionLifecycle.Inline);
@@ -136,15 +136,8 @@ public static class DependencyInjection
                 options.Events.AddEventType<AlbumDeleted>();
                 options.Events.AddEventType<AlbumUpdated>();
                 options.Events.AddEventType<ObjectToAlbumCreated>();
-
-
             })
             .UseLightweightSessions();
-
-        if (!isDevelopment)
-        {
-            martenConfig.OptimizeArtifactWorkflow();
-        }
 
         new HeifConfigurationModule().Configure(Configuration.Default);
 
