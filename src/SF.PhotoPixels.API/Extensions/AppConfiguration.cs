@@ -52,6 +52,11 @@ public static class AppConfiguration
             );
         SelfLog.Enable(msg => Debug.WriteLine(msg));
 
+        if (telemetryConfiguration.Enabled)
+        {
+            loggerConfiguration.WriteTo.OpenTelemetry();
+        }
+
         if (!string.IsNullOrWhiteSpace(telemetryConfiguration.LokiUrl))
         {
             loggerConfiguration.WriteTo.GrafanaLoki(telemetryConfiguration.LokiUrl, new[] { new LokiLabel { Key = "ApplicationName", Value = appName } });

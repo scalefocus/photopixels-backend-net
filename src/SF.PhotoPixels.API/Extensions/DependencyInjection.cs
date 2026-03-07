@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -32,10 +33,30 @@ public static class DependencyInjection
                     .AddMeter("Microsoft.AspNetCore.Hosting")
                     .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
                     .AddMeter("Npgsql")
-                    .AddPrometheusExporter(cfg => { cfg.ScrapeEndpointPath = telemetryConfiguration.PrometheusScrapePath; })
+                    .AddPrometheusExporter(cfg =>
+                    {
+                        cfg.ScrapeEndpointPath = telemetryConfiguration.PrometheusScrapePath;
+                    })
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddProcessInstrumentation();
+                    .AddProcessInstrumentation()
+                    .AddOtlpExporter(o =>
+                    {
+                        if (telemetryConfiguration.OtelExporterUri is not null)
+                        {
+                            o.Endpoint = telemetryConfiguration.OtelExporterUri;
+                        }
+
+                        o.Protocol = OtlpExportProtocol.Grpc;
+                        o.ExportProcessorType = ExportProcessorType.Batch;
+                        o.BatchExportProcessorOptions = new BatchExportProcessorOptions<Activity>
+                        {
+                            MaxQueueSize = 2048,
+                            ScheduledDelayMilliseconds = 5000,
+                            ExporterTimeoutMilliseconds = 30000,
+                            MaxExportBatchSize = 512,
+                        };
+                    });
             })
             .WithTracing(x =>
             {
@@ -54,7 +75,11 @@ public static class DependencyInjection
                     })
                     .AddOtlpExporter(o =>
                     {
-                        o.Endpoint = telemetryConfiguration.OtelExporterUri;
+                        if (telemetryConfiguration.OtelExporterUri is not null)
+                        {
+                            o.Endpoint = telemetryConfiguration.OtelExporterUri;
+                        }
+
                         o.Protocol = OtlpExportProtocol.Grpc;
                         o.ExportProcessorType = ExportProcessorType.Batch;
                         o.BatchExportProcessorOptions = new BatchExportProcessorOptions<Activity>
@@ -65,9 +90,26 @@ public static class DependencyInjection
                             MaxExportBatchSize = 512,
                         };
                     });
-#if DEBUG
-                x.AddConsoleExporter();
-#endif
+            })
+            .WithLogging(x =>
+            {
+                x.AddOtlpExporter(o =>
+                {
+                    if (telemetryConfiguration.OtelExporterUri is not null)
+                    {
+                        o.Endpoint = telemetryConfiguration.OtelExporterUri;
+                    }
+
+                    o.Protocol = OtlpExportProtocol.Grpc;
+                    o.ExportProcessorType = ExportProcessorType.Batch;
+                    o.BatchExportProcessorOptions = new BatchExportProcessorOptions<Activity>
+                    {
+                        MaxQueueSize = 2048,
+                        ScheduledDelayMilliseconds = 5000,
+                        ExporterTimeoutMilliseconds = 30000,
+                        MaxExportBatchSize = 512,
+                    };
+                });
             });
 
 
@@ -94,12 +136,13 @@ public static class DependencyInjection
             options.EnableAnnotations();
             options.CustomSchemaIds(type => type.ToString());
 
-            options.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Version = "v1",
-                Title = AppConfiguration.GetAppName(),
-                Description = "PhotoPixels.io - an open-source media backup platform",
-            });
+            options.SwaggerDoc(
+                "v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = AppConfiguration.GetAppName(),
+                    Description = "PhotoPixels.io - an open-source media backup platform",
+                });
             options.CustomSchemaIds(type => type.FullName);
         });
 
@@ -107,33 +150,35 @@ public static class DependencyInjection
         {
             const string bearer = "Bearer";
 
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
+            options.AddSecurityRequirement(
+                new OpenApiSecurityRequirement
                 {
-                    new OpenApiSecurityScheme
                     {
-                        Reference = new OpenApiReference
+                        new OpenApiSecurityScheme
                         {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = bearer,
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = bearer,
+                            },
+                            Scheme = bearer,
+                            Name = bearer,
+                            In = ParameterLocation.Header,
                         },
-                        Scheme = bearer,
-                        Name = bearer,
-                        In = ParameterLocation.Header,
+                        new List<string>()
                     },
-                    new List<string>()
-                },
-            });
+                });
 
             options.CustomSchemaIds(type => type.FullName!.Replace("+", "_", StringComparison.OrdinalIgnoreCase));
-            options.AddSecurityDefinition(bearer, new OpenApiSecurityScheme
-            {
-                Description = $"Bearer Authorization header using the {bearer} scheme. Example: \"Authorization: {bearer} {{token}}\"",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = bearer,
-            });
+            options.AddSecurityDefinition(
+                bearer, new OpenApiSecurityScheme
+                {
+                    Description = $"Bearer Authorization header using the {bearer} scheme. Example: \"Authorization: {bearer} {{token}}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = bearer,
+                });
         });
 
         return services;
@@ -142,11 +187,13 @@ public static class DependencyInjection
     public static WebApplication UseSwaggerDocumentation(this WebApplication app)
     {
         app.UseSwagger();
-        app.UseSwaggerUI(c => { c.SwaggerEndpoint("v1/swagger.json", $"{AppConfiguration.GetAppName()} v1"); });
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("v1/swagger.json", $"{AppConfiguration.GetAppName()} v1");
+        });
 
         app.MapGet("/", () => Results.Redirect("/swagger")).AllowAnonymous();
 
         return app;
     }
-
 }
