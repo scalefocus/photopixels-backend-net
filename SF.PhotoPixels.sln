@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "solidtus", "src\libraries\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "functional", "src\libraries\SolidTUS\src\functional\functional.csproj", "{3499CE1C-8668-4211-8F8F-53C0F5AE34C2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SF.PhotoPixels.Aspire", "src\SF.PhotoPixels.Aspire\SF.PhotoPixels.Aspire.csproj", "{76761CC4-3594-4A53-90F2-063D6A078F12}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{3499CE1C-8668-4211-8F8F-53C0F5AE34C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3499CE1C-8668-4211-8F8F-53C0F5AE34C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3499CE1C-8668-4211-8F8F-53C0F5AE34C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76761CC4-3594-4A53-90F2-063D6A078F12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76761CC4-3594-4A53-90F2-063D6A078F12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76761CC4-3594-4A53-90F2-063D6A078F12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76761CC4-3594-4A53-90F2-063D6A078F12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

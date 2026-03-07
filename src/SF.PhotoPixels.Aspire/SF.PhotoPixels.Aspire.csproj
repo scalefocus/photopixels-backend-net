@@ -1,0 +1,21 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.2">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UserSecretsId>fa936125-98c3-468d-8ea2-205e6c040bb6</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SF.PhotoPixels.API\SF.PhotoPixels.API.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Aspire.Hosting.Docker" Version="13.1.2-preview.1.26125.13" />
+      <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.1.2" />
+      <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.1.2" />
+    </ItemGroup>
+
+</Project>
