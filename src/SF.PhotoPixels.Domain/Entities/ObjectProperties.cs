@@ -42,6 +42,12 @@ public class ObjectProperties : ISoftDeleted
 
     public bool? IsFavorite { get; set; } = false;
 
+    public DateTimeOffset? DateMediaTaken { get; set; }
+
+    public DateTimeOffset? DateMediaCreated { get; set; }
+
+    public DateTimeOffset? DatePhotopixelsImported { get; set; }
+
     // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
     public ObjectProperties()
     {
@@ -67,6 +73,4 @@ public class ObjectProperties : ISoftDeleted
     {
         return $"{Hash}.{Extension}";
     }
-
-
 }

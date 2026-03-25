@@ -74,7 +74,14 @@ public class GetFavoriteObjectsHandler : IQueryHandler<GetFavoriteObjectsRequest
                 Id = obj.Id,
                 DateCreated = obj.DateCreated,
                 MediaType = MediaHelper.GetMediaType(obj.Extension),
-                IsFavorite = true
+                IsFavorite = true,
+                DatePhotopixelsImported = obj.DatePhotopixelsImported,
+                DateMediaCreated = obj.DateMediaCreated,
+                DateMediaTaken = obj.DateMediaTaken,
+                Filename = obj.Name,
+                SizeInBytes = obj.SizeInBytes,
+                Height = obj.Height,
+                Width = obj.Width
             };
 
             properties.Add(thumbnailProperty);

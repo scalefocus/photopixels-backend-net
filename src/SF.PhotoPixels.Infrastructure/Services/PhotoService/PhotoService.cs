@@ -36,7 +36,7 @@ public class PhotoService : IPhotoService
         }
 
         var saveThumbnail = SaveThumbnailAsync(userId, fingerprint, image, cancellationToken);
-        
+
         await Task.WhenAll(saveImage, saveThumbnail);
 
         return rawImage.GetImageSize() + saveThumbnail.Result;
@@ -49,6 +49,10 @@ public class PhotoService : IPhotoService
         var objectId = new ObjectId(userId, fingerprint);
         var image = await rawImage.ToFormattedImageAsync(cancellationToken);
         var extension = rawImage.GetFileName().Split('.').Last().ToLower();
+
+        var userFolder = _objectStorage.GetUserFolders(userId).ObjectFolder;
+        var name = $"{fingerprint}{Path.GetExtension(filename)}";
+        var metadataDates = PhotoMetadataProvider.GetMetadataDates(Path.Combine(userFolder, name));
 
         var evt = new MediaObjectCreated
         {
@@ -65,6 +69,9 @@ public class PhotoService : IPhotoService
             SizeInBytes = usedQuota,
             AppleCloudId = AppleCloudId,
             AndroidCloudId = AndroidCloudId,
+            DateMediaCreated = metadataDates.dateMediaCreated,
+            DateMediaTaken = metadataDates.dateMediaTaken,
+            DatePhotopixelsImported = metadataDates.datePhotopixelsImported
         };
 
         return await _objectRepository.AddEvent(userId, evt, cancellationToken);

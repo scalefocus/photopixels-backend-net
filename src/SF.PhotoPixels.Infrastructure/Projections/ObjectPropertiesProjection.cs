@@ -55,6 +55,9 @@ public class ObjectPropertiesProjection : EventProjection
             AppleCloudId = mediaObjectCreated.AppleCloudId,
             AndroidCloudId = mediaObjectCreated.AndroidCloudId,
             SizeInBytes = mediaObjectCreated.SizeInBytes,
+            DateMediaCreated = mediaObjectCreated.DateMediaCreated,
+            DateMediaTaken = mediaObjectCreated.DateMediaTaken,
+            DatePhotopixelsImported = mediaObjectCreated.DatePhotopixelsImported
         };
 
         var existingObjectProperties = documentOperations.Query<ObjectProperties>()

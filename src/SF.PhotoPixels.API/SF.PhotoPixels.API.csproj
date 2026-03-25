@@ -17,6 +17,7 @@
 		<PackageReference Include="Marten" Version="8.16.1" />
 		<!--<PackageReference Include="Marten.CommandLine" Version="7.38.1" />-->
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+		<PackageReference Include="Microsoft.FeatureManagement" Version="4.4.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
 		<PackageReference Include="Npgsql" Version="9.0.2" />
 		<PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.2" />

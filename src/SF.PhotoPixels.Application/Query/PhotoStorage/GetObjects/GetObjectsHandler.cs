@@ -70,7 +70,14 @@ public class GetObjectsHandler : IQueryHandler<GetObjectsRequest, OneOf<GetObjec
                 Id = obj.Id,
                 DateCreated = obj.DateCreated,
                 MediaType = MediaHelper.GetMediaType(obj.Extension),
-                IsFavorite = obj.IsFavorite ?? false
+                IsFavorite = obj.IsFavorite ?? false,
+                DatePhotopixelsImported = obj.DatePhotopixelsImported,
+                DateMediaCreated = obj.DateMediaCreated,
+                DateMediaTaken = obj.DateMediaTaken,
+                Filename = obj.Name,
+                SizeInBytes = obj.SizeInBytes,
+                Height = obj.Height,
+                Width = obj.Width
             };
 
             properties.Add(thumbnailProperty);
