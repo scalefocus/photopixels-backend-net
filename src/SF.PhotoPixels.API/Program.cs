@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.FeatureManagement;
 using Serilog;
 using SF.PhotoPixels.API.Extensions;
 using SF.PhotoPixels.API.Middlewares;
@@ -77,6 +78,8 @@ builder.Services.AddSwaggerDocumentation();
 builder.Host.ConfigureWolverineSupport();
 
 builder.ConfigureWebServersUpperLimitOptions();
+
+builder.Services.AddFeatureManagement();
 
 var app = builder.Build();
 

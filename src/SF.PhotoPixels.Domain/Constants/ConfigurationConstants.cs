@@ -5,4 +5,7 @@ public static class ConfigurationConstants
     public static readonly string IsFirstTimeSetup = nameof(IsFirstTimeSetup);
     public static readonly string Registration = nameof(Registration);
     public static readonly string LatestMigration = nameof(LatestMigration);
+
+    // Feature flags
+    public static readonly string EnableIOSVideoConverstion = nameof(EnableIOSVideoConverstion);
 }

@@ -26,7 +26,7 @@ public class GetAlbumItemsHandler : IQueryHandler<GetAlbumItemsRequest, OneOf<Ge
     public async ValueTask<OneOf<GetAlbumItemsResponse, ValidationError>> Handle(GetAlbumItemsRequest request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Handling {RequestType}", request.GetType().Name);
-        
+
         var itemsPerAlbumIds = await _session.Query<AlbumObject>()
             .Where(x => x.AlbumId == request.AlbumId)
             .Select(x => x.ObjectId)
@@ -40,7 +40,14 @@ public class GetAlbumItemsHandler : IQueryHandler<GetAlbumItemsRequest, OneOf<Ge
         {
             Id = objectProperty.Id,
             DateCreated = objectProperty.DateCreated,
-            MediaType = GetMediaType(objectProperty.Extension)
+            MediaType = GetMediaType(objectProperty.Extension),
+            DatePhotopixelsImported = objectProperty.DatePhotopixelsImported,
+            DateMediaCreated = objectProperty.DateMediaCreated,
+            DateMediaTaken = objectProperty.DateMediaTaken,
+            Filename = objectProperty.Name,
+            SizeInBytes = objectProperty.SizeInBytes,
+            Height = objectProperty.Height,
+            Width = objectProperty.Width
         }).ToList();
 
         return result;
@@ -55,5 +62,4 @@ public class GetAlbumItemsHandler : IQueryHandler<GetAlbumItemsRequest, OneOf<Ge
             _ => MediaType.Unknown.ToString().ToLower()
         };
     }
-
 }

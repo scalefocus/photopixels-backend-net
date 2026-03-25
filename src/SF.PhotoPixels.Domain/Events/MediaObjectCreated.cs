@@ -29,4 +29,10 @@ public record MediaObjectCreated
     public string? OriginalHash { get; set; }
 
     public bool IsFavorite { get; set; }
+
+    public DateTimeOffset? DateMediaTaken { get; set; }
+
+    public DateTimeOffset? DateMediaCreated { get; set; }
+
+    public DateTimeOffset? DatePhotopixelsImported { get; set; }
 }
